@@ -29,6 +29,12 @@ cd ~/.agents/repos/agent-skills
 npm exec -- agent-skills install
 ```
 
+Or install and run directly from GitHub without keeping a local clone:
+
+```bash
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills install
+```
+
 The installer will:
 - discover every skill that contains `SKILL.md`
 - link only `enabled` skills into `~/.agents/skills`
@@ -45,6 +51,12 @@ Or with the Node CLI entrypoint:
 ```bash
 cd ~/.agents/repos/agent-skills
 npm exec -- agent-skills update
+```
+
+Or directly from GitHub:
+
+```bash
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills update
 ```
 
 This performs `git pull --ff-only` followed by a re-install.
@@ -71,6 +83,21 @@ npm exec -- agent-skills install   # Link skills to ~/.agents/skills
 npm exec -- agent-skills update    # git pull --ff-only + install
 npm exec -- agent-skills list      # List enabled skills by category
 npm exec -- agent-skills doctor    # Check links, SKILL.md, and shared scripts
+```
+
+When running directly from GitHub:
+
+```bash
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills install
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills update
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills list
+npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills doctor
+```
+
+If this package is later published to npm, the equivalent registry form will be:
+
+```bash
+npx @yuanhaorannnnnn/agent-skills install
 ```
 
 ## Notes

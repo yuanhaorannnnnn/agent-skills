@@ -1,10 +1,25 @@
 {
-  "name": "agent-skills",
+  "name": "@yuanhaorannnnnn/agent-skills",
   "version": "0.1.0",
   "private": false,
   "description": "Agent-neutral skills distribution repository",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuanhaorannnnnn/agent-skills.git"
+  },
+  "files": [
+    "README.md",
+    "bin",
+    "manifest.yaml",
+    "skills",
+    "scripts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
-    "agent-skills": "./scripts/install.mjs"
+    "agent-skills": "bin/agent-skills.js"
   },
   "scripts": {
     "install:local": "node scripts/install.mjs install",
