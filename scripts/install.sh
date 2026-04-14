@@ -22,20 +22,31 @@ get_manifest_enabled() {
   ' "$MANIFEST"
 }
 
-# Cleanup stale links created by this repo
-for existing_link in "$RUNTIME_DIR"/*; do
-  [ -e "$existing_link" ] || continue
-  [ -L "$existing_link" ] || continue
-  existing_target="$(readlink "$existing_link" || true)"
-  case "$existing_target" in
-    "$SKILLS_DIR/"*)
-      if [ ! -e "$existing_link" ]; then
-        rm -f "$existing_link"
-        echo "Removed stale link: $(basename "$existing_link")"
-      fi
-      ;;
-  esac
-done
+is_skill_enabled() {
+  local target="$1"
+  local enabled_val
+  enabled_val="$(get_manifest_enabled "$target")"
+  [ "$enabled_val" != "false" ]
+}
+
+cleanup_repo_links() {
+  for existing_link in "$RUNTIME_DIR"/*; do
+    [ -L "$existing_link" ] || continue
+    local skill_name existing_target
+    skill_name="$(basename "$existing_link")"
+    existing_target="$(readlink "$existing_link" || true)"
+    case "$existing_target" in
+      "$SKILLS_DIR/"*)
+        if [ ! -e "$existing_link" ] || [ ! -d "$SKILLS_DIR/$skill_name" ] || ! is_skill_enabled "$skill_name"; then
+          rm -f "$existing_link"
+          echo "Removed stale link: $skill_name"
+        fi
+        ;;
+    esac
+  done
+}
+
+cleanup_repo_links
 
 installed=()
 updated=()
@@ -51,8 +62,7 @@ for skill_dir in "$SKILLS_DIR"/*/; do
     continue
   fi
 
-  enabled_val="$(get_manifest_enabled "$skill_name")"
-  if [ "$enabled_val" = "false" ]; then
+  if ! is_skill_enabled "$skill_name"; then
     skipped+=("$skill_name (disabled in manifest)")
     continue
   fi

@@ -21,12 +21,12 @@ git clone https://github.com/yuanhaorannnnnn/agent-skills.git ~/.agents/repos/ag
 bash ~/.agents/repos/agent-skills/scripts/install.sh
 ```
 
-Or, if you prefer Node / npx:
+Or, if you prefer the Node CLI entrypoint:
 
 ```bash
 git clone https://github.com/yuanhaorannnnnn/agent-skills.git ~/.agents/repos/agent-skills
 cd ~/.agents/repos/agent-skills
-npx agent-skills install
+npm exec -- agent-skills install
 ```
 
 The installer will:
@@ -40,11 +40,11 @@ The installer will:
 bash ~/.agents/repos/agent-skills/scripts/update.sh
 ```
 
-Or with npx:
+Or with the Node CLI entrypoint:
 
 ```bash
 cd ~/.agents/repos/agent-skills
-npx agent-skills update
+npm exec -- agent-skills update
 ```
 
 This performs `git pull --ff-only` followed by a re-install.
@@ -64,13 +64,13 @@ This performs `git pull --ff-only` followed by a re-install.
 
 ## CLI commands
 
-When installed via npx:
+When running through the local package bin:
 
 ```bash
-npx agent-skills install   # Link skills to ~/.agents/skills
-npx agent-skills update    # git pull --ff-only + install
-npx agent-skills list      # List enabled skills by category
-npx agent-skills doctor    # Check links, SKILL.md, and shared scripts
+npm exec -- agent-skills install   # Link skills to ~/.agents/skills
+npm exec -- agent-skills update    # git pull --ff-only + install
+npm exec -- agent-skills list      # List enabled skills by category
+npm exec -- agent-skills doctor    # Check links, SKILL.md, and shared scripts
 ```
 
 ## Notes

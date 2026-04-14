@@ -30,6 +30,10 @@ function ensureRuntimeDir() {
   }
 }
 
+function isSkillEnabled(enabledMap, name) {
+  return !(enabledMap.has(name) && enabledMap.get(name) === false);
+}
+
 function cmdInstall() {
   const manifest = loadManifest();
   const enabledMap = new Map();
@@ -41,7 +45,7 @@ function cmdInstall() {
 
   ensureRuntimeDir();
 
-  // Cleanup stale links created by this repo
+  // Cleanup stale or disabled links created by this repo
   const entries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
   for (const entry of entries) {
     const linkPath = path.join(RUNTIME_DIR, entry);
@@ -54,7 +58,8 @@ function cmdInstall() {
     if (!stat.isSymbolicLink()) continue;
     const target = fs.readlinkSync(linkPath);
     if (target.startsWith(SKILLS_DIR + path.sep)) {
-      if (!fs.existsSync(linkPath)) {
+      const skillDir = path.join(SKILLS_DIR, entry);
+      if (!fs.existsSync(linkPath) || !fs.existsSync(skillDir) || !isSkillEnabled(enabledMap, entry)) {
         fs.unlinkSync(linkPath);
         console.log(`Removed stale link: ${entry}`);
       }
@@ -77,7 +82,7 @@ function cmdInstall() {
       missingSkillMd.push(name);
       continue;
     }
-    if (enabledMap.has(name) && enabledMap.get(name) === false) {
+    if (!isSkillEnabled(enabledMap, name)) {
       skipped.push(`${name} (disabled in manifest)`);
       continue;
     }
@@ -165,6 +170,10 @@ function cmdDoctor() {
       console.log(`[BAD LINK] ${entry} -> ${target}`);
       issues++;
       continue;
+    }
+    if (!enabledNames.has(entry)) {
+      console.log(`[DISABLED LINK] runtime link ${entry} exists but the skill is disabled in manifest.yaml`);
+      issues++;
     }
     if (!fs.existsSync(path.join(linkPath, 'SKILL.md'))) {
       console.log(`[MISSING SKILL.md] ${entry}`);

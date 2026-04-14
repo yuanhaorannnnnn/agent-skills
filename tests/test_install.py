@@ -91,6 +91,33 @@ skills:
         finally:
             MANIFEST_PATH.write_text(original_manifest)
 
+    def test_install_removes_existing_runtime_link_for_disabled_skill(self) -> None:
+        original_manifest = MANIFEST_PATH.read_text()
+        try:
+            manifest_content = """\
+repo:
+  name: agent-skills
+  runtime_dir: ~/.agents/skills
+skills:
+  - name: save-conversation
+    enabled: false
+    category: conversation
+"""
+            MANIFEST_PATH.write_text(manifest_content)
+
+            with tempfile.TemporaryDirectory() as tmp:
+                home = Path(tmp)
+                runtime = home / ".agents" / "skills"
+                runtime.mkdir(parents=True)
+                existing_link = runtime / "save-conversation"
+                existing_link.symlink_to(SKILLS_DIR / "save-conversation")
+
+                result = self._run_install(home)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertFalse(existing_link.exists())
+        finally:
+            MANIFEST_PATH.write_text(original_manifest)
+
 
 if __name__ == "__main__":
     unittest.main()
