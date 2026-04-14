@@ -1,20 +1,29 @@
 repo:
-  name: agents-skills-repo
+  name: agent-skills
   runtime_dir: ~/.agents/skills
+
 skills:
   - name: capture-mistake-rule
-    kind: local-skill
+    enabled: true
+    category: workflow
   - name: code-reviewer
-    kind: local-skill
+    enabled: true
+    category: review
   - name: fix-issue
-    kind: local-skill
+    enabled: true
+    category: debugging
   - name: repo-agent-bootstrap
-    kind: local-skill
+    enabled: true
+    category: repo
   - name: restore-conversation
-    kind: local-skill
+    enabled: true
+    category: conversation
   - name: save-conversation
-    kind: local-skill
+    enabled: true
+    category: conversation
   - name: skill-cheatsheet
-    kind: local-skill
+    enabled: true
+    category: utility
   - name: task-report-slides
-    kind: local-skill
+    enabled: true
+    category: reporting

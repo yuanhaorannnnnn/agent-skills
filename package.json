@@ -1,0 +1,21 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Agent-neutral skills distribution repository",
+  "bin": {
+    "agent-skills": "./scripts/install.mjs"
+  },
+  "scripts": {
+    "install:local": "node scripts/install.mjs install",
+    "update:local": "node scripts/install.mjs update",
+    "list:local": "node scripts/install.mjs list",
+    "doctor:local": "node scripts/install.mjs doctor"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

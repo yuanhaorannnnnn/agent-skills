@@ -1,0 +1,237 @@
+#!/usr/bin/env node
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+import yaml from 'js-yaml';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '..');
+const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
+const SCRIPTS_DIR = path.join(ROOT_DIR, 'scripts');
+const RUNTIME_DIR = path.join(process.env.HOME, '.agents', 'skills');
+const MANIFEST_PATH = path.join(ROOT_DIR, 'manifest.yaml');
+
+function loadManifest() {
+  if (!fs.existsSync(MANIFEST_PATH)) return null;
+  const content = fs.readFileSync(MANIFEST_PATH, 'utf8');
+  return yaml.load(content);
+}
+
+function getEnabledSkills(manifest) {
+  if (!manifest || !manifest.skills) return [];
+  return manifest.skills.filter(s => s.enabled !== false);
+}
+
+function ensureRuntimeDir() {
+  if (!fs.existsSync(RUNTIME_DIR)) {
+    fs.mkdirSync(RUNTIME_DIR, { recursive: true });
+  }
+}
+
+function cmdInstall() {
+  const manifest = loadManifest();
+  const enabledMap = new Map();
+  if (manifest && manifest.skills) {
+    for (const s of manifest.skills) {
+      enabledMap.set(s.name, s.enabled !== false);
+    }
+  }
+
+  ensureRuntimeDir();
+
+  // Cleanup stale links created by this repo
+  const entries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
+  for (const entry of entries) {
+    const linkPath = path.join(RUNTIME_DIR, entry);
+    let stat;
+    try {
+      stat = fs.lstatSync(linkPath);
+    } catch {
+      continue;
+    }
+    if (!stat.isSymbolicLink()) continue;
+    const target = fs.readlinkSync(linkPath);
+    if (target.startsWith(SKILLS_DIR + path.sep)) {
+      if (!fs.existsSync(linkPath)) {
+        fs.unlinkSync(linkPath);
+        console.log(`Removed stale link: ${entry}`);
+      }
+    }
+  }
+
+  const installed = [];
+  const updated = [];
+  const skipped = [];
+  const missingSkillMd = [];
+
+  const skillDirs = fs.existsSync(SKILLS_DIR)
+    ? fs.readdirSync(SKILLS_DIR)
+        .map(name => ({ name, dir: path.join(SKILLS_DIR, name) }))
+        .filter(({ dir }) => fs.statSync(dir).isDirectory())
+    : [];
+
+  for (const { name, dir } of skillDirs) {
+    if (!fs.existsSync(path.join(dir, 'SKILL.md'))) {
+      missingSkillMd.push(name);
+      continue;
+    }
+    if (enabledMap.has(name) && enabledMap.get(name) === false) {
+      skipped.push(`${name} (disabled in manifest)`);
+      continue;
+    }
+    const targetLink = path.join(RUNTIME_DIR, name);
+    const existed = (() => {
+      try {
+        return fs.lstatSync(targetLink).isSymbolicLink();
+      } catch {
+        return false;
+      }
+    })();
+    if (existed) {
+      fs.unlinkSync(targetLink);
+    }
+    fs.symlinkSync(dir, targetLink, 'dir');
+    if (existed) {
+      updated.push(name);
+    } else {
+      installed.push(name);
+    }
+  }
+
+  console.log('');
+  console.log('=== agent-skills install report ===');
+  if (installed.length) console.log(`Installed: ${installed.join(' ')}`);
+  if (updated.length) console.log(`Updated:   ${updated.join(' ')}`);
+  if (skipped.length) console.log(`Skipped:   ${skipped.join(' ')}`);
+  if (missingSkillMd.length) console.log(`Missing SKILL.md: ${missingSkillMd.join(' ')}`);
+  console.log('===================================');
+}
+
+function cmdUpdate() {
+  console.log('Pulling latest changes...');
+  execSync('git pull --ff-only', { cwd: ROOT_DIR, stdio: 'inherit' });
+  console.log('Running install...');
+  cmdInstall();
+}
+
+function cmdList() {
+  const manifest = loadManifest();
+  const skills = getEnabledSkills(manifest);
+  if (!skills.length) {
+    console.log('No enabled skills found.');
+    return;
+  }
+  const byCategory = {};
+  for (const s of skills) {
+    const cat = s.category || 'uncategorized';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(s.name);
+  }
+  console.log('Published skills:');
+  for (const [cat, names] of Object.entries(byCategory).sort()) {
+    console.log(`\n[${cat}]`);
+    for (const name of names) {
+      console.log(`  - ${name}`);
+    }
+  }
+}
+
+function cmdDoctor() {
+  const manifest = loadManifest();
+  const manifestNames = new Set((manifest?.skills || []).map(s => s.name));
+  const enabledNames = new Set(getEnabledSkills(manifest).map(s => s.name));
+
+  ensureRuntimeDir();
+
+  let issues = 0;
+
+  // Check runtime links that belong to this repo
+  const runtimeEntries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
+  for (const entry of runtimeEntries) {
+    const linkPath = path.join(RUNTIME_DIR, entry);
+    let stat;
+    try {
+      stat = fs.lstatSync(linkPath);
+    } catch {
+      continue;
+    }
+    if (!stat.isSymbolicLink()) continue;
+    const target = fs.readlinkSync(linkPath);
+    if (!target.startsWith(SKILLS_DIR + path.sep)) continue;
+
+    if (!fs.existsSync(linkPath)) {
+      console.log(`[BAD LINK] ${entry} -> ${target}`);
+      issues++;
+      continue;
+    }
+    if (!fs.existsSync(path.join(linkPath, 'SKILL.md'))) {
+      console.log(`[MISSING SKILL.md] ${entry}`);
+      issues++;
+    }
+    if (!manifestNames.has(entry)) {
+      console.log(`[NOT IN MANIFEST] runtime link ${entry} is not listed in manifest.yaml`);
+      issues++;
+    }
+  }
+
+  // Check manifest consistency
+  for (const name of manifestNames) {
+    const skillDir = path.join(SKILLS_DIR, name);
+    if (!fs.existsSync(skillDir)) {
+      console.log(`[MISSING DIR] manifest lists ${name}, but skills/${name}/ does not exist`);
+      issues++;
+    } else if (!fs.existsSync(path.join(skillDir, 'SKILL.md'))) {
+      console.log(`[MISSING SKILL.md] skills/${name}/SKILL.md not found`);
+      issues++;
+    }
+  }
+
+  // Check shared scripts presence (heuristic: list known shared scripts)
+  const knownSharedScripts = [
+    'common.py', 'note_rule.py', 'planning_status.py',
+    'restore_conversation.py', 'review_diff.py',
+    'save_conversation.py', 'init_planning_files.py'
+  ];
+  for (const script of knownSharedScripts) {
+    const scriptPath = path.join(SCRIPTS_DIR, script);
+    if (!fs.existsSync(scriptPath)) {
+      console.log(`[MISSING SCRIPT] scripts/${script}`);
+      issues++;
+    }
+  }
+
+  if (issues === 0) {
+    console.log('Doctor: all checks passed.');
+  } else {
+    console.log(`Doctor: found ${issues} issue(s).`);
+    process.exit(1);
+  }
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  const command = args[0] || 'install';
+
+  switch (command) {
+    case 'install':
+      cmdInstall();
+      break;
+    case 'update':
+      cmdUpdate();
+      break;
+    case 'list':
+      cmdList();
+      break;
+    case 'doctor':
+      cmdDoctor();
+      break;
+    default:
+      console.error(`Unknown command: ${command}`);
+      console.error('Usage: agent-skills [install|update|list|doctor]');
+      process.exit(1);
+  }
+}
+
+main();
