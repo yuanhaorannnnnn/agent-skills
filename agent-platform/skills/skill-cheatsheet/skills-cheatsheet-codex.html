@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex Skills 速查表</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+CT:wght@400;500;600;700&Noto+Serif+SC:wght@400;500;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Noto Serif SC, Songti SC, serif;
+            background: #faf9f5;
+            color: #141413;
+            line-height: 1.6;
+            padding: 40px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d97757;
+        }
+
+        h1 {
+            font-family: Noto Sans SC, PingFang SC, sans-serif;
+            font-size: 42px;
+            font-weight: 600;
+            color: #141413;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-family: Noto Sans SC, PingFang SC, sans-serif;
+            font-size: 14px;
+            color: #b0aea5;
+            letter-spacing: 3px;
+            
+        }
+
+        .section { margin-bottom: 30px; }
+
+        .section-title {
+            font-family: Noto Sans SC, PingFang SC, sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #6a9bcc;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #6a9bcc;
+            border-radius: 50%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+
+        .skill-card {
+            background: white;
+            border: 1px solid #e8e6dc;
+            border-radius: 10px;
+            padding: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .skill-card:hover {
+            border-color: #d97757;
+            box-shadow: 0 4px 16px rgba(217, 119, 87, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .skill-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .skill-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-family: Noto Sans SC, sans-serif;
+            font-weight: 600;
+            font-size: 11px;
+            color: white;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .skill-icon.doc { background: linear-gradient(135deg, #d97757, #c96b4d); }
+        .skill-icon.design { background: linear-gradient(135deg, #6a9bcc, #5a8fb8); }
+        .skill-icon.code { background: linear-gradient(135deg, #788c5d, #6a7c52); }
+        .skill-icon.comm { background: linear-gradient(135deg, #b0aea5, #a2a097); }
+        .skill-icon.user { background: linear-gradient(135deg, #141413, #2a2a29); }
+
+        .skill-name {
+            font-family: Noto Sans SC, PingFang SC, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #141413;
+        }
+
+        .skill-desc {
+            font-size: 14px;
+            color: #5c5a54;
+            line-height: 1.6;
+        }
+
+        .skill-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .keyword {
+            font-family: Noto Sans SC, sans-serif;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: #f5f4f1;
+            color: #5c5a54;
+        }
+
+        .badge {
+            display: inline-block;
+            font-family: Noto Sans SC, sans-serif;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .badge-user {
+            background: #141413;
+            color: #faf9f5;
+        }
+
+        .badge-upstream {
+            background: #eef7f2;
+            color: #2f6f57;
+        }
+
+        .badge-local {
+            background: #f2f1ec;
+            color: #141413;
+        }
+
+        .badge-system {
+            background: #f1effb;
+            color: #6c63a6;
+        }
+
+        .badge-superpower {
+            background: #fbf3e8;
+            color: #9b6c32;
+        }
+
+        .badge-marketplace {
+            background: #eef4fb;
+            color: #2f5d8a;
+        }
+
+        .badge-custom {
+            background: #f5f4f1;
+            color: #141413;
+        }
+
+        .source-summary {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .source-pill {
+            font-family: Noto Sans SC, sans-serif;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: white;
+            border: 1px solid #e8e6dc;
+            color: #5c5a54;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e6dc;
+            text-align: center;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #5c5a54;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: #b0aea5;
+        }
+
+        .trigger-hint {
+            font-family: Noto Sans SC, sans-serif;
+            font-size: 12px;
+            color: #788c5d;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f5f8f2;
+            border-radius: 6px;
+        }
+
+        @media print {
+            body { padding: 20px; }
+            .skill-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="subtitle">Codex</div>
+            <h1>Skills 速查表</h1>
+            <p style="color: #b0aea5; font-size: 15px;">所有已安装技能的快速参考指南</p>
+        </header>
+
+            <div class="source-summary">
+                <div class="source-pill">官方上游 · 10</div>
+                <div class="source-pill">本地自维护 · 9</div>
+                <div class="source-pill">系统内建 · 2</div>
+                <div class="source-pill">方法论 · 14</div>
+
+            </div>
+
+        <div class="section">
+            <div class="section-title">文档与文件处理</div>
+            <div class="grid">
+
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon doc">CANV</div>
+                        <div class="skill-name">canvas-design <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">使用设计理念创建精美的视觉艺术 PNG 和 PDF 文档。当用户要求创建海报、艺术品、设计或其他静态作品时使用。创作原创视觉设计，避免复制现有艺术家作品</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">PDF</span><span class="keyword">文档</span>
+                    </div>
+                    <div class="trigger-hint">触发词：设计海报、创作艺术、视觉设计</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon doc">DOC</div>
+                        <div class="skill-name">docx <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">专业的文档创建、编辑和分析，支持修订模式、批注、格式保留和文本提取。当 Claude 需要处理专业文档（.docx 文件）时使用：创建新文档、修改或编辑内容、处理修订模式、添加批注或其他文档任务</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">docx</span><span class="keyword">文档</span><span class="keyword">文档</span>
+                    </div>
+                    <div class="trigger-hint">触发词：创建Word文档、修订模式、批注</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon doc">PDF</div>
+                        <div class="skill-name">pdf <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">全面的 PDF 操作工具包，用于提取文本和表格、创建新 PDF、合并/拆分文档以及处理表单。当 Claude 需要填写 PDF 表单或以编程方式处理、生成或大规模分析 PDF 文档时使用</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">PDF</span><span class="keyword">PDF</span><span class="keyword">表格</span><span class="keyword">文档</span>
+                    </div>
+                    <div class="trigger-hint">触发词：处理PDF、填写表单、提取PDF内容</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon doc">PPT</div>
+                        <div class="skill-name">pptx <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">演示文稿创建、编辑和分析。当 Claude 需要处理演示文稿（.pptx 文件）时使用：创建新演示文稿、修改或编辑内容、处理布局、添加批注或演讲者备注，或其他演示文稿任务</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">ppt</span>
+                    </div>
+                    <div class="trigger-hint">触发词：制作PPT、创建幻灯片、演示文稿</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon doc">XLS</div>
+                        <div class="skill-name">xlsx <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">全面的电子表格创建、编辑和分析，支持公式、格式设置、数据分析和可视化。当 Claude 需要处理电子表格（.xlsx、.xlsm、.csv、.tsv 等）时使用：创建带有公式和格式的新电子表格、读取或分析数据、在保留公式的同时修改现有电子表格、电子表格中的数据分析和可视化，或重新计算公式</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">xlsx</span><span class="keyword">表格</span><span class="keyword">公式</span>
+                    </div>
+                    <div class="trigger-hint">触发词：Excel表格、电子表格、公式计算</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">设计与创意</div>
+            <div class="grid">
+
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">生成</div>
+                        <div class="skill-name">algorithmic-art <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">使用 p5.js 创建算法艺术，支持随机种子和交互参数探索。用于用户请求使用代码创建艺术、生成艺术、算法艺术、流场或粒子系统时。创建原创的算法艺术以避免版权问题</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">p5.js</span>
+                    </div>
+                    <div class="trigger-hint">触发词：生成艺术、算法艺术、p5.js、流场图</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">BRAI</div>
+                        <div class="skill-name">brainstorming <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">品牌</div>
+                        <div class="skill-name">brand-guidelines <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">应用 Anthropic 官方品牌配色和字体排版。当品牌配色、样式指南、视觉格式或公司设计标准适用时使用</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    <div class="trigger-hint">触发词：品牌配色、Anthropic风格、官方样式</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">capture-mistake-rule <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when a mistake, misread requirement, repeated implementation error, or
+important lesson should be recorded as a durable rule so it is not repeated.
+Trigger on requests like "write this down as a rule", "remember this mistake",
+"capture a lesson learned", or "add a guardrail for next time".</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">DISP</div>
+                        <div class="skill-name">dispatching-parallel-agents <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">EXEC</div>
+                        <div class="skill-name">executing-plans <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when you have a written implementation plan to execute in a separate session with review checkpoints</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">fix-issue <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when the user asks to fix a bug, regression, failing behavior, broken
+feature, runtime error, or repeated mistake pattern. Trigger on requests like
+"fix this", "debug this", "find the root cause", or "check for similar
+issues nearby". Focus on root cause and scan for nearby similar mistakes.</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">前端</div>
+                        <div class="skill-name">frontend-design <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">创建具有高设计质量的生产级前端界面。当用户要求构建网页组件、页面、artifacts、海报或应用程序（例如网站、落地页、仪表盘、React 组件、HTML/CSS 布局或美化任何 Web UI）时使用此技能。生成富有创意、精美的代码和 UI 设计，避免通用的 AI 美学风格</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">React</span><span class="keyword">HTML</span>
+                    </div>
+                    <div class="trigger-hint">触发词：创建网页、前端界面、React组件</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">plan-status <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when the user wants a quick status summary of the current plan, current
+phase, planning progress, or whether task_plan.md, findings.md, and progress.md
+are up to date. Trigger on requests like "plan status", "where are we in the
+plan", or "show planning progress".</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">planning-with-files <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use for complex multi-step tasks that need a written plan, persistent research
+notes, progress tracking, or long-running context across many tool calls.
+Trigger on requests like "make a plan", "break this down", "track progress",
+"organize this project", or "use planning files". Initializes and maintains
+task_plan.md, findings.md, and progress.md in the current project directory.</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">restore-session <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when the user wants to restore a previous session, recover context after a
+reset or clear, resume work from saved notes, or find the next step from prior
+progress. Trigger on requests like "restore session", "recover context",
+"resume where we left off", or "load the saved recap".</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">rest</span><span class="keyword">rest</span>
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">save-session <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when the user wants to save the current session, persist working context,
+store progress, write a branch recap, snapshot git status, or save next steps
+so work can be resumed later. Trigger on requests like "save session", "save
+progress", "store context", "write recap", or "remember where we left off".</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">skill-cheatsheet <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">生成 Skills 速查表。自动扫描所有已安装的 skills（官方 marketplace + 用户自定义），生成 Anthropic 品牌风格的 HTML 速查表。包含每个 skill 的名称、描述、触发词和分类。触发词：生成技能速查表、更新 cheatsheet、skills 列表、查看已安装技能、刷新技能表。</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">HTML</span>
+                    </div>
+                    <div class="trigger-hint">触发词：生成技能速查表、更新cheatsheet、查看已安装技能</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">SUBA</div>
+                        <div class="skill-name">subagent-driven-development <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when executing implementation plans with independent tasks in the current session</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">主题</div>
+                        <div class="skill-name">theme-factory <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">为 artifacts 应用主题的工具包。这些 artifacts 可以是幻灯片、文档、报告、HTML 落地页等。有 10 种预设主题，带有可应用于任何已创建 artifact 的颜色和字体，或可以即时生成新主题</div>
+                    <div class="skill-keywords">
+                        <span class="keyword">HTML</span><span class="keyword">幻灯片</span><span class="keyword">文档</span>
+                    </div>
+                    <div class="trigger-hint">触发词：应用主题、配色方案、样式美化</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">USIN</div>
+                        <div class="skill-name">using-git-worktrees <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">USIN</div>
+                        <div class="skill-name">using-superpowers <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">VERI</div>
+                        <div class="skill-name">verification-before-completion <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon design">WRIT</div>
+                        <div class="skill-name">writing-skills <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when creating new skills, editing existing skills, or verifying skills work before deployment</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">开发与工具</div>
+            <div class="grid">
+
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">code-review-core <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Shared code-review workflow used by review agents. Use when building or updating
+a review agent, or when a review must be run in a consistent structured format.</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon user">自</div>
+                        <div class="skill-name">code-reviewer <span class="badge badge-local">本地自维护</span></div>
+                    </div>
+                    <div class="skill-desc">Use when the user asks for a code review, review of recent changes, diff
+review, PR-style review, bug-risk check, regression scan, or second-pass audit
+of modified code. Focus on correctness, regressions, security, and
+maintainability.</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">FINI</div>
+                        <div class="skill-name">finishing-a-development-branch <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">RECE</div>
+                        <div class="skill-name">receiving-code-review <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">REQU</div>
+                        <div class="skill-name">requesting-code-review <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when completing tasks, implementing major features, or before merging to verify work meets requirements</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">技能</div>
+                        <div class="skill-name">skill-creator <span class="badge badge-upstream">官方上游</span></div>
+                    </div>
+                    <div class="skill-desc">创建有效技能的指南。当用户想要创建新技能（或更新现有技能）以扩展 Claude 的能力、添加专业化知识、工作流程或工具集成时，应使用此技能</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    <div class="trigger-hint">触发词：创建skill、自定义技能、扩展功能</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">技能</div>
+                        <div class="skill-name">skill-creator <span class="badge badge-system">系统内建</span></div>
+                    </div>
+                    <div class="skill-desc">创建有效技能的指南。当用户想要创建新技能（或更新现有技能）以扩展 Claude 的能力、添加专业化知识、工作流程或工具集成时，应使用此技能</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    <div class="trigger-hint">触发词：创建skill、自定义技能、扩展功能</div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">SKIL</div>
+                        <div class="skill-name">skill-installer <span class="badge badge-system">系统内建</span></div>
+                    </div>
+                    <div class="skill-desc">Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">SYST</div>
+                        <div class="skill-name">systematic-debugging <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">TEST</div>
+                        <div class="skill-name">test-driven-development <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when implementing any feature or bugfix, before writing implementation code</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <div class="skill-icon code">WRIT</div>
+                        <div class="skill-name">writing-plans <span class="badge badge-superpower">方法论</span></div>
+                    </div>
+                    <div class="skill-desc">Use when you have a spec or requirements for a multi-step task, before touching code</div>
+                    <div class="skill-keywords">
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="legend">
+<div class="legend-item"><div class="legend-dot" style="background: #d97757;"></div> 文档处理</div>
+<div class="legend-item"><div class="legend-dot" style="background: #6a9bcc;"></div> 设计创意</div>
+<div class="legend-item"><div class="legend-dot" style="background: #788c5d;"></div> 开发工具</div>
+<div class="legend-item"><div class="legend-dot" style="background: #b0aea5;"></div> 沟通协作</div>
+<div class="legend-item"><div class="legend-dot" style="background: #2f6f57;"></div> 官方上游</div>
+<div class="legend-item"><div class="legend-dot" style="background: #141413;"></div> 本地自维护</div>
+<div class="legend-item"><div class="legend-dot" style="background: #6c63a6;"></div> 系统内建</div>
+<div class="legend-item"><div class="legend-dot" style="background: #9b6c32;"></div> 方法论</div>
+
+            </div>
+            <p class="footer-text">Codex 技能速查表 • 35 个技能已安装</p>
+        </footer>
+    </div>
+</body>
+</html>

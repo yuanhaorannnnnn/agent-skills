@@ -1,0 +1,20 @@
+repo:
+  name: agents-skills-repo
+  runtime_dir: ~/.agents/skills
+skills:
+  - name: capture-mistake-rule
+    kind: local-skill
+  - name: code-reviewer
+    kind: local-skill
+  - name: fix-issue
+    kind: local-skill
+  - name: repo-agent-bootstrap
+    kind: local-skill
+  - name: restore-conversation
+    kind: local-skill
+  - name: save-conversation
+    kind: local-skill
+  - name: skill-cheatsheet
+    kind: local-skill
+  - name: task-report-slides
+    kind: local-skill

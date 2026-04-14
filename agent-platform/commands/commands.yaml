@@ -1,0 +1,42 @@
+commands:
+  - name: save
+    aliases: ["/save"]
+    kind: skill
+    target: save-conversation
+    script: agent-platform/scripts/save_conversation.py
+    summary: Persist current conversation state into .agent-state/conversations/<conversation>.md
+  - name: restore
+    aliases: ["/restore"]
+    kind: skill
+    target: restore-conversation
+    script: agent-platform/scripts/restore_conversation.py
+    summary: Restore conversation context from .agent-state and print the next useful task
+  - name: fix
+    aliases: ["/fix"]
+    kind: skill
+    target: fix-issue
+    summary: Investigate root cause, fix safely, and scan for similar issues
+  - name: review
+    aliases: ["/review"]
+    kind: agent
+    target: code-reviewer
+    script: agent-platform/scripts/review_diff.py
+    summary: Run the independent code reviewer against current diffs
+  - name: note
+    aliases: ["/note"]
+    kind: skill
+    target: capture-mistake-rule
+    script: agent-platform/scripts/note_rule.py
+    summary: Persist a durable mistake-prevention rule into .agent-state/rules/mistakes.md
+  - name: plan
+    aliases: ["/plan", "/planning", "/start"]
+    kind: skill
+    target: repo-planning-conversation
+    script: agent-platform/scripts/init_planning_files.py
+    summary: Initialize repo-local planning files under .planning/conversations/<conversation-id>/
+  - name: plan-status
+    aliases: ["/plan:status"]
+    kind: command
+    target: planning-with-files-status
+    script: agent-platform/scripts/planning_status.py
+    summary: Show a compact status summary from .planning/conversations/<conversation-id>/task_plan.md

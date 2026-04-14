@@ -1,0 +1,50 @@
+{
+  "skill_name": "restore-session",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Restore the saved session for the repository at /media/yhr/2T/files/cc_projects/test/codex/agent-platform/skills/restore-session-workspace/fixtures/active-session-repo. Respect `.agent-state/ACTIVE_SESSION`, include the most important next focus, and surface key context if it exists.",
+      "expected_output": "The active session is restored, the next focus comes from Pending Follow-Ups, and Key Context is surfaced.",
+      "files": [],
+      "expectations": [
+        "The restore output says `Session name: carry-session`.",
+        "The restore output says `Current branch: feature-branch`.",
+        "The restore output says `Next focus: Finish the release checklist`.",
+        "The restore output says `Key context: User was in the middle of release prep`."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Restore the saved session for the repository at /media/yhr/2T/files/cc_projects/test/codex/agent-platform/skills/restore-session-workspace/fixtures/branch-fallback-repo. There is no `.agent-state/ACTIVE_SESSION`, so use the branch-named session file and choose the next focus from `Known Issues` when there is no pending follow-up.",
+      "expected_output": "The branch-named session is restored and Known Issues becomes the next focus.",
+      "files": [],
+      "expectations": [
+        "The restore output says `Session name: branch-fallback`.",
+        "The restore output says `Current branch: branch-fallback`.",
+        "The restore output says `Next focus: Re-run the actuator calibration before merge`.",
+        "The restore output says `Memory: not created yet`."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Restore the saved session for the repository at /media/yhr/2T/files/cc_projects/test/codex/agent-platform/skills/restore-session-workspace/fixtures/key-context-repo. There is no actionable Pending Follow-Ups or Known Issues entry, so fall back to `Key Context` and include it in the final summary.",
+      "expected_output": "The restore output falls back to Key Context for Next focus and prints Key context explicitly.",
+      "files": [],
+      "expectations": [
+        "The restore output says `Session name: context-fallback`.",
+        "The restore output says `Next focus: Waiting for the user to confirm the rollout window`.",
+        "The restore output says `Key context: Waiting for the user to confirm the rollout window`."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Attempt to restore the saved session for the repository at /media/yhr/2T/files/cc_projects/test/codex/agent-platform/skills/restore-session-workspace/fixtures/missing-session-repo. There is no saved session file, so report the failure clearly instead of pretending the restore succeeded.",
+      "expected_output": "The restore attempt fails with the missing-session message and a non-zero exit code.",
+      "files": [],
+      "expectations": [
+        "The restore output says `No saved session for session 'missing-session'.`.",
+        "The recorded exit code is non-zero."
+      ]
+    }
+  ]
+}
