@@ -17,18 +17,17 @@ The runtime surface is always:
 ## Layout
 
 ```text
-agent-platform/
-├── agents/
-├── commands/
-├── scripts/
-└── skills/
+agents/
+commands/
+scripts/
+skills/
 scripts/
 ├── install.sh
 └── sync.sh
 manifest.yaml
 ```
 
-`agent-platform/skills/` contains the published skill folders.
+`skills/` contains the published skill folders.
 
 ## Install
 
@@ -60,5 +59,5 @@ Current published local skills are listed in [manifest.yaml](./manifest.yaml).
 
 - This repository only manages `~/.agents/skills`.
 - It does not write to `~/.claude/agents`, `~/.claude/commands`, or `~/.claude/skills`.
-- Skill-relative script paths are preserved by keeping the `agent-platform/`
-  structure intact inside this repository.
+- Skill-relative script paths are preserved by keeping `skills/` and `scripts/`
+  as top-level siblings inside this repository.

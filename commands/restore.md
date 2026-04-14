@@ -4,7 +4,7 @@ description: Restore current conversation context from .agent-state.
 
 Invoke the `restore-conversation` skill.
 
-If deterministic output is needed, run `agent-platform/scripts/restore_conversation.py`.
+If deterministic output is needed, run `scripts/restore_conversation.py`.
 
 Recommended manual restore format when you manage named conversations explicitly:
 
