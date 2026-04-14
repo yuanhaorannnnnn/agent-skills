@@ -35,6 +35,12 @@ Or install and run directly from GitHub without keeping a local clone:
 npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills install
 ```
 
+Once `@yuanhaorannnnnn/agent-skills` is published to npm, the registry form becomes:
+
+```bash
+npx @yuanhaorannnnnn/agent-skills install
+```
+
 The installer will:
 - discover every skill that contains `SKILL.md`
 - link only `enabled` skills into `~/.agents/skills`
@@ -68,7 +74,7 @@ This performs `git pull --ff-only` followed by a re-install.
 | `capture-mistake-rule` | workflow | Record mistakes and lessons learned as durable rules. |
 | `code-reviewer` | review | Review diffs and recent changes for correctness and maintainability. |
 | `fix-issue` | debugging | Fix bugs, regressions, and runtime errors with root-cause focus. |
-| `repo-agent-bootstrap` | repo | Initialize or normalize a repository into the standard repo-local agent layout. |
+| `agent-scaffold` | repo | Initialize or normalize a repository into the standard repo-local agent layout. |
 | `restore-conversation` | conversation | Resume work from saved conversation context. |
 | `save-conversation` | conversation | Persist conversation context for future restoration. |
 | `skill-cheatsheet` | utility | Generate a searchable HTML cheatsheet of installed skills. |
@@ -94,10 +100,22 @@ npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills lis
 npm exec --yes --package=github:yuanhaorannnnnn/agent-skills -- agent-skills doctor
 ```
 
-If this package is later published to npm, the equivalent registry form will be:
+When running from the published npm package, use:
 
 ```bash
 npx @yuanhaorannnnnn/agent-skills install
+npx @yuanhaorannnnnn/agent-skills update
+npx @yuanhaorannnnnn/agent-skills list
+npx @yuanhaorannnnnn/agent-skills doctor
+```
+
+Equivalent `npm exec` form:
+
+```bash
+npm exec --yes --package=@yuanhaorannnnnn/agent-skills -- agent-skills install
+npm exec --yes --package=@yuanhaorannnnnn/agent-skills -- agent-skills update
+npm exec --yes --package=@yuanhaorannnnnn/agent-skills -- agent-skills list
+npm exec --yes --package=@yuanhaorannnnnn/agent-skills -- agent-skills doctor
 ```
 
 ## Notes
