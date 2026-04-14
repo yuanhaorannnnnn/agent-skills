@@ -33,7 +33,7 @@ class InstallScriptTests(unittest.TestCase):
             self.assertTrue((home / ".agents" / "skills" / "save-conversation").is_symlink())
             self.assertTrue((home / ".agents" / "skills" / "restore-conversation").is_symlink())
             self.assertTrue((home / ".agents" / "skills" / "task-report-slides").is_symlink())
-            self.assertTrue((home / ".agents" / "skills" / "agent-scaffold").is_symlink())
+            self.assertTrue((home / ".agents" / "skills" / "scaffold").is_symlink())
 
     def test_install_removes_stale_links_from_this_repo(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

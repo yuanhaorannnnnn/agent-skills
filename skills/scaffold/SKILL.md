@@ -1,5 +1,5 @@
 ---
-name: agent-scaffold
+name: scaffold
 description: Initialize or normalize a repository into the standard repo-local agent system layout. Use when a repository needs a local `AGENTS.md` index with inlined Guardrails and Agent System rules, `.agent-state/` runtime state, and `.planning/conversations/` planning conventions — especially when an existing `AGENTS.md` should be preserved and augmented rather than replaced. Use this skill whenever the user mentions bootstrapping an agent system, setting up AGENTS.md, initializing repo-local agent memory, or normalizing a repo's agent structure.
 ---
 

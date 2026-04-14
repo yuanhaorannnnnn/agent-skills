@@ -74,7 +74,7 @@ This performs `git pull --ff-only` followed by a re-install.
 | `capture-mistake-rule` | workflow | Record mistakes and lessons learned as durable rules. |
 | `code-reviewer` | review | Review diffs and recent changes for correctness and maintainability. |
 | `fix-issue` | debugging | Fix bugs, regressions, and runtime errors with root-cause focus. |
-| `agent-scaffold` | repo | Initialize or normalize a repository into the standard repo-local agent layout. |
+| `scaffold` | repo | Initialize or normalize a repository into the standard repo-local agent layout. |
 | `restore-conversation` | conversation | Resume work from saved conversation context. |
 | `save-conversation` | conversation | Persist conversation context for future restoration. |
 | `skill-cheatsheet` | utility | Generate a searchable HTML cheatsheet of installed skills. |

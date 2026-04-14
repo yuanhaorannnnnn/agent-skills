@@ -12,7 +12,7 @@ skills:
   - name: fix-issue
     enabled: true
     category: debugging
-  - name: agent-scaffold
+  - name: scaffold
     enabled: true
     category: repo
   - name: restore-conversation
