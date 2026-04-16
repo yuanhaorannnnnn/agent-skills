@@ -1,5 +1,5 @@
 ---
-name: tech-report
+name: report
 description: |
   Generate a Markdown technical report in academic paper structure for a
   completed task. Use this skill whenever the user asks for a 技术报告,

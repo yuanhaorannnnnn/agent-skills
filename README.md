@@ -78,7 +78,7 @@ This performs `git pull --ff-only` followed by a re-install.
 | `restore-conversation` | conversation | Resume work from saved conversation context. |
 | `save-conversation` | conversation | Persist conversation context for future restoration. |
 | `skill-cheatsheet` | utility | Generate a searchable HTML cheatsheet of installed skills. |
-| `tech-report` | reporting | Generate a Markdown technical report in academic paper structure after work is finished. |
+| `report` | reporting | Generate a Markdown technical report in academic paper structure after work is finished. |
 
 ## CLI commands
 

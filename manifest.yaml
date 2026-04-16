@@ -24,6 +24,6 @@ skills:
   - name: skill-cheatsheet
     enabled: true
     category: utility
-  - name: tech-report
+  - name: report
     enabled: true
     category: reporting
