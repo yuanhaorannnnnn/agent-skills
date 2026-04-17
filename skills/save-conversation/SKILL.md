@@ -24,7 +24,7 @@ description: |
    - `CODEX_THREAD_ID` when running inside Codex, so different conversations in the same repo and directory do not overwrite each other
    - current branch name only as a last fallback when no conversation-scoped identifier exists
 3. Read any existing `.agent-state/conversations/<conversation>.md`.
-4. Run `../../.scripts/save_conversation.py` to refresh the conversation file. Resolve that relative path from this skill directory, not from the repo being saved.
+4. Run `../.scripts/save_conversation.py` to refresh the conversation file. Resolve that relative path from this skill directory, not from the repo being saved.
 5. Re-open the resulting conversation file and verify it stays focused on conversation context rather than git state.
 6. Re-read and rewrite the stable summary layer on every save. Do not just preserve it blindly. Compress the whole conversation into concise, deduplicated statements so the file reflects the current best understanding rather than only the latest turns. Keep these sections short and durable:
    - `Conversation Summary`
@@ -48,7 +48,7 @@ description: |
 
 ## Script
 
-Use `../../.scripts/save_conversation.py` for deterministic conversation-file selection and persistence. The skill should keep the saved file centered on actionable conversation context for a future restore.
+Use `../.scripts/save_conversation.py` for deterministic conversation-file selection and persistence. The skill should keep the saved file centered on actionable conversation context for a future restore.
 
 ## Recommended Explicit Naming
 

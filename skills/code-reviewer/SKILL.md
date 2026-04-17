@@ -30,7 +30,7 @@ evidence-first findings.
 4. Review the changed lines first, then pull only the minimum adjacent code
    needed to understand changed symbols.
 5. Evaluate against `../../agents/code-reviewer/references/review-checklist.md`.
-6. Use `../../.scripts/review_diff.py` when a structured starter report is useful.
+6. Use `../.scripts/review_diff.py` when a structured starter report is useful.
 7. If the change intent is unclear from code and local context, treat that
    ambiguity as a finding instead of guessing.
 

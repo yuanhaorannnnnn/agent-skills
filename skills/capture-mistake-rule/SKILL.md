@@ -35,7 +35,7 @@ Keep one-off or purely local mistakes only in `.agent-state/rules/mistakes.md`.
 
 ## Script
 
-Use `../../.scripts/note_rule.py` for deterministic updates. The script records
+Use `../.scripts/note_rule.py` for deterministic updates. The script records
 the raw incident in `.agent-state/rules/mistakes.md`; the skill is responsible
 for deciding whether that rule also belongs in
 `docs/agent-system/mistake-patterns.md`.
