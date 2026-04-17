@@ -45,8 +45,8 @@ function cmdInstall() {
 
   ensureRuntimeDir();
 
-  // Maintain shared scripts link
-  const scriptsLink = path.join(RUNTIME_DIR, 'scripts');
+  // Maintain shared scripts link (hidden to avoid being treated as a skill)
+  const scriptsLink = path.join(RUNTIME_DIR, '.scripts');
   if (fs.existsSync(scriptsLink)) {
     fs.unlinkSync(scriptsLink);
   }
@@ -205,9 +205,9 @@ function cmdDoctor() {
   }
 
   // Check shared scripts link
-  const scriptsLinkPath = path.join(RUNTIME_DIR, 'scripts');
+  const scriptsLinkPath = path.join(RUNTIME_DIR, '.scripts');
   if (!fs.existsSync(scriptsLinkPath)) {
-    console.log(`[MISSING LINK] ~/.agents/skills/scripts is not linked to the repo scripts directory`);
+    console.log(`[MISSING LINK] ~/.agents/skills/.scripts is not linked to the repo scripts directory`);
     issues++;
   }
 
