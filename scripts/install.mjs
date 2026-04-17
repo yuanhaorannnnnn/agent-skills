@@ -45,6 +45,13 @@ function cmdInstall() {
 
   ensureRuntimeDir();
 
+  // Maintain shared scripts link
+  const scriptsLink = path.join(RUNTIME_DIR, 'scripts');
+  if (fs.existsSync(scriptsLink)) {
+    fs.unlinkSync(scriptsLink);
+  }
+  fs.symlinkSync(SCRIPTS_DIR, scriptsLink, 'dir');
+
   // Cleanup stale or disabled links created by this repo
   const entries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
   for (const entry of entries) {
@@ -195,6 +202,13 @@ function cmdDoctor() {
       console.log(`[MISSING SKILL.md] skills/${name}/SKILL.md not found`);
       issues++;
     }
+  }
+
+  // Check shared scripts link
+  const scriptsLinkPath = path.join(RUNTIME_DIR, 'scripts');
+  if (!fs.existsSync(scriptsLinkPath)) {
+    console.log(`[MISSING LINK] ~/.agents/skills/scripts is not linked to the repo scripts directory`);
+    issues++;
   }
 
   // Check shared scripts presence (heuristic: list known shared scripts)

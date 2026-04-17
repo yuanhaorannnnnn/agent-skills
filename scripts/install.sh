@@ -7,6 +7,7 @@ RUNTIME_DIR="$HOME/.agents/skills"
 MANIFEST="$ROOT_DIR/manifest.yaml"
 
 mkdir -p "$RUNTIME_DIR"
+ln -sfn "$ROOT_DIR/scripts" "$RUNTIME_DIR/scripts"
 
 get_manifest_enabled() {
   local target="$1"
