@@ -21,7 +21,7 @@ description: |
    - `CODEX_THREAD_ID` when running inside Codex, so the same repo and directory can still restore different conversations correctly
    - `.agent-state/ACTIVE_CONVERSATION` if it exists
    - current branch name only as a last fallback when no conversation-scoped identifier exists
-3. Run `../.scripts/restore_conversation.py`, resolving that relative path from this skill directory rather than from the repo being restored.
+3. Run `~/.agents/skills/.scripts/restore_conversation.py` (canonical runtime path). Do not resolve relative to the repo being restored or invent `~/.claude/.scripts/...`.
 4. Read `.agent-state/conversations/<conversation>.md` if present.
 5. Read `.agent-state/MEMORY.md` if present.
    Read `.agent-state/MEMORY.md` as the repo-level durable memory source.
@@ -33,7 +33,7 @@ description: |
 
 ## Script
 
-Use `../.scripts/restore_conversation.py` for deterministic lookup and summary. The script should surface enough context that the user can resume immediately without having to open the conversation file first.
+Use `~/.agents/skills/.scripts/restore_conversation.py` (canonical runtime path) for deterministic lookup and summary. The script should surface enough context that the user can resume immediately without having to open the conversation file first.
 
 ## Recommended Explicit Naming
 

@@ -17,9 +17,9 @@ description: |
    - correct approach
    - trigger scenario
 3. Check `.agent-state/rules/mistakes.md` for duplicates before writing the raw incident record.
-4. Append the raw incident rule if it is materially new.
-5. If the rule is reusable beyond one isolated incident, also promote it into
-   `.agent-state/rules/mistakes.md` as a durable repo-level pattern.
+4. Append the raw incident record if it is materially new.
+5. If the rule is reusable beyond one isolated incident, also add a clearly
+   marked durable repo-level pattern entry in `.agent-state/rules/mistakes.md`.
 
 ## Promotion Rule
 
@@ -31,9 +31,11 @@ one of these is true:
 - it is a process-level guardrail, not just a local typo
 - it belongs in the repo-local agent system as a long-term rule
 
-Keep one-off or purely local mistakes only in `.agent-state/rules/mistakes.md`.
+Keep one-off or purely local mistakes only as raw incident entries in
+`.agent-state/rules/mistakes.md`. Do not elevate them into durable repo-level
+patterns.
 
 ## Script
 
-Use `../.scripts/note_rule.py` for deterministic updates. The script records
-the raw incident in `.agent-state/rules/mistakes.md`.
+Use `~/.agents/skills/.scripts/note_rule.py` for deterministic updates. The
+script records the raw incident in `.agent-state/rules/mistakes.md`.

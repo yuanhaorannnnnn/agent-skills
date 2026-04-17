@@ -5,7 +5,8 @@ description: |
   生成 Anthropic 品牌风格的 HTML 速查表。自动识别上游仓库来源（gstack、anthropics、superpowers、
   planning-with-files、agent-skills、marketplace）。支持按功能分类和按发布商分组两种视图，
   可在页面上通过标签按钮切换。触发词：生成技能速查表、更新 cheatsheet、skills 列表、
-  查看已安装技能、刷新技能表。
+  查看已安装技能、刷新技能表。Also use this skill when the user asks for a skills cheatsheet,
+  installed skills inventory, skill catalog, or wants to browse available skills across runtimes.
 ---
 
 # Skills 速查表生成器
@@ -32,7 +33,7 @@ python scripts/generate_cheatsheet.py
 
 - 自动扫描多个 skills 目录：
   - 通用 agent：`~/.agents/skills`
-  - 特定 agent runtime：`~/.claude/skills`、`~/.codex/skills`、`~/.pi/skills`
+  - 特定 agent runtime：`~/.claude/skills`、`~/.codex/skills`、`~/.pi/agent/skills`
   - 官方 marketplace：`~/.claude/plugins/marketplaces/anthropic-agent-skills/skills`
 - 解析 SKILL.md 获取元数据，支持多行 YAML frontmatter
 - **自动识别上游仓库来源**：通过解析 symlink 真实路径推断所属上游；对于直接安装在 `~/.agents/skills` 下的 `impeccable` 设计技能套件，也会显式识别为 `impeccable`
@@ -45,7 +46,7 @@ python scripts/generate_cheatsheet.py
 
 ## 输出位置
 
-默认: `~/.claude/skills/skills-cheatsheet.html`
+默认: `~/.agents/skills/skills-cheatsheet.html`
 
 ## 脚本说明
 

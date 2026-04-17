@@ -1,6 +1,6 @@
 ---
 name: scaffold
-description: Initialize or normalize a repository into the standard repo-local agent system layout. Use when a repository needs a local `AGENTS.md` index with inlined Guardrails and Agent System rules, `.agent-state/` runtime state, and `.planning/conversations/` planning conventions — especially when an existing `AGENTS.md` should be preserved and augmented rather than replaced. Use this skill whenever the user mentions bootstrapping an agent system, setting up AGENTS.md, initializing repo-local agent memory, or normalizing a repo's agent structure.
+description: Initialize or normalize a repository into the standard repo-local agent system layout. Use when a repository needs a local `AGENTS.md` index with inlined Guardrails and Agent System rules, `.agent-state/` runtime state, and `.planning/conversations/` planning conventions — especially when an existing `AGENTS.md` should be preserved and augmented rather than replaced. Use this skill whenever the user mentions bootstrapping an agent system, setting up AGENTS.md, initializing repo-local agent memory, normalizing a repo's agent structure, bootstrap a coding-agent repo, init agent conventions, or set up agent rules for a repository.
 ---
 
 # Repo Agent Bootstrap
@@ -64,3 +64,9 @@ If those markers are absent, append the managed block near the end of the file.
 
 - `references/structure.md`: explains the two-layer structure (`AGENTS.md` +
   `.agent-state/` + `.planning/`) and why `docs/agent-system/` was eliminated
+
+### agents/
+
+- `agents/openai.yaml`: metadata for OpenAI-compatible runtimes that support
+  per-skill agent manifests. Keep it alongside the skill when those runtimes
+  need additional machine-readable metadata beyond `SKILL.md`.

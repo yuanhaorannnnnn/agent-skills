@@ -10,8 +10,13 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
 const SCRIPTS_DIR = path.join(ROOT_DIR, 'scripts');
-const RUNTIME_DIR = path.join(process.env.HOME, '.agents', 'skills');
 const MANIFEST_PATH = path.join(ROOT_DIR, 'manifest.yaml');
+const HOME_DIR = process.env.HOME;
+const RUNTIME_DIRS = [
+  path.join(HOME_DIR, '.agents', 'skills'),
+  path.join(HOME_DIR, '.claude', 'skills'),
+  path.join(HOME_DIR, '.pi', 'agent', 'skills'),
+];
 
 function loadManifest() {
   if (!fs.existsSync(MANIFEST_PATH)) return null;
@@ -24,9 +29,9 @@ function getEnabledSkills(manifest) {
   return manifest.skills.filter(s => s.enabled !== false);
 }
 
-function ensureRuntimeDir() {
-  if (!fs.existsSync(RUNTIME_DIR)) {
-    fs.mkdirSync(RUNTIME_DIR, { recursive: true });
+function ensureRuntimeDir(runtimeDir) {
+  if (!fs.existsSync(runtimeDir)) {
+    fs.mkdirSync(runtimeDir, { recursive: true });
   }
 }
 
@@ -34,28 +39,30 @@ function isSkillEnabled(enabledMap, name) {
   return !(enabledMap.has(name) && enabledMap.get(name) === false);
 }
 
-function cmdInstall() {
-  const manifest = loadManifest();
+function buildEnabledMap(manifest) {
   const enabledMap = new Map();
   if (manifest && manifest.skills) {
     for (const s of manifest.skills) {
       enabledMap.set(s.name, s.enabled !== false);
     }
   }
+  return enabledMap;
+}
 
-  ensureRuntimeDir();
-
-  // Maintain shared scripts link (hidden to avoid being treated as a skill)
-  const scriptsLink = path.join(RUNTIME_DIR, '.scripts');
-  if (fs.existsSync(scriptsLink)) {
-    fs.unlinkSync(scriptsLink);
+function maintainScriptsLink(runtimeDir) {
+  const scriptsLink = path.join(runtimeDir, '.scripts');
+  if (fs.existsSync(scriptsLink) || fs.lstatSync(path.dirname(scriptsLink)).isDirectory()) {
+    try {
+      fs.unlinkSync(scriptsLink);
+    } catch {}
   }
   fs.symlinkSync(SCRIPTS_DIR, scriptsLink, 'dir');
+}
 
-  // Cleanup stale or disabled links created by this repo
-  const entries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
+function cleanupRepoLinks(runtimeDir, enabledMap) {
+  const entries = fs.existsSync(runtimeDir) ? fs.readdirSync(runtimeDir) : [];
   for (const entry of entries) {
-    const linkPath = path.join(RUNTIME_DIR, entry);
+    const linkPath = path.join(runtimeDir, entry);
     let stat;
     try {
       stat = fs.lstatSync(linkPath);
@@ -72,6 +79,12 @@ function cmdInstall() {
       }
     }
   }
+}
+
+function installIntoRuntime(runtimeDir, enabledMap) {
+  ensureRuntimeDir(runtimeDir);
+  maintainScriptsLink(runtimeDir);
+  cleanupRepoLinks(runtimeDir, enabledMap);
 
   const installed = [];
   const updated = [];
@@ -93,7 +106,7 @@ function cmdInstall() {
       skipped.push(`${name} (disabled in manifest)`);
       continue;
     }
-    const targetLink = path.join(RUNTIME_DIR, name);
+    const targetLink = path.join(runtimeDir, name);
     const existed = (() => {
       try {
         return fs.lstatSync(targetLink).isSymbolicLink();
@@ -112,12 +125,28 @@ function cmdInstall() {
     }
   }
 
+  return { installed, updated, skipped, missingSkillMd };
+}
+
+function cmdInstall() {
+  const manifest = loadManifest();
+  const enabledMap = buildEnabledMap(manifest);
+
+  const perRuntime = RUNTIME_DIRS.map((runtimeDir) => ({
+    runtimeDir,
+    ...installIntoRuntime(runtimeDir, enabledMap),
+  }));
+
   console.log('');
   console.log('=== agent-skills install report ===');
-  if (installed.length) console.log(`Installed: ${installed.join(' ')}`);
-  if (updated.length) console.log(`Updated:   ${updated.join(' ')}`);
-  if (skipped.length) console.log(`Skipped:   ${skipped.join(' ')}`);
-  if (missingSkillMd.length) console.log(`Missing SKILL.md: ${missingSkillMd.join(' ')}`);
+  for (const { runtimeDir, installed, updated, skipped, missingSkillMd } of perRuntime) {
+    console.log(`Runtime:   ${runtimeDir}`);
+    if (installed.length) console.log(`Installed: ${installed.join(' ')}`);
+    if (updated.length) console.log(`Updated:   ${updated.join(' ')}`);
+    if (skipped.length) console.log(`Skipped:   ${skipped.join(' ')}`);
+    if (missingSkillMd.length) console.log(`Missing SKILL.md: ${missingSkillMd.join(' ')}`);
+    console.log('');
+  }
   console.log('===================================');
 }
 
@@ -155,42 +184,7 @@ function cmdDoctor() {
   const manifestNames = new Set((manifest?.skills || []).map(s => s.name));
   const enabledNames = new Set(getEnabledSkills(manifest).map(s => s.name));
 
-  ensureRuntimeDir();
-
   let issues = 0;
-
-  // Check runtime links that belong to this repo
-  const runtimeEntries = fs.existsSync(RUNTIME_DIR) ? fs.readdirSync(RUNTIME_DIR) : [];
-  for (const entry of runtimeEntries) {
-    const linkPath = path.join(RUNTIME_DIR, entry);
-    let stat;
-    try {
-      stat = fs.lstatSync(linkPath);
-    } catch {
-      continue;
-    }
-    if (!stat.isSymbolicLink()) continue;
-    const target = fs.readlinkSync(linkPath);
-    if (!target.startsWith(SKILLS_DIR + path.sep)) continue;
-
-    if (!fs.existsSync(linkPath)) {
-      console.log(`[BAD LINK] ${entry} -> ${target}`);
-      issues++;
-      continue;
-    }
-    if (!enabledNames.has(entry)) {
-      console.log(`[DISABLED LINK] runtime link ${entry} exists but the skill is disabled in manifest.yaml`);
-      issues++;
-    }
-    if (!fs.existsSync(path.join(linkPath, 'SKILL.md'))) {
-      console.log(`[MISSING SKILL.md] ${entry}`);
-      issues++;
-    }
-    if (!manifestNames.has(entry)) {
-      console.log(`[NOT IN MANIFEST] runtime link ${entry} is not listed in manifest.yaml`);
-      issues++;
-    }
-  }
 
   // Check manifest consistency
   for (const name of manifestNames) {
@@ -204,11 +198,46 @@ function cmdDoctor() {
     }
   }
 
-  // Check shared scripts link
-  const scriptsLinkPath = path.join(RUNTIME_DIR, '.scripts');
-  if (!fs.existsSync(scriptsLinkPath)) {
-    console.log(`[MISSING LINK] ~/.agents/skills/.scripts is not linked to the repo scripts directory`);
-    issues++;
+  for (const runtimeDir of RUNTIME_DIRS) {
+    ensureRuntimeDir(runtimeDir);
+
+    const runtimeEntries = fs.existsSync(runtimeDir) ? fs.readdirSync(runtimeDir) : [];
+    for (const entry of runtimeEntries) {
+      const linkPath = path.join(runtimeDir, entry);
+      let stat;
+      try {
+        stat = fs.lstatSync(linkPath);
+      } catch {
+        continue;
+      }
+      if (!stat.isSymbolicLink()) continue;
+      const target = fs.readlinkSync(linkPath);
+      if (!target.startsWith(SKILLS_DIR + path.sep)) continue;
+
+      if (!fs.existsSync(linkPath)) {
+        console.log(`[BAD LINK] ${runtimeDir}/${entry} -> ${target}`);
+        issues++;
+        continue;
+      }
+      if (!enabledNames.has(entry)) {
+        console.log(`[DISABLED LINK] runtime link ${runtimeDir}/${entry} exists but the skill is disabled in manifest.yaml`);
+        issues++;
+      }
+      if (!fs.existsSync(path.join(linkPath, 'SKILL.md'))) {
+        console.log(`[MISSING SKILL.md] ${runtimeDir}/${entry}`);
+        issues++;
+      }
+      if (!manifestNames.has(entry)) {
+        console.log(`[NOT IN MANIFEST] runtime link ${runtimeDir}/${entry} is not listed in manifest.yaml`);
+        issues++;
+      }
+    }
+
+    const scriptsLinkPath = path.join(runtimeDir, '.scripts');
+    if (!fs.existsSync(scriptsLinkPath)) {
+      console.log(`[MISSING LINK] ${runtimeDir}/.scripts is not linked to the repo scripts directory`);
+      issues++;
+    }
   }
 
   // Check shared scripts presence (heuristic: list known shared scripts)
