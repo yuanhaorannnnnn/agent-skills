@@ -14,9 +14,9 @@ description: |
 ## Workflow
 
 1. Determine the current repository root. Branch can be recorded elsewhere if useful, but it is not the primary identity of a saved conversation.
-   Before updating the conversation file, treat the repo-local `AGENTS.md` and
-   `docs/agent-system/conversation-rules.md` as the authoritative rules for how
-   this repository wants conversation state organized.
+   Before updating the conversation file, treat the repo-local `AGENTS.md` as
+   the authoritative rules for how this repository wants conversation state
+   organized.
 2. Resolve the active conversation document with this priority:
    - explicit conversation override if one was provided
    - when the current save should create a new independent conversation in a repo, ALWAYS pass `--conversation <name>` explicitly instead of relying on `.agent-state/ACTIVE_CONVERSATION` fallback
@@ -75,8 +75,6 @@ Naming rules:
 ## State Files
 
 - `AGENTS.md`
-- `docs/agent-system/conversation-rules.md`
-- `docs/agent-system/project-memory.md`
 - `.agent-state/MEMORY.md`
 - `.agent-state/ACTIVE_CONVERSATION`
 - `.agent-state/conversations/<conversation>.md`

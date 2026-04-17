@@ -14,9 +14,8 @@ description: |
 ## Workflow
 
 1. Determine the current repository root and current branch.
-   Before restoring, treat the repo-local `AGENTS.md` and
-   `docs/agent-system/conversation-rules.md` as the authoritative rules for how
-   this repository expects conversations to be interpreted.
+   Before restoring, treat the repo-local `AGENTS.md` as the authoritative
+   rules for how this repository expects conversations to be interpreted.
 2. Resolve the active conversation with this priority:
    - explicit conversation override if one was provided
    - `CODEX_THREAD_ID` when running inside Codex, so the same repo and directory can still restore different conversations correctly
@@ -25,9 +24,7 @@ description: |
 3. Run `../.scripts/restore_conversation.py`, resolving that relative path from this skill directory rather than from the repo being restored.
 4. Read `.agent-state/conversations/<conversation>.md` if present.
 5. Read `.agent-state/MEMORY.md` if present.
-   If `docs/agent-system/project-memory.md` exists, read it as the preferred
-   repo-level durable memory source. Treat `.agent-state/MEMORY.md` as runtime
-   compatibility state.
+   Read `.agent-state/MEMORY.md` as the repo-level durable memory source.
 6. Read and surface the stable summary layer first when it exists. Treat it as the authoritative compressed recap of the whole conversation:
    - `Conversation Summary`
    - `Current Objective`

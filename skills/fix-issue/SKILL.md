@@ -61,11 +61,10 @@ When this repository has a local agent-system layout, prefer these sources
 before falling back to `.agent-state/*`:
 
 - `AGENTS.md` for routing
-- `docs/agent-system/project-memory.md` for repo-level durable constraints
-- `docs/agent-system/mistake-patterns.md` for reusable mistake guardrails
+- `.agent-state/MEMORY.md` for repo-level durable constraints
+- `.agent-state/rules/mistakes.md` for reusable mistake guardrails
 
-Treat `.agent-state/MEMORY.md` as compatibility/runtime memory rather than the
-primary long-term rule source.
+Treat `.agent-state/MEMORY.md` as the primary long-term rule source.
 
 ## Output
 
@@ -98,7 +97,6 @@ same mistake shape in the most likely nearby locations.
 
 ## References
 
-- Review `docs/agent-system/project-memory.md` when it exists for project constraints before changing behavior.
-- Review `docs/agent-system/mistake-patterns.md` when it exists for durable mistake guardrails.
-- Use `.agent-state/MEMORY.md` only as a compatibility/runtime memory file when the repo-level docs are absent or incomplete.
-- If the same mistake should be remembered, record the raw incident in `.agent-state/rules/mistakes.md` and promote durable patterns into `docs/agent-system/mistake-patterns.md` when they are worth keeping long term.
+- Review `.agent-state/MEMORY.md` for project constraints before changing behavior.
+- Review `.agent-state/rules/mistakes.md` for durable mistake guardrails.
+- If the same mistake should be remembered, record the raw incident in `.agent-state/rules/mistakes.md`.
