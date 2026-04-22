@@ -110,6 +110,12 @@ def main() -> int:
         output.extend([render_section(header, lines).rstrip(), ""])
 
     conversation_path.write_text("\n".join(output).rstrip() + "\n", encoding="utf-8")
+
+    # Always sync ACTIVE_CONVERSATION to the resolved name so cross-agent
+    # restores always hit the same conversation file regardless of thread ID.
+    active_path = state_dir / ACTIVE_CONVERSATION_FILE
+    active_path.write_text(conversation_name + "\n")
+
     print(conversation_path)
     return 0
 
