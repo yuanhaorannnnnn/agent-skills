@@ -18,33 +18,29 @@ def render_weekly_report(
     end_date: datetime,
     total_sessions: int = 0,
 ) -> str:
-    """Render a weekly work report as Markdown."""
+    """Render a weekly work report as Markdown with numbered sections."""
     lines = []
 
     # Header
     lines.append(f"# Weekly Work Report - {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
     lines.append("")
-    lines.append(f"> Generated from coding agent conversations")
     lines.append(f"> Total sessions: {total_sessions} | Total tasks: {len(tasks)}")
     lines.append("")
 
-    # Summary
-    lines.append("## Summary")
+    # 1. Summary
+    lines.append("## 1. Summary")
     lines.append("")
 
     completed = len([t for t in tasks if t.status == "completed"])
     in_progress = len([t for t in tasks if t.status == "in_progress"])
     blocked = len([t for t in tasks if t.status == "blocked"])
-    skipped = len([t for t in tasks if t.status == "skipped"])
 
     lines.append("| Metric | Count |")
     lines.append("|--------|-------|")
-    lines.append(f"| Tasks identified | {len(tasks)} |")
+    lines.append(f"| Tasks | {len(tasks)} |")
     lines.append(f"| Completed | {completed} |")
     lines.append(f"| In Progress | {in_progress} |")
     lines.append(f"| Blocked | {blocked} |")
-    if skipped:
-        lines.append(f"| Skipped (too short) | {skipped} |")
 
     all_files = set()
     for t in tasks:
@@ -52,8 +48,8 @@ def render_weekly_report(
     lines.append(f"| Files modified | {len(all_files)} |")
     lines.append("")
 
-    # By Project
-    lines.append("## By Project")
+    # 2. Tasks
+    lines.append("## 2. Tasks")
     lines.append("")
 
     # Group tasks by project
@@ -64,6 +60,7 @@ def render_weekly_report(
             by_project[proj] = []
         by_project[proj].append(t)
 
+    proj_idx = 1
     for project, proj_tasks in sorted(by_project.items()):
         # Clean up project name
         display_project = project.replace("-", " ").replace("_", " ")
@@ -74,91 +71,25 @@ def render_weekly_report(
         elif display_project.startswith("home lkshpc ZHITAI 2T "):
             display_project = display_project[len("home lkshpc ZHITAI 2T "):]
 
-        lines.append(f"### {display_project}")
+        lines.append(f"### 2.{proj_idx}. {display_project.strip()}")
         lines.append("")
 
-        for task in proj_tasks:
-            _render_task(lines, task)
+        visible_tasks = [t for t in proj_tasks if t.status != "skipped"]
+        for task_idx, task in enumerate(visible_tasks, start=1):
+            _render_task(lines, task, proj_idx, task_idx)
 
-    # Daily Breakdown
-    lines.append("## Daily Breakdown")
-    lines.append("")
-    lines.append("| Date | Tasks | Key Activities |")
-    lines.append("|------|-------|----------------|")
-
-    by_date: dict[str, list[Task]] = {}
-    for t in tasks:
-        if t.start_time:
-            date_str = t.start_time.strftime("%Y-%m-%d (%a)")
-            if date_str not in by_date:
-                by_date[date_str] = []
-            by_date[date_str].append(t)
-
-    for date_str, day_tasks in sorted(by_date.items()):
-        summaries = []
-        for t in day_tasks:
-            title = t.title[:30] + "..." if len(t.title) > 30 else t.title
-            status_icon = "✅" if t.status == "completed" else "🔄" if t.status == "in_progress" else "⚠️"
-            summaries.append(f"{status_icon} {title}")
-        lines.append(f"| {date_str} | {len(day_tasks)} | {', '.join(summaries[:3])} |")
-
-    lines.append("")
-
-    # In Progress / Pending
-    pending = [t for t in tasks if t.status in ("in_progress", "blocked")]
-    if pending:
-        lines.append("## In Progress / Pending")
-        lines.append("")
-        for t in pending:
-            icon = "🔄" if t.status == "in_progress" else "⚠️"
-            lines.append(f"- {icon} **{t.project or 'Uncategorized'}**: {t.title}")
-            if t.task_description:
-                lines.append(f"  - {t.task_description[:100]}")
-        lines.append("")
-
-    # Completed
-    completed_tasks = [t for t in tasks if t.status == "completed"]
-    if completed_tasks:
-        lines.append("## Completed This Week")
-        lines.append("")
-        for t in completed_tasks:
-            lines.append(f"- ✅ **{t.project or 'Uncategorized'}**: {t.title}")
-        lines.append("")
-
-    # Files Modified
-    if all_files:
-        lines.append("## Files Modified")
-        lines.append("")
-        # Group by extension
-        by_ext: dict[str, list[str]] = {}
-        for f in sorted(all_files):
-            ext = Path(f).suffix or "no ext"
-            if ext not in by_ext:
-                by_ext[ext] = []
-            by_ext[ext].append(f)
-
-        for ext, files in sorted(by_ext.items()):
-            lines.append(f"### {ext}")
-            for f in files[:20]:
-                lines.append(f"- `{f}`")
-            if len(files) > 20:
-                lines.append(f"- ... and {len(files) - 20} more")
-            lines.append("")
+        proj_idx += 1
 
     return "\n".join(lines)
 
 
-def _render_task(lines: list[str], task: Task) -> None:
-    """Render a single task in STAR format."""
-    # Skip very short/noise tasks
-    if task.status == "skipped":
-        return
-
+def _render_task(lines: list[str], task: Task, proj_idx: int, task_idx: int) -> None:
+    """Render a single task in STAR format with numbering."""
     # Status badge
     status_badge = {
-        "completed": "✅ Completed",
-        "in_progress": "🔄 In Progress",
-        "blocked": "⚠️ Blocked",
+        "completed": "Completed",
+        "in_progress": "In Progress",
+        "blocked": "Blocked",
     }.get(task.status, task.status)
 
     # Duration
@@ -167,7 +98,7 @@ def _render_task(lines: list[str], task: Task) -> None:
         duration = (task.end_time - task.start_time).total_seconds()
         duration_str = format_duration(duration)
 
-    lines.append(f"#### {task.title}")
+    lines.append(f"#### 2.{proj_idx}.{task_idx}. {task.title}")
     lines.append("")
 
     meta_parts = []
