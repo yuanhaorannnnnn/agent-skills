@@ -48,42 +48,18 @@ def render_weekly_report(
     lines.append(f"| Files modified | {len(all_files)} |")
     lines.append("")
 
-    # 2. Tasks
+    # 2. Tasks (flat list, no grouping)
     lines.append("## 2. Tasks")
     lines.append("")
 
-    # Group tasks by project
-    by_project: dict[str, list[Task]] = {}
-    for t in tasks:
-        proj = t.project or "Uncategorized"
-        if proj not in by_project:
-            by_project[proj] = []
-        by_project[proj].append(t)
-
-    proj_idx = 1
-    for project, proj_tasks in sorted(by_project.items()):
-        # Clean up project name
-        display_project = project.replace("-", " ").replace("_", " ")
-        if display_project.startswith("media yhr 2T files cc projects "):
-            display_project = display_project[len("media yhr 2T files cc projects "):]
-        elif display_project.startswith("home yhr "):
-            display_project = display_project[len("home yhr "):]
-        elif display_project.startswith("home lkshpc ZHITAI 2T "):
-            display_project = display_project[len("home lkshpc ZHITAI 2T "):]
-
-        lines.append(f"### 2.{proj_idx}. {display_project.strip()}")
-        lines.append("")
-
-        visible_tasks = [t for t in proj_tasks if t.status != "skipped"]
-        for task_idx, task in enumerate(visible_tasks, start=1):
-            _render_task(lines, task, proj_idx, task_idx)
-
-        proj_idx += 1
+    visible_tasks = [t for t in tasks if t.status != "skipped"]
+    for task_idx, task in enumerate(visible_tasks, start=1):
+        _render_task(lines, task, task_idx)
 
     return "\n".join(lines)
 
 
-def _render_task(lines: list[str], task: Task, proj_idx: int, task_idx: int) -> None:
+def _render_task(lines: list[str], task: Task, task_idx: int) -> None:
     """Render a single task in STAR format with numbering."""
     # Status badge
     status_badge = {
@@ -98,12 +74,14 @@ def _render_task(lines: list[str], task: Task, proj_idx: int, task_idx: int) -> 
         duration = (task.end_time - task.start_time).total_seconds()
         duration_str = format_duration(duration)
 
-    lines.append(f"#### 2.{proj_idx}.{task_idx}. {task.title}")
+    lines.append(f"### 2.{task_idx}. {task.title}")
     lines.append("")
 
     meta_parts = []
     if task.agent:
         meta_parts.append(f"**Agent**: {task.agent}")
+    if task.project:
+        meta_parts.append(f"**Project**: {task.project}")
     if duration_str:
         meta_parts.append(f"**Duration**: {duration_str}")
     meta_parts.append(f"**Status**: {status_badge}")
