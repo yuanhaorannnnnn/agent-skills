@@ -15,6 +15,8 @@ const HOME_DIR = process.env.HOME;
 const RUNTIME_DIRS = [
   path.join(HOME_DIR, '.agents', 'skills'),
   path.join(HOME_DIR, '.claude', 'skills'),
+  path.join(HOME_DIR, '.codex', 'skills'),
+  path.join(HOME_DIR, '.kimi', 'skills'),
   path.join(HOME_DIR, '.pi', 'agent', 'skills'),
 ];
 
@@ -242,7 +244,7 @@ function cmdDoctor() {
 
   // Check shared scripts presence (heuristic: list known shared scripts)
   const knownSharedScripts = [
-    'common.py', 'note_rule.py', 'planning_status.py',
+    'common.py', 'note_rule.py', 'planning_paths.py', 'planning_status.py',
     'restore_conversation.py', 'review_diff.py',
     'save_conversation.py', 'init_planning_files.py'
   ];

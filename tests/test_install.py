@@ -14,6 +14,8 @@ MANIFEST_PATH = REPO_ROOT / "manifest.yaml"
 RUNTIME_DIRS = [
     (".agents", "skills"),
     (".claude", "skills"),
+    (".codex", "skills"),
+    (".kimi", "skills"),
     (".pi", "agent", "skills"),
 ]
 
@@ -39,6 +41,7 @@ class InstallScriptTests(unittest.TestCase):
                 runtime = home.joinpath(*runtime_parts)
                 self.assertTrue((runtime / "save-conversation").is_symlink())
                 self.assertTrue((runtime / "restore-conversation").is_symlink())
+                self.assertTrue((runtime / "plan-workspace").is_symlink())
                 self.assertTrue((runtime / "report").is_symlink())
                 self.assertTrue((runtime / ".scripts").is_symlink())
                 self.assertTrue((runtime / "scaffold").is_symlink())

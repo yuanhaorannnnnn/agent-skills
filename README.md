@@ -1,15 +1,19 @@
 # agent-skills
 
-An agent-neutral skills distribution repository. It maintains published skills in Git and exposes them through `~/.agents/skills` — without binding to Claude-specific plugin directories, Codex-specific command systems, or any particular agent runtime.
+An agent-neutral skills distribution repository. It maintains published skills in Git and exposes them through the local skill runtime directories used by coding agents.
 
 ## What this repository is
 
 - A **pure skill publishing repository**.
 - Each skill is a self-contained folder under `skills/`.
 - Shared runtime scripts live under `scripts/` and are reachable from skills via relative paths.
-- The final runtime surface is always:
+- Runtime surfaces:
   ```text
   ~/.agents/skills
+  ~/.claude/skills
+  ~/.codex/skills
+  ~/.kimi/skills
+  ~/.pi/agent/skills
   ```
 
 ## How to install
@@ -43,7 +47,7 @@ npx @yuanhaorannnnnn/agent-skills install
 
 The installer will:
 - discover every skill that contains `SKILL.md`
-- link only `enabled` skills into `~/.agents/skills`
+- link only `enabled` skills into the supported runtime skill directories
 - clean up stale links previously created by this repository
 
 ## How to update
@@ -74,6 +78,7 @@ This performs `git pull --ff-only` followed by a re-install.
 | `capture-mistake-rule` | workflow | Record mistakes and lessons learned as durable rules. |
 | `code-reviewer` | review | Review diffs and recent changes for correctness and maintainability. |
 | `fix-issue` | debugging | Fix bugs, regressions, and runtime errors with root-cause focus. |
+| `plan-workspace` | planning | Create and maintain conversation-scoped planning workspaces with spec, ExecPlan, task index, findings, and progress files. |
 | `scaffold` | repo | Initialize or normalize a repository into the standard repo-local agent layout. |
 | `restore-conversation` | conversation | Resume work from saved conversation context. |
 | `save-conversation` | conversation | Persist conversation context for future restoration. |
@@ -120,6 +125,5 @@ npm exec --yes --package=@yuanhaorannnnnn/agent-skills -- agent-skills doctor
 
 ## Notes
 
-- This repository only manages `~/.agents/skills`.
-- It does not write to `.claude/`, `.codex/`, or any agent-specific directories.
+- This repository manages local skill links for `~/.agents/skills`, `~/.claude/skills`, `~/.codex/skills`, `~/.kimi/skills`, and `~/.pi/agent/skills`.
 - Skill-relative script paths are preserved by keeping `skills/` and `scripts/` as top-level siblings inside this repository.

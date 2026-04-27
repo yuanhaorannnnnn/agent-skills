@@ -33,6 +33,8 @@ def main() -> int:
     root = Path(args.project_dir).resolve()
     planning_dir = conversation_planning_dir(root, args.conversation or None)
     plan = planning_dir / "task_plan.md"
+    spec = planning_dir / "spec.md"
+    exec_plan = planning_dir / "exec_plan.md"
     findings = planning_dir / "findings.md"
     progress = planning_dir / "progress.md"
 
@@ -113,7 +115,14 @@ def main() -> int:
         print(f"  {status_icon(status)} {name}")
     print("")
     print(f"Plan dir: {plan.parent}")
-    print(f"Files: task_plan.md {'✓' if plan.exists() else '✗'} | findings.md {'✓' if findings.exists() else '✗'} | progress.md {'✓' if progress.exists() else '✗'}")
+    print(
+        "Files: "
+        f"spec.md {'✓' if spec.exists() else '✗'} | "
+        f"exec_plan.md {'✓' if exec_plan.exists() else '✗'} | "
+        f"task_plan.md {'✓' if plan.exists() else '✗'} | "
+        f"findings.md {'✓' if findings.exists() else '✗'} | "
+        f"progress.md {'✓' if progress.exists() else '✗'}"
+    )
     print(f"Errors logged: {max(error_count, 0)}")
     return 0
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from planning_paths import conversation_planning_dir
 
-TEMPLATE_ROOT = Path(__file__).resolve().parent.parent / "upstream" / "planning-with-files-repo" / "planning-with-files" / "templates"
+TEMPLATE_ROOT = Path(__file__).resolve().parent.parent / "skills" / "plan-workspace" / "templates"
 
 
 def copy_if_missing(template_name: str, destination: Path) -> bool:
@@ -18,7 +18,7 @@ def copy_if_missing(template_name: str, destination: Path) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Initialize planning-with-files templates in a project.")
+    parser = argparse.ArgumentParser(description="Initialize a conversation-scoped planning workspace.")
     parser.add_argument("--project-dir", default=".", help="Target project directory")
     parser.add_argument("--conversation", default="", help="Optional conversation id override")
     args = parser.parse_args()
@@ -27,7 +27,7 @@ def main() -> int:
     planning_dir = conversation_planning_dir(project_dir, args.conversation or None)
     planning_dir.mkdir(parents=True, exist_ok=True)
     created = []
-    for name in ("task_plan.md", "findings.md", "progress.md"):
+    for name in ("spec.md", "exec_plan.md", "task_plan.md", "findings.md", "progress.md"):
         if copy_if_missing(name, planning_dir):
             created.append(name)
 

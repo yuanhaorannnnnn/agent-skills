@@ -20,6 +20,9 @@ skills:
 - name: save-conversation
   enabled: true
   category: conversation
+- name: plan-workspace
+  enabled: true
+  category: planning
 - name: skill-cheatsheet
   enabled: true
   category: utility
