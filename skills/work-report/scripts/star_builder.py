@@ -29,6 +29,11 @@ _MODEL = "claude-sonnet-4-6"
 
 _STAR_PROMPT = """You are analyzing a coding agent conversation to extract a work record following the STAR principle.
 
+The final report is read by a person who wants a clear weekly/monthly work summary,
+not a transcript audit. Write natural, concrete Chinese that sounds like a human
+summarizing real engineering work. Avoid debug-log wording, raw prompt wording,
+and vague phrases such as "进行了一些处理" or "完成相关工作".
+
 STAR stands for:
 - Situation: The context and background of why this task existed
 - Task: The specific objective or goal
@@ -56,12 +61,12 @@ Extract the work record in JSON format:
 }}
 
 Guidelines:
-1. Situation: 1-2 sentences describing the context/background (in Chinese)
-2. Task: The core objective in 1 sentence (in Chinese)
-3. Actions: 3-5 key actions, each as a concise bullet (in Chinese). Focus on technical decisions and file changes.
-4. Result: What was achieved or the current state (in Chinese)
+1. Situation: 1-2 concise Chinese sentences explaining why this work mattered. Do not mention "USER", "ASSISTANT", prompts, or raw session mechanics.
+2. Task: The core objective in one plain Chinese sentence. Phrase it as a work goal, not as a chat request.
+3. Actions: 3-5 concrete Chinese action items. Prefer engineering verbs such as "梳理", "实现", "修正", "验证", "接入", "清理". Mention important files only when they help the reader understand the work.
+4. Result: One clear Chinese sentence stating the outcome, current state, or remaining gap. If unfinished, say what remains instead of pretending it is complete.
 5. Status: "completed" if the task was finished, "in_progress" if ongoing, "blocked" if stuck
-6. Be factual and specific. Mention specific file names if relevant.
+6. Be factual and specific, but readable. Remove filler, assistant self-reference, and tool chatter.
 7. If the conversation is too short or just a meta command, set all fields to empty strings and status to "skipped".
 
 Output ONLY the JSON object, no markdown formatting, no explanation."""

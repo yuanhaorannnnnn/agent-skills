@@ -10,7 +10,7 @@ description: |
 
 # Work Report
 
-从 coding agent（Claude Code / Codex / Kimi）的 conversation 中自动生成工作周报/月报，按 STAR 原则结构化输出。
+从 coding agent（Claude Code / Codex / Kimi）的 conversation 中自动生成工作周报/月报，把零散会话整理成可读的工作总结。
 
 ## 为什么需要这个 skill
 
@@ -81,22 +81,31 @@ crontab -e
 
 报告默认保存到 `~/.agents/work-reports/YYYY-MM/weekly-YYYY-MM-DD.md`
 
+报告采用扁平任务列表，不按项目强行分组。项目名、agent、耗时和状态作为任务元信息展示，正文尽量用自然中文说明“为什么做、做了什么、结果如何”。
+
 报告结构：
 ```
-# Weekly Work Report - YYYY-MM-DD to YYYY-MM-DD
-## Summary（统计概览：任务数、完成数、进行中数、修改文件数）
-## By Project（按项目分组）
-### Project A
-#### Task 1
-- **Situation**: 背景/上下文
-- **Task**: 目标
-- **Action**: 关键行动步骤（3-5 条）
-- **Result**: 结果
-- **Stats**: N prompts, N responses, N events
-## Daily Breakdown（按日汇总）
-## In Progress / Pending（进行中任务）
-## Completed This Week（已完成任务）
-## Files Modified（文件列表）
+# 工作周报：YYYY-MM-DD 至 YYYY-MM-DD
+> 基于 N 个 agent session 自动整理，识别出 N 项有效工作。
+
+## 1. 本周概览
+本周共整理 N 项工作，完成 N 项，进行中 N 项。涉及 N 个文件的修改或检查。
+
+## 2. 重点工作
+### 2.1 任务标题
+**项目**: project | **耗时**: 1h 20m | **Agent**: codex | **状态**: 已完成
+
+本项工作围绕“任务目标”展开。
+
+- **背景**: 这项工作出现的上下文和原因
+- **目标**: 本次工作的具体目标
+- **主要工作**:
+  - 关键行动 1
+  - 关键行动 2
+  - 关键行动 3
+- **结果**: 已完成的结果、当前状态或剩余问题
+- **相关文件**: `path/to/file.py`
+- **记录来源**: N 条用户输入，N 条 agent 回复，N 条事件
 ```
 
 ## 工作原理
@@ -118,10 +127,10 @@ crontab -e
 
 将连续的事件流切分为独立的任务单元。切分信号：
 - **不同 session_id** — 新开 session 通常是新任务
-- **时间间隔 > 30 分钟** — 长时间无活动视为任务结束
+- **时间间隔 > 2 小时** — 长时间无活动视为任务结束
 - **`/clear` 命令** — 用户主动清除上下文
 
-合并重复：归一化 title 后，相似度 ≥ 85% 且同一项目 + 24 小时内的任务合并。
+合并重复：先用 title、时间和项目做低成本预合并，再在 STAR 提取后用 Situation/Task/Result 相似度和 LLM 判断合并语义相同的任务。
 
 ### 3. STAR 提取
 
@@ -130,17 +139,17 @@ crontab -e
 2. **LLM 提取** — 将 conversation 文本传给 Claude，按 STAR 原则结构化
 
 LLM prompt 要求：
-- Situation: 1-2 句话描述背景
-- Task: 1 句话描述目标
-- Action: 3-5 条关键行动（文件修改、技术决策、命令执行）
-- Result: 结果或当前状态
-- 全部用中文输出
+- Situation: 1-2 句话说明为什么做这项工作，不暴露原始 prompt 或 session 机制
+- Task: 1 句话写成工作目标，而不是聊天请求复述
+- Action: 3-5 条关键行动，使用自然的工程动词，例如“梳理、实现、修正、验证、接入、清理”
+- Result: 1 句话说明结果、当前状态或剩余问题
+- 全部用中文输出，避免“做了一些处理”这类空泛表达
 
 LLM 响应缓存保存在 `~/.agents/work-reports/.cache/`，重复任务秒级复用。
 
 ### 4. 渲染（Report Renderer）
 
-生成 Markdown 报告，按项目分组，每日汇总。
+生成 Markdown 报告。默认输出一个概览段落和扁平任务列表，避免把自动生成的项目路径、hash 或 session id 当成报告主结构。
 
 ## 关键文件
 
@@ -175,6 +184,6 @@ skills/work-report/
 
 ## 已知限制
 
-1. 重复任务合并依赖 title 相似度，不同表述的同一任务可能无法合并
+1. 不同表述的同一任务仍可能无法合并，尤其是文本相似度低但语义相同的长任务
 2. LLM 提取质量取决于 conversation 内容完整性（被 compact 的上下文会丢失）
 3. Codex 和 Kimi 的 collector 基于逆向工程，agent 更新后可能需要适配
