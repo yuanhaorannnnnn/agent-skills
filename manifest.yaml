@@ -29,6 +29,12 @@ skills:
 - name: report
   enabled: true
   category: reporting
+- name: work-report
+  enabled: true
+  category: reporting
 - name: skill-map
   enabled: true
   category: utility
+- name: video-ingest
+  enabled: true
+  category: media

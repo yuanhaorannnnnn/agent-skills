@@ -18,6 +18,7 @@ const RUNTIME_DIRS = [
   path.join(HOME_DIR, '.codex', 'skills'),
   path.join(HOME_DIR, '.kimi', 'skills'),
   path.join(HOME_DIR, '.pi', 'agent', 'skills'),
+  path.join(HOME_DIR, '.hermes', 'skills'),
 ];
 
 function loadManifest() {

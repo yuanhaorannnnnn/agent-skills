@@ -28,8 +28,21 @@ description: |
 6. Read and surface the stable summary layer first when it exists. Treat it as the authoritative compressed recap of the whole conversation:
    - `Conversation Summary`
    - `Current Objective`
-7. Choose the "next focus" from the action layer with this priority: `Pending Follow-Ups`, then `Known Issues`, then `Key Context`, then `Current Objective`.
-8. Return a short confirmation with the restored conversation file, memory file, the stable summary fields that exist, the most important next focus, and `Key Context` when it exists. Branch may be reported as auxiliary metadata, but it should not drive conversation identity when a conversation-scoped identifier exists.
+7. Read `.planning/conversations/<conversation>/` if it exists. Note which tasks have dedicated planning workspaces so they can be surfaced during restore.
+8. Choose the "next focus" from the action layer with this priority:
+   - First incomplete item under `Active Tasks` (or `Pending Follow-Ups` if using the legacy flat format)
+   - Then `Known Issues`
+   - Then `Key Context`
+   - Then `Current Objective`
+   When `Active Tasks` uses task-grouped checklists, surface the heading of the task with the first incomplete item, plus a count of total open items.
+9. Return a short confirmation with:
+   - the restored conversation file path
+   - memory file path
+   - the stable summary fields that exist
+   - the most important next focus (with task name if grouped)
+   - `Key Context` when it exists
+   - **planning workspace status**: list task names that have `.planning/conversations/<conversation>/<task>/` directories, so the user knows where to dig deeper
+   Branch may be reported as auxiliary metadata, but it should not drive conversation identity when a conversation-scoped identifier exists.
 
 ## Script
 

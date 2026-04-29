@@ -39,10 +39,43 @@ description: |
    - `Constraints`: only active constraints
    - `Open Questions`: only unresolved questions
    When new information appears, merge it into these summaries instead of appending raw recent context.
-7. Update the action layer on every save so the next restore can resume immediately:
-   - `Pending Follow-Ups`
+7. Update the action layer on every save so the next restore can resume immediately.
+
+   **Task-oriented action layer (preferred):**
+   Replace the flat `Pending Follow-Ups` list with a task-grouped checklist when the conversation has multiple concurrent work items:
+
+   ```markdown
+   ## Active Tasks
+
+   ### task-name-1
+   - [ ] sub-task A
+   - [x] sub-task B (已完成)
+
+   ### task-name-2
+   - [ ] sub-task C
+   ```
+
+   Group related follow-ups under a task heading. Use `- [x]` to mark completed items so restore shows progress at a glance.
+
+   **Simple task → inline checklist:**
+   If a task is small (1-2 sessions, no complex dependencies), keep its checklist directly in the conversation file.
+
+   **Complex task → planning workspace:**
+   If a task is large (3+ sessions, cross-day, involves research or irreversible decisions), create a dedicated planning workspace under `.planning/conversations/<conversation-id>/<task-name>/` with `spec.md`, `exec_plan.md`, `findings.md`, and `progress.md`. In the conversation file, reference it:
+
+   ```markdown
+   ### agent-platform-sync
+   - [ ] Design sync lock mechanism
+   - [ ] Implement retry with backoff
+   - [ ] Write tests
+   - Planning: `.planning/conversations/infra/agent-platform-sync/`
+   ```
+
+   Keep these sections in every saved conversation file:
+   - `Active Tasks` (or `Pending Follow-Ups` for single-task conversations)
    - `Known Issues`
    - `Key Context`
+
    Preserve useful existing notes; if there is nothing specific to add, leave `- None` rather than deleting the sections.
 8. Write the updated conversation recap back to `.agent-state/conversations/<conversation>.md`. Do not switch conversation files just because the git branch changed inside the same conversation.
 
@@ -92,7 +125,7 @@ Keep these stable summary sections in every saved conversation file:
 
 Keep these action sections in every saved conversation file:
 
-- `## Pending Follow-Ups`
+- `## Active Tasks` (preferred when multiple concurrent work items exist; use `## Pending Follow-Ups` for single-task conversations)
 - `## Known Issues`
 - `## Key Context`
 
