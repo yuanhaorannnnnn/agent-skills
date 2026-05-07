@@ -25,8 +25,8 @@ if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
     fi
 fi
 
-# Python executable (prefer python3)
-PYTHON="${PYTHON:-python3}"
+# Python executable (prefer anaconda python3 with anthropic SDK)
+PYTHON="${PYTHON:-/home/lkshpc/anaconda3/bin/python3}"
 
 # Script path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

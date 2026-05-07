@@ -1,0 +1,17 @@
+{
+  "skill_name": "deep-research",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "调研一下当前 agent-platform 仓库的 skill 管理机制。这个仓库管理着 6 个 runtime（agents/claude/codex/kimi/pi/hermes）的 skill 符号链接，有 upstream 第三方 skill 同步、disable/enable 状态管理、per-agent whitelist 等功能。请分析当前架构的设计思路、关键模块的职责划分，以及潜在的可扩展性问题。",
+      "expected_output": "结构化深度研究报告，包含：1) 代码结构分析（scripts/ 目录各脚本职责、manifest.yaml 结构、state/ 状态管理）；2) 本地知识库约束（MEMORY.md 中的架构决策、.agent-state/ 中的已知问题）；3) 外部参考（skill 管理平台/包管理器的最佳实践）；4) 方案对比（当前方案 vs 可能的替代架构）；5) 可执行的建议",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "深入研究 work-report 周报生成系统的两个问题：1) duration 高估（如 GPU Lidar task 显示 167h，根因是 idle 终端时间累积）；2) task title 污染（如 '好的 先修改比较脚本'、'确认' 这类脏 prompt 进入标题）。请分析现有 collector（claude/codex/kimi）和 clustering（task_clustering.py）的实现，找出根因，提出至少两个改进方案并对比优劣。",
+      "expected_output": "结构化深度研究报告，包含：1) 代码层面根因分析（collector 如何提取 task title、clustering 的切分信号和合并逻辑）；2) 历史约束检索（conversation Known Issues、之前尝试过的修复）；3) 外部参考（conversation analytics、time-tracking 最佳实践）；4) 多方案对比（如 idle-timeout clipping、title 清洗规则、LLM 重生成等）；5) 推荐方案与实施步骤",
+      "files": []
+    }
+  ]
+}

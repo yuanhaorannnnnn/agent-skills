@@ -44,3 +44,9 @@ skills:
 - name: dev-wrapup
   enabled: true
   category: workflow
+- name: autoresearch-loop
+  enabled: true
+  category: automation
+- name: deep-research
+  enabled: true
+  category: research
