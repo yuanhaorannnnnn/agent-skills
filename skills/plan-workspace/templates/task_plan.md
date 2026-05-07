@@ -1,14 +1,39 @@
 # Task Plan: [Task Name]
 
-Canonical plan: ./exec_plan.md
+This is the authoritative plan. Keep it self-contained enough that a fresh
+agent can continue without relying on hidden chat history.
 
 ## Goal
-- [One sentence describing the target state]
+<!--
+  WHAT: One clear sentence describing what you're trying to achieve.
+  WHY: This is your north star. Re-reading this keeps you focused.
+  EXAMPLE: "Create a Python CLI todo app with add, list, and delete functionality."
+-->
+[One sentence describing the end state]
+
+## Architecture / Decisions
+<!--
+  WHAT: How you'll approach the problem and key design decisions.
+  WHY: A fresh agent needs to understand the approach, not just the steps.
+  WHEN: Update whenever intent, architecture, milestones, or validation strategy changes.
+-->
+| Decision | Rationale |
+|----------|-----------|
+|          |           |
 
 ## Current Phase
-- Phase 1: Discovery
+<!--
+  WHAT: Which phase you're currently working on.
+  WHY: Quick reference for where you are in the task.
+-->
+Phase 1: Discovery
 
 ## Phases
+<!--
+  WHAT: Break your task into 3-7 logical phases. Each should be completable.
+  WHY: Breaking work into phases prevents overwhelm and makes progress visible.
+  WHEN: Update status after completing each phase: pending -> in_progress -> complete
+-->
 
 ### Phase 1: Discovery
 - [ ] Understand user intent and constraints
@@ -16,33 +41,52 @@ Canonical plan: ./exec_plan.md
 - [ ] Record discoveries in findings.md
 - **Status:** in_progress
 
-### Phase 2: Plan
-- [ ] Update spec.md if requirements need clarification
-- [ ] Write or revise exec_plan.md
+### Phase 2: Planning & Structure
+- [ ] Confirm or refine the architecture
 - [ ] Define verification strategy
+- [ ] Document decisions with rationale
 - **Status:** pending
 
-### Phase 3: Execute
-- [ ] Implement the plan step by step
-- [ ] Update progress.md after material changes
+### Phase 3: Implementation
+- [ ] Execute the plan step by step
 - [ ] Update findings.md for new discoveries
+- [ ] Update progress.md after material changes
 - **Status:** pending
 
-### Phase 4: Verify
+### Phase 4: Testing & Verification
 - [ ] Run relevant checks
 - [ ] Record test results in progress.md
 - [ ] Resolve failures or document residual risk
 - **Status:** pending
 
-### Phase 5: Handoff
-- [ ] Update exec_plan.md recovery notes
-- [ ] Update task_plan.md phase status
-- [ ] Save conversation context if cross-agent resume is needed
+### Phase 5: Delivery
+- [ ] Review all output files
+- [ ] Ensure deliverables are complete
+- [ ] Update handoff notes in progress.md if needed
 - **Status:** pending
 
-## Notes
-- Keep this file as a compact execution index.
-- Put detailed design in exec_plan.md.
-- Put evidence and external-source notes in findings.md.
-- Put chronological work logs and errors in progress.md.
+## Validation
+<!--
+  WHAT: Commands, manual checks, or acceptance criteria.
+  WHY: You need to know when the task is actually done.
+-->
+- [Verification command or criterion]
 
+## Errors Encountered
+<!--
+  WHAT: Every error, what attempt number, and how it was resolved.
+  WHY: Logging errors prevents repeating the same mistakes.
+  WHEN: Add immediately when an error occurs, even if fixed quickly.
+-->
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+|       | 1       |            |
+
+## Recovery Notes
+<!--
+  WHAT: Context a fresh agent needs to continue.
+  WHY: Cross-agent handoff or session resume after /clear.
+-->
+- Current phase: [Phase]
+- Next action: [Action]
+- Important context: [Context]

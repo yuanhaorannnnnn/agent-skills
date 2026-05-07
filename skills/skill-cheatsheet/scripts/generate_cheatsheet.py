@@ -152,8 +152,15 @@ class SkillsScanner:
         if agents_dir.exists():
             dirs.append((agents_dir, "agent"))
         # 特定 agent runtimes
-        for runtime in ["claude", "codex", "pi"]:
-            rdir = Path.home() / f".{runtime}" / "skills"
+        runtime_paths = {
+            "claude": ".claude/skills",
+            "codex": ".codex/skills",
+            "kimi": ".kimi/skills",
+            "pi": ".pi/agent/skills",
+            "hermes": ".hermes/skills",
+        }
+        for runtime, rel_path in runtime_paths.items():
+            rdir = Path.home() / rel_path
             if rdir.exists():
                 dirs.append((rdir, runtime))
         # marketplace
@@ -483,7 +490,9 @@ class CheatsheetGenerator:
                 'agent': 'AGENT',
                 'claude': 'CLAUDE',
                 'codex': 'CODEX',
+                'kimi': 'KIMI',
                 'pi': 'PI',
+                'hermes': 'HERMES',
                 'marketplace': 'MKT',
             }
             text = runtime_labels.get(source, source.upper())

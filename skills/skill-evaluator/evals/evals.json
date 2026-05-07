@@ -1,0 +1,23 @@
+{
+  "skill_name": "skill-evaluator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想实现一个功能，每次保存 Python 文件时自动运行 black 格式化代码",
+      "expected_output": "不建议创建 skill。这是简单的命令组合，用 Bash + git hook 或 editor 配置即可实现。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我想做一个 skill，能自动从 Slack 导出对话、提取 Action Items、生成待办事项列表并写入 Notion",
+      "expected_output": "建议创建 skill。涉及多平台 API 调用、数据转换、状态管理，复杂度高，如果使用频率高则值得封装。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我想做一个 skill，能把我的代码注释整理成正式的 API 文档",
+      "expected_output": "扩展现有 skill。report、doc-coauthoring 或 docx skill 可能已部分覆盖，可以考虑扩展。",
+      "files": []
+    }
+  ]
+}

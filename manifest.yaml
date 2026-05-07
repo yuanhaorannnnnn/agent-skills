@@ -38,3 +38,6 @@ skills:
 - name: video-ingest
   enabled: true
   category: media
+- name: skill-evaluator
+  enabled: true
+  category: meta

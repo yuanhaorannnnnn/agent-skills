@@ -1,23 +1,34 @@
-# Progress
+# Progress Log
 
-## Session Log
+<!--
+  WHAT: Your session log - a chronological record of what you did, when, and what happened.
+  WHY: Answers "What have I done?" for session recovery. Helps resume after breaks.
+  WHEN: Update after completing each phase or encountering errors.
+-->
 
-### [YYYY-MM-DD]
-- Started:
-- Actions:
-- Files changed:
-- Verification:
-- Next:
+## Session: [YYYY-MM-DD]
+
+### Phase [N]: [Title]
+- **Status:** in_progress
+- **Started:** [timestamp]
+- Actions taken:
+  - [Specific action performed]
+- Files created/modified:
+  - [file.py] (created/modified)
 
 ## Test Results
-| Check | Command/Input | Expected | Actual | Status |
-|-------|---------------|----------|--------|--------|
-|       |               |          |        |        |
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+|      |       |          |        |        |
 
 ## Error Log
-| Time | Error | Attempt | Resolution |
-|------|-------|---------|------------|
-|      |       |         |            |
+| Timestamp | Error | Attempt | Resolution |
+|-----------|-------|---------|------------|
+|           |       | 1       |            |
 
 ## Handoff Notes
-- [What the next agent/session should do first]
+<!--
+  WHAT: What the next agent/session should do first.
+  WHY: Cross-agent handoff or session resume after /clear.
+-->
+- [What to do next]
