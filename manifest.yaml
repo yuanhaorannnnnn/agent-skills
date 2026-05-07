@@ -41,3 +41,6 @@ skills:
 - name: skill-evaluator
   enabled: true
   category: meta
+- name: dev-wrapup
+  enabled: true
+  category: workflow
