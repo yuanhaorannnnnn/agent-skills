@@ -50,3 +50,6 @@ skills:
 - name: deep-research
   enabled: true
   category: research
+- name: skill-architect
+  enabled: true
+  category: utility
