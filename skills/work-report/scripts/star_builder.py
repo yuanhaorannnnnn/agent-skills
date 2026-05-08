@@ -100,6 +100,9 @@ def _apply_save_conversation(task: Task, save_conv: dict) -> None:
     """Apply save-conversation summary to task fields."""
     task.situation = save_conv.get("summary", "")[:500]
     task.task_description = save_conv.get("objective", "")[:300]
+    # LLM-extracted objective is a better title than the first user prompt
+    if task.task_description:
+        task.title = task.task_description[:120]
 
     # Key decisions become actions
     decisions = save_conv.get("key_decisions", "")
@@ -225,6 +228,9 @@ def _apply_star_json(task: Task, data: dict) -> None:
 
     task.situation = data.get("situation", "")[:500]
     task.task_description = data.get("task", "")[:300]
+    # LLM-extracted task description is a better title than the first user prompt
+    if task.task_description:
+        task.title = task.task_description[:120]
 
     actions = data.get("actions", [])
     if isinstance(actions, list):

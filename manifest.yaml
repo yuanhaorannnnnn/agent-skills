@@ -53,3 +53,6 @@ skills:
 - name: skill-architect
   enabled: true
   category: utility
+- name: skill-status
+  enabled: true
+  category: utility
