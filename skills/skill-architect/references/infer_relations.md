@@ -132,9 +132,87 @@ Expected output:
 }
 ```
 
+## Abstract Relationship Layer (隐喻层)
+
+Beyond concrete data-flow edges, identify **abstract thematic associations** that give the system conceptual coherence. This is NOT about inventing fake relationships — it is about recognizing higher-dimensional patterns in what the skills actually do, and expressing them through a unifying metaphor.
+
+### How to Think Abstractly
+
+1. **Choose a unifying metaphor** for the entire system — a real-world industry, craft, or scenario that naturally accommodates all the skills.
+   - Good metaphors: building a house, running a restaurant, publishing a newspaper, operating a factory, cultivating a garden
+   - The metaphor should make sense for the MAJORITY of skills; do not force a skill into a metaphor that clearly does not fit
+
+2. **Map each skill to a metaphorical role** within that scenario.
+   - Example (house-building): scaffold = foundation/land-surveying, save-conversation = laying bricks/phase-completion, plan-workspace = blueprints/architecture, report = final inspection certificate
+
+3. **Identify abstract edges** — conceptual flows that exist in the metaphor even if not explicitly stated in descriptions.
+   - Abstract edges connect skills that share a conceptual domain or form a natural sequence in the metaphorical workflow
+   - Abstract edges MUST still be grounded in the skill's actual function
+   - In Mermaid, abstract edges use dashed lines: `A -.->|metaphor label| B`
+
+4. **Distinguish concrete vs abstract in output:**
+   - `type: "concrete"` → solid arrow, based on explicit evidence (files, triggers)
+   - `type: "abstract"` → dashed arrow, based on functional analogy within the metaphor
+
+### Example: Abstract Mapping for Dev Skills
+
+Input: scaffold, save-conversation, plan-workspace, fix-issue, capture-mistake-rule
+Metaphor: **Building a House**
+
+| Skill | Metaphorical Role | Abstract Connection |
+|-------|-------------------|---------------------|
+| scaffold | Land survey & foundation | Everything builds on this |
+| plan-workspace | Blueprints & permits | Guides all construction |
+| save-conversation | Laying bricks / phase checkpoints | Periodic固化 of progress |
+| fix-issue | Repairing cracks / quality inspection | Fixes defects found during build |
+| capture-mistake-rule | Building codes & lessons learned | Prevents same defect twice |
+
+Abstract edges:
+- plan-workspace -.->|"guided by blueprints"| scaffold (abstract: planning precedes building)
+- fix-issue -.->|"feeds lessons into"| capture-mistake-rule (abstract: both quality-related)
+- save-conversation -.->|"固化阶段性成果"| dev-wrapup (abstract: checkpoints in a process)
+
+### Rules for Abstract Edges
+
+- **NEVER invent abstract edges for completely unrelated domains** (e.g., do NOT connect a video downloader to a code reviewer just because both "process things")
+- Abstract edges must feel NATURAL in the chosen metaphor — if you have to stretch the analogy, skip it
+- When cohesion is `none`, abstract mapping should also return empty (the skills truly have no conceptual overlap)
+- Prefer FEWER strong abstract edges over MANY weak ones
+
+## Output Format (Updated)
+
+```json
+{
+  "title": "Human-readable system name",
+  "metaphor": "The unifying scenario (e.g., 'Building a Knowledge Workshop')",
+  "cohesion": "strong|weak|none",
+  "summary": "One sentence",
+  "nodes": [...],
+  "edges": [
+    {
+      "from": "...",
+      "to": "...",
+      "label": "...",
+      "type": "trigger|data|depends|extends|includes",
+      "layer": "concrete|abstract",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "groups": [...],
+  "themes": [
+    {
+      "name": "Theme name in metaphor",
+      "metaphor": "Metaphorical role description",
+      "members": ["skill-id-1", "skill-id-2"]
+    }
+  ]
+}
+```
+
 ## Anti-patterns to Avoid
 
 - Do NOT connect skills just because they are in the same repository
-- Do NOT assume a skill "uses" another unless the description says so
+- Do NOT assume a skill "uses" another unless the description says so (concrete layer)
 - Do NOT create symmetric edges (A→B and B→A) unless both directions are explicitly described
 - Do NOT assign skills to groups arbitrarily; groups must reflect real functional layers
+- Do NOT stretch metaphors to force-fit unrelated skills — if a skill does not fit the metaphor, leave it ungrouped or in a standalone group
