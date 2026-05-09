@@ -457,9 +457,11 @@ mcp__sequential-thinking__sequentialthinking:
 
 ### 5.2 保存位置
 
+研究报告作为独立文档保存，避免覆盖 plan-workspace 的 findings.md。
+
 默认保存到当前仓库的 planning 目录：
 ```
-.planning/conversations/<current-conversation>/findings.md
+.planning/conversations/<current-conversation>/research-<topic>-YYYYMMDD.md
 ```
 
 如果当前没有 conversation context，保存到：
