@@ -41,6 +41,18 @@ Current-task planning workspace. Default target layout:
         └── progress.md
 ```
 
+### `.research/`
+
+Deep-research output reports. Independent from `.planning/` to avoid confusion with plan-workspace files. Default target layout:
+
+```text
+.research/
+├── <conversation>/
+│   └── <topic>-YYYYMMDD.md
+└── standalone/
+    └── <topic>-YYYYMMDD.md
+```
+
 ## Design Principle
 
 Keep roles distinct, but keep the layer count minimal:
@@ -48,6 +60,7 @@ Keep roles distinct, but keep the layer count minimal:
 - `AGENTS.md` = index + inlined rules (no separate docs layer)
 - `.agent-state/` = all durable and runtime state
 - `.planning/` = current-task planning files
+- `.research/` = deep-research output reports
 
 ## Why Not `docs/agent-system/`?
 
