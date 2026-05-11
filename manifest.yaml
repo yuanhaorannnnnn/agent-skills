@@ -56,3 +56,6 @@ skills:
 - name: skill-status
   enabled: true
   category: utility
+- name: dev-design
+  enabled: true
+  category: workflow
