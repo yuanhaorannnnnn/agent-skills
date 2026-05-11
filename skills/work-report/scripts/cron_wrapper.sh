@@ -32,5 +32,9 @@ PYTHON="${PYTHON:-/home/lkshpc/anaconda3/bin/python3}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPORT_SCRIPT="$SCRIPT_DIR/generate_work_report.py"
 
-# Run the report generator in auto mode
-exec "$PYTHON" "$REPORT_SCRIPT" weekly --auto
+# Run the report generator in auto mode.
+# Generate two reports: full (all work) and work-only (仿真/重建 via --topic 工作).
+exec "$PYTHON" "$REPORT_SCRIPT" weekly --auto \
+    && echo "[cron] Full report generated." \
+    && "$PYTHON" "$REPORT_SCRIPT" weekly --auto --topic 工作 --output "$HOME/.agents/work-reports/$(date +%Y-%m)/weekly-$(date +%Y-%m-%d)-work.md" \
+    && echo "[cron] Work-only report generated."

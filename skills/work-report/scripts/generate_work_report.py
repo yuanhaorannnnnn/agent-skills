@@ -14,6 +14,7 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 from common_wr import get_week_range, get_month_range, get_report_dir
+import yaml
 from collectors.claude_collector import collect_claude_sessions
 from collectors.codex_collector import collect_codex_sessions
 from collectors.kimi_collector import collect_kimi_sessions
@@ -70,6 +71,49 @@ def collect_all_sessions(since: datetime, until: datetime, agent_filter: str = N
         all_sessions.extend(kimi)
 
     return all_sessions
+
+
+TOPICS_CONFIG_PATH = Path.home() / ".agents" / "work-reports" / "topics.yaml"
+
+
+def load_topics() -> dict:
+    """Load topic presets from config file."""
+    if not TOPICS_CONFIG_PATH.exists():
+        return {}
+    with open(TOPICS_CONFIG_PATH, encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def filter_by_topic(tasks: list, topic_name: str) -> list:
+    """Filter tasks by a named topic preset.
+
+    The topic config maps to 'projects' (repo names) and 'keywords'
+    (task title substring matches). A task matches if its project is in
+    the projects list OR its title contains any keyword.
+    """
+    topics = load_topics()
+    topic = topics.get(topic_name)
+    if not topic:
+        print(f"[!] Topic '{topic_name}' not found in {TOPICS_CONFIG_PATH}")
+        print(f"    Available topics: {', '.join(topics.keys())}")
+        return tasks
+
+    projects = [p.lower() for p in topic.get("projects", [])]
+    keywords = [k.lower() for k in topic.get("keywords", [])]
+    label = topic.get("label", topic_name)
+
+    print(f"Applying topic filter '{label}': {len(projects)} projects, {len(keywords)} keywords")
+
+    filtered = []
+    for t in tasks:
+        proj = (t.project or "").lower()
+        title = (t.title or "").lower()
+        match = any(p in proj for p in projects)
+        if not match:
+            match = any(k in title for k in keywords)
+        if match:
+            filtered.append(t)
+    return filtered
 
 
 def filter_by_project(tasks: list, project_filter: str) -> list:
@@ -131,6 +175,12 @@ def cmd_weekly(args):
         tasks = cluster_sessions(sessions)
         print(f"  Found {len(tasks)} tasks")
         print()
+
+        # Filter by topic (named preset, before project filter)
+        if getattr(args, 'topic', None):
+            tasks = filter_by_topic(tasks, args.topic)
+            print(f"After topic filter '{args.topic}': {len(tasks)} tasks")
+            print()
 
         # Filter by project
         if args.project:
@@ -221,6 +271,12 @@ def cmd_monthly(args):
         print(f"  Found {len(tasks)} tasks")
         print()
 
+        # Filter by topic (named preset, before project filter)
+        if getattr(args, 'topic', None):
+            tasks = filter_by_topic(tasks, args.topic)
+            print(f"After topic filter '{args.topic}': {len(tasks)} tasks")
+            print()
+
         if args.project:
             tasks = filter_by_project(tasks, args.project)
             print(f"After project filter '{args.project}': {len(tasks)} tasks")
@@ -276,6 +332,14 @@ def main():
         "--project", type=str, help="Filter by project name"
     )
     weekly_parser.add_argument(
+        "--topic", type=str,
+        help="Filter by named topic preset (from ~/.agents/work-reports/topics.yaml)"
+    )
+    weekly_parser.add_argument(
+        "--list-topics", action="store_true",
+        help="List available topic presets and exit"
+    )
+    weekly_parser.add_argument(
         "--agent", type=str, choices=["claude", "codex", "kimi"],
         help="Filter by agent"
     )
@@ -303,6 +367,14 @@ def main():
         "--project", type=str, help="Filter by project name"
     )
     monthly_parser.add_argument(
+        "--topic", type=str,
+        help="Filter by named topic preset (from ~/.agents/work-reports/topics.yaml)"
+    )
+    monthly_parser.add_argument(
+        "--list-topics", action="store_true",
+        help="List available topic presets and exit"
+    )
+    monthly_parser.add_argument(
         "--agent", type=str, choices=["claude", "codex", "kimi"],
         help="Filter by agent"
     )
@@ -319,6 +391,23 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Handle --list-topics
+    if getattr(args, 'list_topics', False):
+        topics = load_topics()
+        if not topics:
+            print(f"No topics configured. Create {TOPICS_CONFIG_PATH} to define topic presets.")
+        else:
+            print(f"Available topics (from {TOPICS_CONFIG_PATH}):\n")
+            for name, cfg in topics.items():
+                label = cfg.get('label', name)
+                projs = ', '.join(cfg.get('projects', []))
+                kws = ', '.join(cfg.get('keywords', [])[:5])
+                print(f"  {name:20s} → {label}")
+                print(f"  {'':20s}   projects: {projs}")
+                print(f"  {'':20s}   keywords: {kws} ...")
+                print()
+        return
 
     if args.command == "weekly":
         cmd_weekly(args)

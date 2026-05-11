@@ -42,6 +42,13 @@ python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --agent claude
 # 只输出特定项目
 python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --project "test"
 
+# 按主题过滤（主题别名在 ~/.agents/work-reports/topics.yaml 中定义）
+python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --topic 仿真
+python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --topic 工作
+
+# 列出可用主题
+python3 ~/.agents/skills/.scripts/generate_work_report.py --list-topics
+
 # 指定输出路径
 python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --output ~/reports/week-12.md
 
@@ -71,11 +78,22 @@ crontab -e
 - `ANTHROPIC_API_KEY` 环境变量（可在 crontab 中直接设置，或放入 `~/.anthropic_api_key`）
 - Python 3.10+ 和 `anthropic` SDK
 
+**定时任务行为**（cron 每周日 23:00 自动执行）：
+- 生成两份报告：
+  1. 全量周报（所有工作）
+  2. 工作周报（`--topic 工作`，仅仿真/重建相关）
+- 工作周报路径带 `-work` 后缀：`weekly-YYYY-MM-DD-work.md`
+
 **Auto 模式行为**：
 - 静默执行，所有输出重定向到 `~/.agents/work-reports/.logs/auto-YYYYMMDD-HHMMSS.log`
 - 自动检测 LLM 可用性：若 API key 缺失，降级为基础模式（无 STAR 提取，仅输出原始任务列表）
 - 空数据周静默退出，不报错
 - 生成成功后报告保存到默认路径
+
+**主题过滤机制**：
+- 主题预设文件：`~/.agents/work-reports/topics.yaml`
+- 每个主题定义 `projects`（仓库名）和 `keywords`（标题关键词）两个匹配维度
+- `--topic 工作` 匹配 CarlaUE5 / TadSimVehicleDynamicsDemo 仓库的所有任务
 
 ## 输出
 
