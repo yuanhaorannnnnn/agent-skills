@@ -59,6 +59,3 @@ skills:
 - name: dev-design
   enabled: true
   category: workflow
-- name: karpathy-guidelines
-  enabled: true
-  category: workflow
