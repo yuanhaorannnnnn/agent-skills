@@ -1,14 +1,16 @@
 ---
 name: autoresearch-loop
 description: |
-  Supervised automation loop for CARLA LiDAR performance optimization.
+  Supervised automation loop for iterative code optimization with
+  benchmark feedback. Originally designed for CARLA sensor performance,
+  but applies to any compile→benchmark→analyze→improve loop.
   Use this skill whenever the user wants to run an automated optimization
   benchmark loop, iterate on code optimizations automatically, or set up
-  a self-driving performance tuning workflow for CARLA sensors. Also trigger
-  when the user mentions "autoresearch loop", "automatic benchmark",
-  "optimization loop", "run experiments automatically", or wants AI to
-  generate and test optimization hypotheses without manual intervention
-  for each build/benchmark cycle.
+  a self-driving performance tuning workflow. Also trigger when the user
+  mentions "autoresearch loop", "automatic benchmark", "optimization loop",
+  "run experiments automatically", "自动优化", "自动跑 benchmark", or
+  wants AI to generate and test optimization hypotheses without manual
+  intervention for each build/benchmark cycle.
 ---
 
 # Autoresearch Loop

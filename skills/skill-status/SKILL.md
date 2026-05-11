@@ -1,6 +1,12 @@
 ---
 name: skill-status
-description: Query the disable/enable status of skills across all sources
+description: |
+  Query the disable/enable status of skills across all sources.
+  Use when the user wants to check which skills or upstreams are enabled,
+  disabled, or blocked per-agent. Trigger on: "skill status", "查看技能状态",
+  "哪些 skill 被禁用了", "check skill status", "skill enable status",
+  "show disabled skills", or when the user is debugging why a certain
+  skill isn't triggering.
 ---
 
 # skill-status
