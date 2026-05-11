@@ -2,9 +2,16 @@
 name: dev-design
 description: |
   基于 conversation 对话记录、planning 文档和代码变更，生成面向产品、测试、
-  开发同事的技术开发设计方案文档（Markdown）。触发词："生成开发方案"、
-  "写设计评审文档"、"生成技术方案"、"write design doc"、"dev design"。
+  开发同事的技术开发设计方案文档（Markdown）。
+
+  触发词："生成开发方案"、"写设计评审文档"、"生成技术方案"、"write design doc"、
+  "dev design"、"把这个 feature 的方案整理出来"、"写一个 XX 的技术方案"。
+
   注意：这不是需求文档或 PRD，而是技术实现方案，重点回答"怎么做"和"为什么这么做"。
+
+  即使用户没有说"开发方案"这四个字，只要场景是"开发前的技术方案编写"——
+  比如用户说"整理一下 XX 传感器的设计"、"把 XX feature 的架构写出来"、
+  "写个文档给评审会看"——都应该触发此 skill。
 ---
 
 # Dev Design
@@ -20,14 +27,6 @@ description: |
 
 直接让 agent 自由输出容易产出"教科书风格"的泛泛文档。这个 skill 强制按
 固定的 14 节结构 + 写作约束执行，确保文档能直接拿到评审会上用。
-
-## 触发方式
-
-- "生成开发方案"
-- "开始写设计文档"
-- "写方案评审文档"
-- "把这个 feature 的方案整理出来"
-- "write a dev design doc"
 
 ## 输入源优先级
 
@@ -149,4 +148,4 @@ description: |
 
 - [人类化中文写作指南](https://github.com/op7418/Humanizer-zh) — 24 种 AI 写作痕迹
 - [说人话](https://github.com/MrGeDiao/shuorenhua) — 210+ 中文禁词、19 种反模式、保真回读
-- 本地反例对照：见 `taste.md`
+- 本地反例对照：见 `references/taste.md`

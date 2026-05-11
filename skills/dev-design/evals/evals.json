@@ -5,36 +5,31 @@
       "id": 1,
       "prompt": "生成开发方案。conversation 是 rgbd，基于 .agent-state/conversations/rgbd.md 和 .planning/conversations/rgbd/ 下的规划文档，编写 CARLA RGB-D 传感器的技术开发设计方案。",
       "expected_output": "14 节完整文档。包含：Executive Summary 用具体数值（分辨率/FOV/payload size）；方案范围中'本次不包含'清单至少 5 项；Architecture 节有 ASCII 图；测试评审点按四层拆分（编译→API→Runtime→DFS）；风险表中有具体文件路径；Review Decision Checklist 有至少 7 个选择题。无禁词。",
-      "effort_tier": "deep",
-      "files": []
+"files": []
     },
     {
       "id": 2,
       "prompt": "基于 conversation tof 的开发记录，写 ToF Camera Sensor 的技术方案文档。",
       "expected_output": "14 节完整文档。包含：Exec Summary 点明三个关键事实；背景与问题节有对比表（Depth Camera vs LiDAR vs ToF）；用户可见行为分 Blueprint/Python/DFS 三小节；Core Logic 节包含深度还原公式和点云反投影公式；'本次不包含'清单至少 8 项；Acceptance Criteria 有 15+ 条具体验收条件。无'需要强调的是'等禁词。",
-      "effort_tier": "deep",
-      "files": []
+"files": []
     },
     {
       "id": 3,
       "prompt": "帮我写一个新增 CARLA 实例分割传感器（sensor.camera.instance_segmentation 已存在，这次要新增一个 GPU 加速版本 sensor.camera.instance_segmentation_gpu）的开发方案。只有 conversation 记录，暂时还没有 planning 文档。",
       "expected_output": "14 节文档。即使 planning 缺失，也基于 conversation 内容生成。标注缺失的信息源。'本次不包含'清单清晰定义 GPU 版本与 CPU 版本的边界。产品评审点区分'如果产品目标是 A'和'如果产品目标是 B'的两种场景。",
-      "effort_tier": "medium",
-      "files": []
+"files": []
     },
     {
       "id": 4,
       "prompt": "写个技术方案吧，就我上次说的那个把 Carla 的 TrafficManager 替换成我们自己写的轻量版的事。",
       "expected_output": "14 节文档。即使 conversation 信息不完整，也尽力生成，并标注缺失项。指出这个方案的关键风险：TrafficManager 替换涉及行为树、lane change logic、collision avoidance 等耦合模块。",
-      "effort_tier": "medium",
-      "files": []
+"files": []
     },
     {
       "id": 5,
       "prompt": "生成一下 sensor.camera.rgbd 的开发设计方案文档，保存到 /home/yhr/Documents/ 下。",
       "expected_output": "14 节文档 + 正确保存到 /home/yhr/Documents/RGB-D Camera Sensor 方案评审文档.md。文档完成后确认保存路径。",
-      "effort_tier": "deep",
-      "files": []
+"files": []
     }
   ]
 }
