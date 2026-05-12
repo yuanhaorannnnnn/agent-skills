@@ -72,8 +72,16 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 
 ### 保存位置
 
+设计方案文档保存到 `.proposal/` 目录（与 `.planning/`、`.research/` 平级）：
+
+**有 conversation 时**：
 ```
-/home/yhr/Documents/<Feature> 方案评审文档.md
+.proposal/<conversation-id>/<Feature> 方案评审文档.md
+```
+
+**无 conversation 时**：
+```
+.proposal/standalone/<Feature> 方案评审文档.md
 ```
 
 ---
@@ -163,7 +171,7 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 - [ ] 风险表中有具体文件路径或参数名
 - [ ] Code Navigation 表中每行都有文件路径 + 职责描述
 - [ ] 全文不超过 10 个"需要"、8 个"建议"、5 个"后续"
-- [ ] `save_to_disk` / `save_to_disk(path)` 标注了输出路径（如果需要）
+- [ ] 文件已保存到 `.proposal/<conversation-id>/`（如果有 conversation id）
 
 ---
 
