@@ -35,7 +35,7 @@ skills:
 - name: skill-map
   enabled: true
   category: utility
-- name: video-ingest
+- name: content-ingest
   enabled: true
   category: media
 - name: skill-evaluator
@@ -56,6 +56,9 @@ skills:
 - name: skill-status
   enabled: true
   category: utility
+- name: paper-to-concept
+  enabled: true
+  category: research
 - name: dev-design
   enabled: true
   category: workflow

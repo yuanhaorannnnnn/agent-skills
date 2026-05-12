@@ -30,13 +30,20 @@ description: |
 
 ## 输入源优先级
 
-1. `.agent-state/conversations/<id>.md` — 决策/约束/关键上下文
-2. `.planning/conversations/<id>/` — spec / task_plan / findings / progress
-3. 代码 diff — 从 conversation 中的实现记录提取文件清单和关键变更
-4. 当前对话中的设计讨论 — 尚未写入文件的最新讨论
+dev-design 通常在代码开发之前执行，因此代码不是主要输入源。
+优先级按实际可用性排列：
 
-**如果 conversation 或 planning 文档不存在**，基于当前对话内容尽量生成，
-并标注缺失的信息源。
+1. **当前对话中的设计讨论** — 所有方案决策、trade-off、参数取舍都在这里。
+   这是最丰富的信息源，不要只依赖文件而忽略对话。
+2. `.planning/conversations/<id>/` — spec / task_plan / findings / progress。
+   深度研究阶段的输出物，包含架构决策和外部参考。
+3. `.agent-state/conversations/<id>.md` — 关键决策、约束、已知问题。
+   用于验证不遗漏已确认的设计点。
+4. **代码 diff / 参考实现**（可选）— 仅在已有部分代码或参考文件时使用，
+   例如 Code Navigation 节需要具体文件路径时。
+
+**如果 planning 文档或 conversation recap 不存在**，直接基于当前对话生成，
+并标注缺失的信息源。不要因为文件缺失而拒绝生成。
 
 ---
 
