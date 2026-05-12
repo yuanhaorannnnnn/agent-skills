@@ -23,9 +23,33 @@ If extraction fails:
 4. Ask the user to confirm the video is accessible in their browser.
 5. If the site extractor is broken, update `yt-dlp` before changing this skill.
 
+### Bilibili: yt-dlp HTTP 412 fallback
+
+Bilibili blocks yt-dlp aggressively. If `ingest_video.py` fails with HTTP 412, use the Bilibili playurl API directly:
+
+```bash
+# Get CID and metadata
+curl -s "https://api.bilibili.com/x/web-interface/view?bvid=BVID" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)['data']
+print(f'cid={d[\"cid\"]}')
+print(f'title={d[\"title\"]}')
+"
+
+# Get audio stream
+curl -s "https://api.bilibili.com/x/player/playurl?bvid=BVID&cid=CID&qn=80&fnver=0&fnval=16&fourk=1" \
+  -H "Referer: https://www.bilibili.com" \
+  | python3 -c "import sys,json; print(max(json.load(sys.stdin)['data']['dash']['audio'], key=lambda x: x['bandwidth'])['base_url'])"
+
+# Download audio and convert
+curl -o audio.m4s -H "Referer: https://www.bilibili.com" "AUDIO_URL"
+ffmpeg -y -i audio.m4s -vn -ar 16000 -ac 1 <video_id>.wav
+rm audio.m4s
+```
+
 ## ASR backend
 
-Use FunASR `iic/SenseVoiceSmall` by default for local transcription. It is preferred over Whisper CLI for Chinese social-video audio because it handles Chinese and mixed-language speech more reliably in this workflow.
+Use FunASR `iic/SenseVoiceSmall` as the primary ASR backend for Chinese social-video audio.
 
 If `scripts/transcribe_audio.py` reports that FunASR is missing, install:
 
