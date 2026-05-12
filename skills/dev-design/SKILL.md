@@ -72,16 +72,21 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 
 ### 保存位置
 
-设计方案文档保存到 `.proposal/` 目录（与 `.planning/`、`.research/` 平级）：
+设计方案文档保存到**当前工作仓库的** `.proposal/` 目录（与 `.planning/`、`.research/` 平级）。路径相对于研发所在的仓库，不是 agent 平台仓库。
 
 **有 conversation 时**：
 ```
-.proposal/<conversation-id>/<Feature> 方案评审文档.md
+<cwd>/.proposal/<conversation-id>/<Feature> 方案评审文档.md
 ```
 
 **无 conversation 时**：
 ```
-.proposal/standalone/<Feature> 方案评审文档.md
+<cwd>/.proposal/standalone/<Feature> 方案评审文档.md
+```
+
+例如开发 CarlaUE5 的 ToF 传感器时，输出：
+```
+/media/yhr/2T/CarlaUE5/.proposal/tof/ToF Camera Sensor 方案评审文档.md
 ```
 
 ---
