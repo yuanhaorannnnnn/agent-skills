@@ -10,6 +10,7 @@ Supports:
 Output: absolute path to the downloaded PDF file.
 """
 
+import os
 import argparse
 import re
 import sys
@@ -17,8 +18,8 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
-# Wiki root — where papers get stored
-WIKI_ROOT = Path("/media/yhr/2T/files/wiki")
+# Wiki root — where papers get stored (configurable via WIKI_ROOT env var)
+WIKI_ROOT = Path(os.environ.get("WIKI_ROOT", Path.home() / "wiki"))
 PAPERS_DIR = WIKI_ROOT / "raw" / "papers" / "paper"
 
 # User-Agent to avoid 403 from arXiv and others

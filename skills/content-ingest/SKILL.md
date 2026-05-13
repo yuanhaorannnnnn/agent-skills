@@ -1,11 +1,10 @@
 ---
 name: content-ingest
 description: |
-  通用内容摄入 + 技能蒸馏。自动检测输入类型并路由到对应提取管线，输出统一的结构化笔记。
-  替代旧的 video-ingest 和 article-ingest。
-  支持：视频（X/YouTube/Bilibili/小红书）、文章（远程URL/本地剪藏）。
-  输入为视频URL、文章URL、或本地Clippings路径，输出为 wiki queries/ 下的结构化技能笔记。
-  当用户说"把这篇/这个视频消化一下"、"提取干货"、"整理要点"时使用。
+  Load when the user shares a video or article URL and wants to save it into the
+  wiki, or says "把这篇/这个视频消化一下", "提取干货", "整理要点", "ingest this",
+  "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
+  article URLs (Substack, Medium, blog posts) or local Clippings files.
 version: "2.0.0"
 user_invocable: true
 ---
@@ -14,12 +13,25 @@ user_invocable: true
 
 将视频、文章摄入到 wiki，去噪、蒸馏、生成结构化笔记。
 
+## Step 0: 查重
+
+处理前先检查 `raw/PROCESSED.md`，避免重复摄入：
+
+```bash
+grep -F "SOURCE_URL_OR_PATH" raw/PROCESSED.md
+```
+
+如果命中，说明该来源已处理过，告知用户对应的输出页面并确认是否需要重新摄入。
+
 ## 自动路由
 
 根据输入自动选择管线：
 
 ```
 输入
+  ├─ 用户意图："下载/离线/镜像" → 静态站点镜像
+  │     wget 整站下载 → 链接本地化 → 生成资源列表笔记 → queries/
+  │
   ├─ youtube.com / x.com / bilibili.com / xhslink.com → 视频管线
   │     下载(yt-dlp) → 音频提取 → FunASR 转录 → 蒸馏 → queries/
   │
@@ -98,6 +110,21 @@ python ~/.agents/skills/content-ingest/scripts/extract_article.py "URL" \
 
 读取正文，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<slug>.md`。
 
+## 静态站点镜像
+
+当用户分享的是一个**交互式演示站、HTML 文档站、教程站**（不适合文本提取），且用户意图是"下载下来离线看"而非"提取干货"时，用 wget 整站镜像：
+
+```bash
+wget --mirror --page-requisites --adjust-extension --convert-links --no-parent \
+  -e http_proxy=http://127.0.0.1:7890 -e https_proxy=http://127.0.0.1:7890 \
+  --directory-prefix=/media/yhr/2T/files/wiki/raw/assets \
+  "URL"
+```
+
+下载完成后生成 query 笔记：列出所有页面文件名和用途，记录离线打开方式（`xdg-open raw/assets/<host>/<path>/index.html`）。标准索引更新（index.md + log.md + PROCESSED.md）同上。
+
+**和文章管线的区别**：文章管线提取文本，蒸馏可操作知识。镜像管线保留完整的 HTML/CSS/JS，在浏览器里体验。
+
 ## 蒸馏规则
 
 从内容中提取**可操作**的知识。核心原则：找"how"不找"what"。
@@ -165,11 +192,17 @@ confidence: medium
 
 ## 索引更新
 
-完成笔记后更新 `index.md` 和 `log.md`：
+完成笔记后，更新三处索引：
 
-```markdown
-## [YYYY-MM-DD] create | {标题} → queries/{slug}.md
-```
+1. **`index.md`** — 在对应区域追加一行
+2. **`log.md`** — 追加时序记录：
+   ```markdown
+   ## [YYYY-MM-DD] create | {标题} → queries/{slug}.md
+   ```
+3. **`raw/PROCESSED.md`** — 追加已处理标记，防止未来重复摄入：
+   ```markdown
+   | YYYY-MM-DD | video/article | raw/transcripts/xxx.md 或 Clippings/xxx.md | queries/{slug}.md |
+   ```
 
 ## 依赖
 

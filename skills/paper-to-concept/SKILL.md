@@ -1,17 +1,11 @@
 ---
 name: paper-to-concept
 description: |
-  论文阅读 + 自动概念整理的工作流包装器。当用户说"读论文"、"分析论文"、"paper"并提供 PDF 路径或 URL 时，
-  先下载（如为 URL），再调用 ljg-paper 完成论文阅读和 Denote 笔记生成，然后自动触发概念整理流程：
-  1. [URL 输入] 下载论文 PDF 到 raw/papers/paper/
-  2. 调用 ljg-paper 读取 PDF → 生成 Denote 笔记
-  3. 用 LLM 分类判断归属哪些 concept（支持一对多）
-  4. 更新/创建 concepts/{name}.md
-  5. 更新 wiki/index.md 和 log.md
-  6. 如必要，创建/更新 entities/ 下的作者、机构、会议页
-  
-  必须使用该 skill 当用户要求读论文并自动整理到 wiki 概念库，或用户明确说"用 paper-to-concept"。
-  如果用户只说"读论文"但没有提到 wiki/concept/整理，优先用原始 ljg-paper skill。
+  Load when the user asks to read a paper AND organize it into the wiki concept
+  library, or explicitly says "用 paper-to-concept", "读论文并整理到 wiki",
+  "分析这篇论文并更新概念库". Provide a PDF path or arXiv/OpenReview URL.
+  Do NOT load when the user only says "读论文" or "read this paper" without
+  mentioning wiki/concept organization — use ljg-paper instead.
 version: "1.1.0"
 user_invocable: true
 ---
@@ -46,6 +40,16 @@ user_invocable: true
 - 任意以 `.pdf` 结尾的直接 PDF URL
 
 ## 执行流程
+
+### Step -1: 查重
+
+处理前先检查 `raw/PROCESSED.md`，避免重复摄入：
+
+```bash
+grep -F "PAPER_PDF_PATH_OR_URL" raw/PROCESSED.md
+```
+
+如果命中，告知用户对应的概念页并确认是否重新处理。
 
 ### Step 0: 下载论文（仅 URL 输入）
 
@@ -192,11 +196,12 @@ papers:
 - ...
 ```
 
-### Step 7: 更新 index.md 和 log.md（脚本已处理）
+### Step 7: 更新 index.md、log.md 和 PROCESSED.md（脚本已处理）
 
 脚本已自动更新。但检查一下：
 - `index.md` 中 concept 名称按字母序排在最前
 - `log.md` 记录格式正确
+- `raw/PROCESSED.md` 已追加论文 PDF 路径和对应概念页（防重复处理）
 
 ### Step 8: 更新 Entities（脚本自动处理）
 
@@ -269,6 +274,6 @@ papers:
 - [ ] 自动检测到新生成的笔记文件
 - [ ] LLM 正确分类 concept（现有或新建）
 - [ ] Concept 页格式正确，含聚合内容
-- [ ] index.md 和 log.md 已更新
+- [ ] index.md、log.md 和 raw/PROCESSED.md 已更新
 - [ ] Entities 已更新（如必要）
 - [ ] 所有 wikilink 有效

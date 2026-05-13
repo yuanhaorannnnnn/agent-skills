@@ -80,6 +80,9 @@ def build_command(args: argparse.Namespace, output_dir: Path) -> list[str]:
     if args.referer:
         command.extend(["--referer", args.referer])
 
+    if args.js_runtime:
+        command.extend(["--js-runtimes", args.js_runtime])
+
     return command
 
 
@@ -112,6 +115,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--proxy", help="Proxy URL passed to yt-dlp.")
     parser.add_argument("--user-agent", help="Custom User-Agent passed to yt-dlp.")
     parser.add_argument("--referer", help="Custom Referer passed to yt-dlp.")
+    parser.add_argument("--js-runtime", default="node", help="JS runtime for yt-dlp bot challenge solving (default: node).")
     parser.add_argument("--format", help="yt-dlp format selector.")
     parser.add_argument(
         "--playlist",

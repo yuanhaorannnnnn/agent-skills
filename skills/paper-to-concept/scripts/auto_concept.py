@@ -6,6 +6,7 @@ auto_concept.py: 自动将论文笔记整理到 wiki concept 页
 输出：更新的 concept 页路径列表
 """
 
+import os
 import re
 import sys
 import json
@@ -13,8 +14,8 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-# Wiki 根目录
-WIKI_ROOT = Path("/media/yhr/2T/files/wiki")
+# Wiki 根目录 (configurable via WIKI_ROOT env var)
+WIKI_ROOT = Path(os.environ.get("WIKI_ROOT", Path.home() / "wiki"))
 NOTES_DIR = Path.home() / "Documents" / "notes"
 CONCEPTS_DIR = WIKI_ROOT / "concepts"
 ENTITIES_DIR = WIKI_ROOT / "entities"
