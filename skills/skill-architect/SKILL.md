@@ -98,11 +98,24 @@ LLM 输出结构化 JSON,包含:
 4. 检查 mmdc 是否可用,如不可用提示安装:`npm install -g @mermaid-js/mermaid-cli`
 5. 报告文件路径
 
-#### HTML 格式(`-f html`)
+#### HTML 格式(`-f html`, 默认)
 
-1. 将 Mermaid 源码嵌入 HTML 模板(见下方)
-2. 保存到 `~/.agents/skills/skill-architect-output-<name>.html`
-3. 用浏览器打开
+使用 SVG 交互模板（`references/architecture-template.html`）替代 Mermaid CDN 渲染。
+
+1. 读取 `references/architecture-template.html` 作为结构模板
+2. 按 skill 分层/分组生成 SVG 节点（rect + text），关系边（line/path）
+3. 按数据层→元治理→会话→研究→开发→内容→报告 7 层分配 skills
+4. 在 `<script>` 中注入 DETAIL 字典，每个 skill 的 title/meta/body
+5. 保存到 `~/Downloads/skill-architect-<name>.html`
+6. 用浏览器打开
+
+**SVG 布局规则**:
+- 每层 5-6 个 skill，等宽排列
+- 层内 10px 间距，层间 20px 间距
+- 关系边：实线 = 显式调用，虚线 = 数据流
+- 配色：7 组柔色背景，区别于部署流程图的绿/红色系
+
+**模板文件**: `references/architecture-template.html`（可复用的完整 HTML 框架）
 
 #### ASCII 格式(`-f ascii`)
 
