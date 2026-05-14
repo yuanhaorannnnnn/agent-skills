@@ -62,3 +62,9 @@ skills:
 - name: dev-design
   enabled: true
   category: workflow
+- name: wechat-markdown
+  enabled: true
+  category: media
+- name: wechat-discover
+  enabled: true
+  category: media
