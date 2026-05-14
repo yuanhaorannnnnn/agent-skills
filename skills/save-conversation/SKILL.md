@@ -1,140 +1,42 @@
 ---
 name: save-conversation
 description: |
-  Use when the user wants to save the current conversation, persist working
-  context, store progress, or write next steps so the same conversation can be
-  resumed later. Trigger on requests like "save conversation", "save where we
-  are", "store context", "write recap", or "remember where we left off". Use
-  this whenever future resumption should be easy, especially when the user wants
-  a stable conversation identity that is independent of branch changes.
+  Save the current conversation context so it can be resumed later.
+  Trigger when user says "save conversation", "保存会话", "记住进度",
+  "store context", or finishes a session. Use whenever future resumption
+  should be easy — independent of branch changes.
 ---
 
 # Save Conversation
 
-## Workflow
+Write a conversation recap to `.agent-state/conversations/<conversation>.md`.
 
-1. Determine the current repository root. Branch can be recorded elsewhere if useful, but it is not the primary identity of a saved conversation.
-   Before updating the conversation file, treat the repo-local `AGENTS.md` as
-   the authoritative rules for how this repository wants conversation state
-   organized.
-2. Resolve the active conversation document with this priority:
-   - explicit conversation override if one was provided
-   - when the current save should create a new independent conversation in a repo, ALWAYS pass `--conversation <name>` explicitly instead of relying on `.agent-state/ACTIVE_CONVERSATION` fallback
-   - `.agent-state/ACTIVE_CONVERSATION` if it already exists
-   - `CODEX_THREAD_ID` when running inside Codex, so different conversations in the same repo and directory do not overwrite each other
-   - current branch name only as a last fallback when no conversation-scoped identifier exists
-   If the user provided arguments (e.g. `/save --conversation <name> <next focus>`),
-   treat any text after the conversation name as `next_focus` — a description of
-   what the next session should work on. Write it into the recap as a `## Next Focus`
-   section at the top of the action layer.
-3. Read any existing `.agent-state/conversations/<conversation>.md`.
-4. Run `~/.agents/skills/.scripts/save_conversation.py` (canonical runtime path) to refresh the conversation file. Do not resolve relative to the repo being saved or invent `~/.claude/.scripts/...`.
-5. Re-open the resulting conversation file and verify it stays focused on conversation context rather than git state.
-6. Re-read and rewrite the stable summary layer on every save. Do not just preserve it blindly. Compress the whole conversation into concise, deduplicated statements so the file reflects the current best understanding rather than only the latest turns. Keep these sections short and durable:
-   - `Conversation Summary`
-   - `Current Objective`
-   - `Key Decisions`
-   - `Constraints`
-   - `Open Questions`
-   Preferred style:
-   - `Conversation Summary`: 1-3 sentences covering the whole conversation, not just the latest step
-   - `Current Objective`: a single current target
-   - `Key Decisions`: only decisions that still matter
-   - `Constraints`: only active constraints
-   - `Open Questions`: only unresolved questions
-   When new information appears, merge it into these summaries instead of appending raw recent context.
-7. Update the action layer on every save so the next restore can resume immediately.
+## Identity
 
-   **Task-oriented action layer (preferred):**
-   Replace the flat `Pending Follow-Ups` list with a task-grouped checklist when the conversation has multiple concurrent work items:
+Resolve the conversation id:
+1. Explicit `--conversation <name>` (always create new conversations this way)
+2. `.agent-state/ACTIVE_CONVERSATION`
+3. `CODEX_THREAD_ID` (Codex runtime)
+4. Current branch name (last resort)
 
-   ```markdown
-   ## Active Tasks
+Treat any text after the conversation name as `next_focus` — write it as `## Next Focus`.
 
-   ### task-name-1
-   - [ ] sub-task A
-   - [x] sub-task B (已完成)
+## Structure
 
-   ### task-name-2
-   - [ ] sub-task C
-   ```
+### Stable summary (rewrite every save)
+- `Conversation Summary` — 1-3 sentences covering the whole conversation
+- `Current Objective` — a single current target
+- `Key Decisions` — only decisions that still matter
+- `Constraints` — only active constraints
+- `Open Questions` — only unresolved
 
-   Group related follow-ups under a task heading. Use `- [x]` to mark completed items so restore shows progress at a glance.
+### Action layer
+- `Active Tasks` — task-grouped checklists. Simple tasks inline; complex tasks reference `.planning/conversations/<id>/<task>/`
+- `Known Issues`
+- `Key Context`
 
-   **Simple task → inline checklist:**
-   If a task is small (1-2 sessions, no complex dependencies), keep its checklist directly in the conversation file.
+## Constraints
 
-   **Complex task → planning workspace:**
-   If a task is large (3+ sessions, cross-day, involves research or irreversible decisions), create a dedicated planning workspace under `.planning/conversations/<conversation-id>/<task-name>/` with `spec.md`, `exec_plan.md`, `findings.md`, and `progress.md`. In the conversation file, reference it:
-
-   ```markdown
-   ### agent-platform-sync
-   - [ ] Design sync lock mechanism
-   - [ ] Implement retry with backoff
-   - [ ] Write tests
-   - Planning: `.planning/conversations/infra/agent-platform-sync/`
-   ```
-
-   Keep these sections in every saved conversation file:
-   - `Active Tasks` (or `Pending Follow-Ups` for single-task conversations)
-   - `Known Issues`
-   - `Key Context`
-
-   Preserve useful existing notes; if there is nothing specific to add, leave `- None` rather than deleting the sections.
-8. Write the updated conversation recap back to `.agent-state/conversations/<conversation>.md`. Do not switch conversation files just because the git branch changed inside the same conversation.
-
-## Script
-
-Use `~/.agents/skills/.scripts/save_conversation.py` (canonical runtime path) for deterministic conversation-file selection and persistence. The skill should keep the saved file centered on actionable conversation context for a future restore.
-
-## Recommended Explicit Naming
-
-When you want a stable human-readable conversation name that matches your renamed
-thread, prefer explicit naming instead of depending on runtime thread ids.
-
-Recommended format:
-
-- `/save --conversation <name>`
-
-Examples:
-
-- `/save --conversation suspension-tuning-v1`
-- `/save --conversation steer-comparison-pass-2`
-
-Naming rules:
-
-- use short, stable names
-- prefer lowercase words with hyphens
-- keep using the exact same name for later saves and restores of the same
-  conversation
-- treat the explicit conversation name as the source of truth for manual naming
-
-## State Files
-
-- `AGENTS.md`
-- `.agent-state/MEMORY.md`
-- `.agent-state/ACTIVE_CONVERSATION`
-- `.agent-state/conversations/<conversation>.md`
-- `.agent-state/rules/mistakes.md`
-
-## Resume Context
-
-Keep these stable summary sections in every saved conversation file:
-
-- `## Conversation Summary`
-- `## Current Objective`
-- `## Key Decisions`
-- `## Constraints`
-- `## Open Questions`
-
-Keep these action sections in every saved conversation file:
-
-- `## Active Tasks` (preferred when multiple concurrent work items exist; use `## Pending Follow-Ups` for single-task conversations)
-- `## Known Issues`
-- `## Key Context`
-
-The summary layer should represent the whole conversation in compressed form. It must be intentionally rewritten so it does not drift into "recent chat only". The action layer should change often and represent the immediate resume point.
-
-When repo-local topic docs exist, prefer them as the long-term system of record.
-Treat `.agent-state/*` as runtime/conversation state and compatibility storage, not
-as the only durable rule source.
+- **Do not duplicate.** If information already lives in `.planning/`, `AGENTS.md`, `.proposal/`, or `.research/`, reference the path — don't copy the content.
+- **Merge, don't append.** When new information arrives, fold it into existing summaries instead of adding raw recent context.
+- **Compress aggressively.** The file should fit in a single screen of context.
