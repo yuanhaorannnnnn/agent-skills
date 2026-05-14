@@ -23,6 +23,10 @@ description: |
    - `.agent-state/ACTIVE_CONVERSATION` if it already exists
    - `CODEX_THREAD_ID` when running inside Codex, so different conversations in the same repo and directory do not overwrite each other
    - current branch name only as a last fallback when no conversation-scoped identifier exists
+   If the user provided arguments (e.g. `/save --conversation <name> <next focus>`),
+   treat any text after the conversation name as `next_focus` — a description of
+   what the next session should work on. Write it into the recap as a `## Next Focus`
+   section at the top of the action layer.
 3. Read any existing `.agent-state/conversations/<conversation>.md`.
 4. Run `~/.agents/skills/.scripts/save_conversation.py` (canonical runtime path) to refresh the conversation file. Do not resolve relative to the repo being saved or invent `~/.claude/.scripts/...`.
 5. Re-open the resulting conversation file and verify it stays focused on conversation context rather than git state.
