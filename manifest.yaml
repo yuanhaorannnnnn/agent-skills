@@ -68,3 +68,12 @@ skills:
 - name: wechat-discover
   enabled: true
   category: media
+- name: zoom-out
+  enabled: true
+  category: research
+- name: caveman
+  enabled: true
+  category: productivity
+- name: auto-optimize
+  enabled: true
+  category: automation
