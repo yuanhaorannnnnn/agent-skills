@@ -77,3 +77,9 @@ skills:
 - name: auto-optimize
   enabled: true
   category: automation
+- name: agent-handoff
+  enabled: true
+  category: workflow
+- name: visual-design
+  enabled: true
+  category: design
