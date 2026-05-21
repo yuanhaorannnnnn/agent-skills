@@ -32,10 +32,32 @@ the next step — not to replay every tool call and system message.
   sub-flows (guardian, judge, etc.), repeated system prompts, token count logs.
 - **Respect token budget.** Cap the extracted conversation at ~8000 words.
   Prefer recent turns over earlier ones when truncating.
-- **Always show what was transferred.** After extraction, present a brief
-  summary: source agent, session time, turn count, token estimate.
+- **Always show what you learned.** After extraction, present:
+  - Source agent, session time, turn count, token estimate.
+  - Key decisions made in the source session.
+  - Current pending work / next step.
+  - For short sessions (<15 turns): include the full filtered transcript.
+  - For long sessions: include only the first 2 turns (initial context),
+    the last 3 turns (most recent), and any turns containing explicit
+    architectural decisions or user approvals. Mark truncation clearly.
 
 ## Workflow
+
+### Step 0: Run the extraction script
+
+Use the bundled mechanical extractor to handle cwd filtering, session
+discovery, TRANSCRIPT detection, and noise removal:
+
+```bash
+python3 <skill-dir>/scripts/extract_handoff.py --source <codex|pi|claude> --cwd <path>
+```
+
+Add `--json` for machine-readable output. The script handles all three
+agents internally — no per-agent parsing code needed.
+
+The script output gives you: session path, mode (transcript/direct/message),
+line count, extracted turns, word/token estimates. Use this to decide
+truncation strategy, then proceed with semantic interpretation.
 
 ### Step 1: Identify source
 
@@ -72,19 +94,13 @@ The actual conversation is at `projects/<cwd-slug>/<sessionId>.jsonl`.
 
 Read the JSONL lines and filter by type:
 
-**Codex** — has two modes. Try direct extraction first; if it yields little,
-auto-switch to TRANSCRIPT parsing. Always guard against `None` content:
-`if not content: continue`.
+**Codex** — has two modes. **Always scan for TRANSCRIPT first.** If the
+marker `">>> TRANSCRIPT"` appears anywhere in the session, use TRANSCRIPT
+mode exclusively — this is a guardian-wrapped session and direct mode
+will produce garbage. Only fall back to direct mode if no TRANSCRIPT is
+found. Always guard against `None` content: `if not content: continue`.
 
-*Direct mode* (response_item):
-- Keep: `response_item` where `payload.role` is `"user"` or `"assistant"`
-- Skip: `payload.role == "developer"` (system prompt / skill injection dumps)
-- User content: `payload.content[].type == "input_text"` → extract `text`
-- Assistant content: `payload.content[].type == "output_text"` → extract `text`
-- Skip turns where every `output_text` starts with `{"outcome"` — those are
-  guardian JSON responses, not real assistant replies.
-
-*TRANSCRIPT mode* (guardian-wrapped sessions):
+*TRANSCRIPT mode* (guardian-wrapped — check FIRST):
 Codex sessions supervised by guardian/judge embed the real conversation inside
 TRANSCRIPT blocks in `user_message` or `input_text` lines:
 
@@ -96,20 +112,21 @@ TRANSCRIPT blocks in `user_message` or `input_text` lines:
 >>> TRANSCRIPT END
 ```
 
-*Auto-detection*: Scan BOTH `input_text` and `output_text` blocks for
-the marker `">>> TRANSCRIPT"`. If present in any line, the session is
-guardian-wrapped → use TRANSCRIPT mode exclusively. Do not rely solely on
-`output_text` `{"outcome"` ratio — TRANSCRIPT blocks often appear in
-`input_text` fields and would be missed.
-
 Parsing strategy:
 - Extract lines matching `[N] user: <text>` and `[N] assistant: <text>`.
 - Ignore `[N] tool:`, `[N] system:`, `[N] guardian:`, `[N] developer:`.
 - After a TRANSCRIPT START, subsequent DELTA blocks contain only new turns
   since the last approval. Deduplicate by turn number `N`, keeping the
   longest text for each `(N, role)` pair.
-- The regex above splits on `[N] role:` anchors, which handles multi-line
-  messages cleanly — no fragile cross-line matching needed.
+- Split on `[N] role:` anchors to handle multi-line messages cleanly.
+
+*Direct mode* (fallback — only if no TRANSCRIPT found):
+- Keep: `response_item` where `payload.role` is `"user"` or `"assistant"`
+- Skip: `payload.role == "developer"` (system prompt / skill injection dumps)
+- User content: `payload.content[].type == "input_text"` → extract `text`
+- Assistant content: `payload.content[].type == "output_text"` → extract `text`
+- Skip turns where every `output_text` starts with `{"outcome"` — those are
+  guardian JSON responses, not real assistant replies.
 
 *Drop list* (both modes): `function_call`, `function_call_output`,
 `session_meta`, `token_count`, `turn_context`, `event_msg`,
