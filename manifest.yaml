@@ -5,9 +5,7 @@ skills:
 - name: capture-mistake-rule
   enabled: true
   category: workflow
-- name: code-reviewer
-  enabled: true
-  category: review
+
 - name: fix-issue
   enabled: true
   category: debugging
@@ -83,3 +81,6 @@ skills:
 - name: visual-design
   enabled: true
   category: design
+- name: post-mortem
+  enabled: true
+  category: workflow
