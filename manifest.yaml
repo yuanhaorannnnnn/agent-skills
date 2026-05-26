@@ -78,9 +78,15 @@ skills:
 - name: agent-handoff
   enabled: true
   category: workflow
-- name: visual-design
+- name: product-look
   enabled: true
   category: design
 - name: post-mortem
   enabled: true
   category: workflow
+- name: quick-page
+  enabled: true
+  category: design
+- name: doc-review
+  enabled: true
+  category: review

@@ -41,7 +41,19 @@ version: "1.0.0"
 
 ## 执行
 
-根据参数选择模具和格式,按以下步骤执行:
+### 0. 如果用户未指定 skill 范围，先弹出选择
+
+当用户只输入了 `--` 参数（模具/格式）但没有指定 skill 列表时，询问范围。
+
+**Claude Code 环境**：使用 `AskUserQuestion` 弹出选择框。
+**其他 agent（Codex/Pi 等）**：直接以纯文本提问，让用户回复选项号。
+
+选项：
+1. **自建 skill** → 扫描 `~/.agents/repos/agent-skills/skills/` 下所有 skill
+2. **所有 skill** → 自建 + 所有已安装 upstream skill
+3. **按 publisher** → 用户输入 publisher 名（如 `gstack`、`agent-skills`），只选该 publisher 的 skill
+
+选择后继续执行以下步骤。如果用户在触发时已显式列出 skill 名，跳过此步。
 
 ### 1. 解析输入
 

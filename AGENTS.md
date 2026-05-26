@@ -51,9 +51,9 @@ Two distinct scenarios for visual output. Choose the correct path before startin
 
 When the user is building a **complete product** (app, website, platform, SaaS tool, portfolio, etc.) and needs a coherent visual identity:
 
-1. Trigger `visual-design` to generate a `DESIGN.md` with design tokens (colors, typography, spacing).
+1. Trigger `product-look` to generate a `DESIGN.md` with design tokens (colors, typography, spacing).
 2. Save `DESIGN.md` to the project root.
-3. When the user later needs specific pages, use `frontend-design` with DESIGN.md tokens as constraints.
+3. When the user later needs specific pages, use `frontend-design` (if available — Claude Code) or generate HTML directly (Codex/Pi) with DESIGN.md tokens as constraints.
 
 ### Path B: Page-Level Visual Expression
 
@@ -62,16 +62,18 @@ When the user needs a **single page or artifact** for daily dev work (status rep
 1. Read `/media/yhr/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`.
 2. Match the user's requested page type to the closest entry in the catalog (9 categories, 20 examples).
 3. Read the corresponding example file(s) to study their layout structure and component patterns.
-4. Use `frontend-design` to generate the page, adapting the observed patterns to the user's content.
+4. Generate the page:
+   - **Claude Code**: use `frontend-design` to generate, adapting observed patterns.
+   - **Codex / Pi**: generate HTML directly, using the example's CSS variables, typography, and component patterns as reference.
 
 ### DESIGN.md Priority Rule
 
-When a `DESIGN.md` exists in the project root, `frontend-design` MUST treat its tokens as non-negotiable constraints:
+When a `DESIGN.md` exists in the project root, treat its tokens as non-negotiable constraints:
 - **colors**: use the exact hex values from `DESIGN.md`
 - **typography**: use the exact font families, sizes, and weights from `DESIGN.md`
 - **spacing**: use the spacing unit and scale from `DESIGN.md`
 
-Within these constraints, `frontend-design` still exercises creative freedom — layout composition, animation, background details, and decorative elements remain its domain.
+Within these constraints, the agent still exercises creative freedom — layout composition, animation, background details, and decorative elements remain its domain.
 
 ## 5. Operational Mandates
 - **Verification:** Always verify file paths and content existence before operating.

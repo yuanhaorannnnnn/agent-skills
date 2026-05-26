@@ -1,5 +1,5 @@
 ---
-name: visual-design
+name: product-look
 description: |
   Generate a customized DESIGN.md (design token specification) for a product
   or project. Reads the awesome-design-md reference library (71 DESIGN.md files
