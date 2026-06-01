@@ -2,91 +2,94 @@ repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
-- name: capture-mistake-rule
+- name: Codify
   enabled: true
   category: workflow
 
-- name: fix-issue
+- name: Neutralize
   enabled: true
   category: debugging
-- name: scaffold
+- name: StandUp
   enabled: true
   category: repo
-- name: restore-conversation
+- name: Reactivate
   enabled: true
   category: conversation
-- name: save-conversation
+- name: Secure
   enabled: true
   category: conversation
-- name: plan-workspace
+- name: Staging
   enabled: true
   category: planning
-- name: skill-cheatsheet
+- name: Kneeboard
   enabled: true
   category: utility
-- name: report
+- name: FieldReport
   enabled: true
   category: reporting
-- name: work-report
+- name: SITREP
   enabled: true
   category: reporting
-- name: skill-map
+- name: OrderOfBattle
   enabled: true
   category: utility
-- name: content-ingest
+- name: Acquisition
   enabled: true
   category: media
-- name: skill-evaluator
+- name: GoNogo
   enabled: true
   category: meta
-- name: dev-wrapup
+- name: Sanitize
   enabled: true
   category: workflow
-- name: autoresearch-loop
+- name: Sweep
   enabled: true
   category: automation
-- name: deep-research
+- name: Fusion
   enabled: true
   category: research
-- name: skill-architect
+- name: Formation
   enabled: true
   category: utility
-- name: skill-status
+- name: RollCall
   enabled: true
   category: utility
-- name: paper-to-concept
+- name: Exploitation
   enabled: true
   category: research
-- name: dev-design
+- name: CONOPS
   enabled: true
   category: workflow
-- name: wechat-markdown
+- name: Collation
   enabled: true
   category: media
-- name: wechat-discover
+- name: SourceRecon
   enabled: true
   category: media
-- name: zoom-out
+- name: Overwatch
   enabled: true
   category: research
-- name: caveman
+- name: Stripped
   enabled: true
   category: productivity
-- name: auto-optimize
+- name: Calibrate
   enabled: true
   category: automation
-- name: agent-handoff
+- name: Passdown
   enabled: true
   category: workflow
-- name: product-look
+- name: Cover
   enabled: true
   category: design
-- name: post-mortem
+- name: AfterAction
   enabled: true
   category: workflow
-- name: quick-page
+- name: Breach
   enabled: true
   category: design
-- name: doc-review
+- name: Tabletop
+  enabled: true
+  category: review
+- name: delivery-align
   enabled: true
   category: review

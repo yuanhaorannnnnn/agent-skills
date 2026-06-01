@@ -15,7 +15,6 @@ const HOME_DIR = process.env.HOME;
 const RUNTIME_DIRS = [
   path.join(HOME_DIR, '.agents', 'skills'),
   path.join(HOME_DIR, '.claude', 'skills'),
-  path.join(HOME_DIR, '.hermes', 'skills'),
 ];
 
 function loadManifest() {
