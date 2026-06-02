@@ -1,1 +1,1 @@
-/home/yhr/.agents/repos/agent-skills/skills/work-report/scripts/cron_wrapper.sh
+/home/yhr/.claude/skills/SITREP/scripts/cron_wrapper.sh

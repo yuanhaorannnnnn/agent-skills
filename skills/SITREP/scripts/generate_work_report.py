@@ -17,7 +17,7 @@ from common_wr import get_week_range, get_month_range, get_report_dir
 import yaml
 from collectors.claude_collector import collect_claude_sessions
 from collectors.codex_collector import collect_codex_sessions
-from collectors.kimi_collector import collect_kimi_sessions
+from collectors.pi_collector import collect_pi_sessions
 from task_clustering import cluster_sessions, merge_by_star_similarity
 from star_builder import build_stars_for_tasks
 from report_renderer import render_weekly_report, save_report
@@ -64,11 +64,11 @@ def collect_all_sessions(since: datetime, until: datetime, agent_filter: str = N
         print(f"  Found {len(codex)} sessions")
         all_sessions.extend(codex)
 
-    if agent_filter is None or agent_filter == "kimi":
-        print("Collecting Kimi sessions...")
-        kimi = collect_kimi_sessions(since, until)
-        print(f"  Found {len(kimi)} sessions")
-        all_sessions.extend(kimi)
+    if agent_filter is None or agent_filter == "pi":
+        print("Collecting Pi sessions...")
+        pi_sessions = collect_pi_sessions(since, until)
+        print(f"  Found {len(pi_sessions)} sessions")
+        all_sessions.extend(pi_sessions)
 
     return all_sessions
 
@@ -340,7 +340,7 @@ def main():
         help="List available topic presets and exit"
     )
     weekly_parser.add_argument(
-        "--agent", type=str, choices=["claude", "codex", "kimi"],
+        "--agent", type=str, choices=["claude", "codex", "pi"],
         help="Filter by agent"
     )
     weekly_parser.add_argument(
@@ -375,7 +375,7 @@ def main():
         help="List available topic presets and exit"
     )
     monthly_parser.add_argument(
-        "--agent", type=str, choices=["claude", "codex", "kimi"],
+        "--agent", type=str, choices=["claude", "codex", "pi"],
         help="Filter by agent"
     )
     monthly_parser.add_argument(

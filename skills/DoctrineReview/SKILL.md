@@ -1,5 +1,5 @@
 ---
-name: distill
+name: DoctrineReview
 description: |
   Review recent work across all agent runtimes and distill repeated
   manual workflows into skills, subagents, or automations. Use when the

@@ -90,6 +90,6 @@ skills:
 - name: Tabletop
   enabled: true
   category: review
-- name: delivery-align
+- name: Traceback
   enabled: true
   category: review

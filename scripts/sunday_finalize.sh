@@ -1,0 +1,1 @@
+/home/yhr/.claude/skills/SITREP/scripts/sunday_finalize.sh

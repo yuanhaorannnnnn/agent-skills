@@ -1,5 +1,5 @@
 ---
-name: delivery-align
+name: Traceback
 description: |
   Three-way artifact alignment check: design document → implementation code →
   test coverage. Finds gaps where the design says X but the code doesn't do X,

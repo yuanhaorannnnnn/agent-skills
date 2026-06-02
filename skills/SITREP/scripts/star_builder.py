@@ -25,7 +25,7 @@ _CACHE_DIR = Path.home() / ".agents" / "work-reports" / ".cache"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Model to use for STAR extraction
-_MODEL = "claude-sonnet-4-6"
+_MODEL = os.environ.get("ANTHROPIC_MODEL", "deepseek-v4-pro[1m]")
 
 _STAR_PROMPT = """You are analyzing a coding agent conversation to extract a work record following the STAR principle.
 
@@ -157,7 +157,10 @@ def _call_llm(conversation: str, task: Task) -> Optional[dict]:
     if not api_key:
         return None
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.Anthropic(
+        api_key=api_key,
+        base_url=os.environ.get("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"),
+    )
 
     files_str = ", ".join(task.files_modified[:10]) if task.files_modified else "None"
     time_range = ""
@@ -185,7 +188,11 @@ def _call_llm(conversation: str, task: Task) -> Optional[dict]:
             messages=[{"role": "user", "content": prompt}],
         )
 
-        content = response.content[0].text if response.content else ""
+        content = ""
+        for block in response.content:
+            if hasattr(block, "text") and block.text:
+                content = block.text
+                break
         return _parse_json_response(content)
 
     except Exception as e:

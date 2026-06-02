@@ -1,5 +1,5 @@
 ---
-name: discussion-digest
+name: CommsDigest
 description: |
   Load when the user shares a discussion thread and wants to visualize its
   structure, or says "梳理这个讨论", "这条线程结论是什么", "理一下参与人立场",

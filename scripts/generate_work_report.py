@@ -1,1 +1,1 @@
-/home/yhr/.agents/repos/agent-skills/skills/work-report/scripts/generate_work_report.py
+/home/yhr/.claude/skills/SITREP/scripts/generate_work_report.py

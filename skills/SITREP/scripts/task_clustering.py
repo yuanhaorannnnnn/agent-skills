@@ -684,11 +684,21 @@ def merge_by_star_similarity(
     if not quiet:
         print(f"  Rule-based candidates: {len(candidates)} pairs")
 
+    HIGH_SIM_THRESHOLD = 0.9  # auto-merge without LLM
+
     # Stage 2: LLM confirmation for candidates
     # LLM judgment overrides all other rules. If LLM says same task, merge regardless
     # of project, agent, status, or /clear boundaries.
     llm_merge_pairs: set[tuple[int, int]] = set()
+    auto_merged = 0
     for idx, (i, j, sim) in enumerate(candidates):
+        if sim >= HIGH_SIM_THRESHOLD:
+            # Auto-merge: very similar tasks skip LLM
+            llm_merge_pairs.add((i, j))
+            auto_merged += 1
+            if not quiet:
+                print(f"    Auto [{idx+1}/{len(candidates)}]: {tasks[i].title[:40]}... (sim={sim:.2f}) → MERGE")
+            continue
         if not quiet:
             print(f"    LLM check [{idx+1}/{len(candidates)}]: {tasks[i].title[:40]}... vs {tasks[j].title[:40]}... (sim={sim:.2f})")
         if _llm_should_merge(tasks[i], tasks[j]):
@@ -698,6 +708,10 @@ def merge_by_star_similarity(
         else:
             if not quiet:
                 print(f"      → NO, keep separate")
+
+    if auto_merged:
+        if not quiet:
+            print(f"  Auto-merged {auto_merged} high-similarity pairs")
 
     if not llm_merge_pairs:
         return tasks
