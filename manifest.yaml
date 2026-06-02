@@ -5,7 +5,6 @@ skills:
 - name: Codify
   enabled: true
   category: workflow
-
 - name: Neutralize
   enabled: true
   category: debugging
@@ -93,3 +92,6 @@ skills:
 - name: Traceback
   enabled: true
   category: review
+- name: Tasking
+  enabled: true
+  category: workflow
