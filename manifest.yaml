@@ -9,8 +9,9 @@ skills:
   enabled: true
   category: debugging
 - name: StandUp
-  enabled: true
+  enabled: false
   category: repo
+  status: deprecated
 - name: Reactivate
   enabled: true
   category: conversation
@@ -18,8 +19,9 @@ skills:
   enabled: true
   category: conversation
 - name: Staging
-  enabled: true
+  enabled: false
   category: planning
+  status: deprecated
 - name: Kneeboard
   enabled: true
   category: utility
@@ -35,7 +37,13 @@ skills:
 - name: Acquisition
   enabled: true
   category: media
+- name: CommsDigest
+  enabled: true
+  category: media
 - name: GoNogo
+  enabled: true
+  category: meta
+- name: DoctrineReview
   enabled: true
   category: meta
 - name: Sanitize
@@ -93,5 +101,14 @@ skills:
   enabled: true
   category: review
 - name: Tasking
+  enabled: true
+  category: workflow
+- name: Repair
+  enabled: true
+  category: workflow
+- name: Sentinel
+  enabled: true
+  category: automation
+- name: Execute
   enabled: true
   category: workflow

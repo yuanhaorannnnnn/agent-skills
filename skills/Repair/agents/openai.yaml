@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repair"
+  short_description: "云效缺陷单接单分析代码修复交付和回归验证收尾自动化流程"
+  default_prompt: "Use $Repair to process a Yunxiao bug through Intake, Fix, and Closeout."
