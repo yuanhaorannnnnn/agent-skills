@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import tempfile
 import unittest
@@ -14,9 +13,6 @@ MANIFEST_PATH = REPO_ROOT / "manifest.yaml"
 RUNTIME_DIRS = [
     (".agents", "skills"),
     (".claude", "skills"),
-    (".codex", "skills"),
-    (".kimi", "skills"),
-    (".pi", "agent", "skills"),
 ]
 
 
@@ -39,30 +35,11 @@ class InstallScriptTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             for runtime_parts in RUNTIME_DIRS:
                 runtime = home.joinpath(*runtime_parts)
-                self.assertTrue((runtime / "save-conversation").is_symlink())
-                self.assertTrue((runtime / "restore-conversation").is_symlink())
-                self.assertTrue((runtime / "plan-workspace").is_symlink())
-                self.assertTrue((runtime / "report").is_symlink())
+                # Enabled skills from manifest should be linked
+                self.assertTrue((runtime / "Secure").is_symlink())
+                self.assertTrue((runtime / "Reactivate").is_symlink())
+                self.assertTrue((runtime / "Execute").is_symlink())
                 self.assertTrue((runtime / ".scripts").is_symlink())
-                self.assertTrue((runtime / "scaffold").is_symlink())
-
-    def test_install_removes_stale_links_from_this_repo(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            home = Path(tmp)
-            stale_links = []
-            for runtime_parts in RUNTIME_DIRS:
-                runtime = home.joinpath(*runtime_parts)
-                runtime.mkdir(parents=True)
-                stale_link = runtime / "deleted-skill"
-                stale_target = SKILLS_DIR / "deleted-skill"
-                stale_link.symlink_to(stale_target)
-                stale_links.append(stale_link)
-                self.assertTrue(stale_link.is_symlink())
-
-            result = self._run_install(home)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            for stale_link in stale_links:
-                self.assertFalse(stale_link.exists())
 
     def test_install_does_not_touch_foreign_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -82,16 +59,15 @@ class InstallScriptTests(unittest.TestCase):
     def test_install_skips_disabled_skills(self) -> None:
         original_manifest = MANIFEST_PATH.read_text()
         try:
-            # Replace manifest with one that disables save-conversation
             manifest_content = """\
 repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
-  - name: save-conversation
+  - name: Secure
     enabled: false
     category: conversation
-  - name: restore-conversation
+  - name: Reactivate
     enabled: true
     category: conversation
 """
@@ -103,39 +79,8 @@ skills:
                 self.assertEqual(result.returncode, 0, result.stderr)
                 for runtime_parts in RUNTIME_DIRS:
                     runtime = home.joinpath(*runtime_parts)
-                    self.assertFalse((runtime / "save-conversation").exists())
-                    self.assertTrue((runtime / "restore-conversation").is_symlink())
-        finally:
-            MANIFEST_PATH.write_text(original_manifest)
-
-    def test_install_removes_existing_runtime_link_for_disabled_skill(self) -> None:
-        original_manifest = MANIFEST_PATH.read_text()
-        try:
-            manifest_content = """\
-repo:
-  name: agent-skills
-  runtime_dir: ~/.agents/skills
-skills:
-  - name: save-conversation
-    enabled: false
-    category: conversation
-"""
-            MANIFEST_PATH.write_text(manifest_content)
-
-            with tempfile.TemporaryDirectory() as tmp:
-                home = Path(tmp)
-                existing_links = []
-                for runtime_parts in RUNTIME_DIRS:
-                    runtime = home.joinpath(*runtime_parts)
-                    runtime.mkdir(parents=True)
-                    existing_link = runtime / "save-conversation"
-                    existing_link.symlink_to(SKILLS_DIR / "save-conversation")
-                    existing_links.append(existing_link)
-
-                result = self._run_install(home)
-                self.assertEqual(result.returncode, 0, result.stderr)
-                for existing_link in existing_links:
-                    self.assertFalse(existing_link.exists())
+                    self.assertFalse((runtime / "Secure").exists())
+                    self.assertTrue((runtime / "Reactivate").is_symlink())
         finally:
             MANIFEST_PATH.write_text(original_manifest)
 

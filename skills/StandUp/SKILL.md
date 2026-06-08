@@ -1,26 +1,22 @@
 ---
 name: StandUp
-description: Initialize or normalize a repository into the standard repo-local agent system layout. Use when a repository needs a local `AGENTS.md` index with inlined Guardrails and Agent System rules, `.agent-state/` runtime state, and `.planning/conversations/` planning conventions — especially when an existing `AGENTS.md` should be preserved and augmented rather than replaced. Use this skill whenever the user mentions bootstrapping an agent system, setting up AGENTS.md, initializing repo-local agent memory, normalizing a repo's agent structure, bootstrap a coding-agent repo, init agent conventions, or set up agent rules for a repository.
+status: deprecated
+description: |
+  DEPRECATED — AGENTS.md + CLAUDE.md initialization is now handled by
+  repo conventions and Canon project pages. Runtime directory scaffolding
+  (.agent-state/, .planning/) is no longer part of the standard agent
+  bootstrap — these directories are created on-demand by skills that
+  need them, not pre-initialized.
 ---
 
-# Scaffold
+# DEPRECATED — Scaffold
 
-Initialize a repo with the standard agent-system layout: `AGENTS.md` (index +
-inlined rules) + `.agent-state/` (runtime state) + `.planning/` (task planning).
-See `references/structure.md` for the full layout rationale.
+StandUp has been deprecated. The repo-local agent runtime layout (AGENTS.md + CLAUDE.md + .agent-state/ + .planning/) is no longer pre-initialized:
 
-## What it creates
+- **AGENTS.md + CLAUDE.md**: maintained by repo conventions and the user. No skill pre-creates these.
+- **.agent-state/ + .planning/**: created on-demand by skills that write to them (as runtime scratch buffers only, not durable state).
+- **Canon project pages**: created manually or by Secure when a repo has durable cross-project relevance. See `/media/yhr/2T/Canon/SCHEMA.md`.
 
-- `AGENTS.md` — entry index with Guardrails and inlined Agent System block
-- `.agent-state/MEMORY.md` — durable repo knowledge
-- `.agent-state/rules/mistakes.md` — guardrails in ❌/✅ format
-- `.planning/README.md`
-- `.planning/conversations/.gitkeep`
+The `scripts/init_repo_agent_system.py` script and `references/structure.md` are kept for reference but are no longer maintained.
 
-## Workflow
-
-1. Run `scripts/init_repo_agent_system.py --repo <repo-root>`
-2. If `AGENTS.md` already exists, preserve all project content, only update
-   the `<!-- BEGIN AGENT-SYSTEM -->` / `<!-- END AGENT-SYSTEM -->` block
-3. Adjust wording for repo-specific conventions
-4. Summarize what was created, updated, and preserved
+This file is kept for backward reference only. Do not trigger on this skill.

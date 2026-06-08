@@ -11,59 +11,75 @@ END_MARKER = "<!-- END AGENT-SYSTEM -->"
 MANAGED_BLOCK = f"""{BEGIN_MARKER}
 ## Repo Agent System
 
+### Canon Context
+
+- Durable cross-project context belongs in Canon: `/media/yhr/2T/Canon`
+- Repo-local `.agent-state/`, `.planning/`, `.research/`, and `.proposal/` are runtime buffers and artifact locations, not long-term source of truth.
+- When a task, decision, incident, workflow, pattern, or artifact should survive the current conversation, create or update a Canon update card under `/media/yhr/2T/Canon/raw/update-cards/` and link the relevant Canon page.
+- Reference repo artifacts by absolute path; do not copy them into Canon unless a portable bundle is explicitly requested.
+
 ### Conversation Save/Restore
 
 - Active conversation pointer: `.agent-state/ACTIVE_CONVERSATION`
 - Conversation summaries: `.agent-state/conversations/<conversation>.md`
-- Conversation files should focus on conversation context, current goals, todos,
-  and risks — not git state snapshots.
-- Use conversation id as the primary key, not branch name.
-- To create an independent new session, always specify a session name explicitly;
-  do not rely on ACTIVE_CONVERSATION fallback.
+- Conversation files are runtime resume buffers: current objective, todos, risks, next focus, and Canon links.
+- Use conversation id as the runtime key, not branch name.
+- To create an independent new session, always specify a session name explicitly; do not rely on ACTIVE_CONVERSATION fallback.
 
 ### Planning
 
-- Task planning files: `.planning/conversations/<conversation-id>/`
+- Runtime task planning files: `.planning/conversations/<conversation-id>/`
   - `spec.md`, `task_plan.md`, `findings.md`, `progress.md`
-- Planning id can be a conversation id or a stable workflow name (e.g. `rpm_limit`).
-- Do not keep planning files long-term in the repo root; migrate old files to the
-  path above before continuing to maintain them.
+- Planning id can be a conversation id or a stable workflow name.
+- For durable task state, use Canon task pages: `/media/yhr/2T/Canon/tasks/<task>.md`
+- Do not keep long-term planning files in the repo root.
 
 ### Source Of Truth Map
 
-- Repo runtime memory + architecture: `.agent-state/MEMORY.md`
-- Guardrails (durable + runtime): `.agent-state/rules/mistakes.md`
-- Conversation recap: `.agent-state/conversations/<conversation>.md`
-- Task planning: `.planning/conversations/<conversation-id>/`
+- Durable project/task graph: `/media/yhr/2T/Canon`
+- Repo-local index: `AGENTS.md`
+- Runtime conversation recap: `.agent-state/conversations/<conversation>.md`
+- Runtime task planning: `.planning/conversations/<conversation-id>/`
+- Local guardrail scratchpad: `.agent-state/rules/mistakes.md`
 {END_MARKER}
 """
 
-MEMORY_MD = """# Repo Agent Memory
+MEMORY_MD = """# Repo Agent Runtime Notes
 
 ## Purpose
 
-Record durable agent constraints and architecture knowledge that remain valid
-across sessions. Put one-off task details in `.agent-state/conversations/`
-and current task plans in `.planning/conversations/`.
+Record repo-local runtime notes and pointers that help agents operate in this repository. Durable cross-project memory belongs in Canon:
+
+```text
+/media/yhr/2T/Canon
+```
+
+Put one-off task details in `.agent-state/conversations/` and active execution plans in `.planning/conversations/`. Promote stable facts to Canon project/task/decision/pattern/incident/artifact pages.
+
+## Canon Links
+
+- Project page: <!-- /media/yhr/2T/Canon/projects/<project>.md -->
+- Active task pages: <!-- /media/yhr/2T/Canon/tasks/<task>.md -->
+- Relevant workflows/patterns/decisions/incidents: <!-- Canon links here -->
 
 ## Repository Structure
 
 <!-- Fill in repo-specific structure here -->
 
-## Repo-Specific Constraints
+## Repo-Specific Runtime Constraints
 
-<!-- Fill in repo-specific constraints here -->
+<!-- Fill in repo-local constraints here -->
 
-## Durable Rules
+## Local Notes
 
-<!-- Fill in durable rules here -->
+<!-- Keep short. Promote durable facts to Canon. -->
 
 ## Layout Summary
 
 - Repo-local index: `AGENTS.md`
 - Runtime state: `.agent-state/`
-- Task planning files: `.planning/conversations/<id>/`
-- Guardrails: `.agent-state/rules/mistakes.md`
+- Runtime task planning files: `.planning/conversations/<id>/`
+- Durable context graph: `/media/yhr/2T/Canon`
 """
 
 MISTAKES_MD = """# Mistake Rules
@@ -83,7 +99,7 @@ MISTAKES_MD = """# Mistake Rules
 
 PLANNING_README = """# Planning Workspace
 
-This directory stores conversation-scoped planning files.
+This directory stores runtime conversation-scoped planning files. Durable task state belongs in Canon: `/media/yhr/2T/Canon/tasks/`.
 
 Default structure:
 

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Dev wrapup helper: git status, task file matching, agent detection."""
+"""Dev wrapup helper: git status, task file matching, agent detection.
+
+Canon-first: task identity comes from Canon task pages, not .agent-state/.
+"""
 
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+
+CANON_TASKS = Path("/media/yhr/2T/Canon/tasks")
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> str:
@@ -22,35 +28,55 @@ def git_status(cwd: Path) -> list[tuple[str, str]]:
     return files
 
 
-def get_conversation_id(repo_root: Path) -> str | None:
-    """Read .agent-state/ACTIVE_CONVERSATION or fallback to branch name."""
-    active_file = repo_root / ".agent-state" / "ACTIVE_CONVERSATION"
-    if active_file.exists():
-        return active_file.read_text().strip()
-    # fallback: current branch name
+def resolve_task_page(repo_root: Path) -> Path | None:
+    """Resolve the Canon task page for the current work.
+
+    Priority: explicit env var > branch-based match > semantic scan > None.
+    Returns Path to task page or None.
+    """
+    # 1. Explicit override via env
+    explicit = os.environ.get("CANON_TASK_PAGE")
+    if explicit:
+        p = Path(explicit)
+        if p.exists():
+            return p
+
+    # 2. Project + branch match
     branch = run(["git", "branch", "--show-current"], cwd=repo_root)
-    return branch if branch else None
+    if branch:
+        project = repo_root.name
+        # Try demand/bug ID pattern in branch name
+        demand_match = re.match(r"(?:feature|bugfix|fix)/([\w-]+)", branch)
+        if demand_match:
+            candidate = CANON_TASKS / f"{demand_match.group(1)}.md"
+            if candidate.exists():
+                return candidate
+        # Try project-branch pattern
+        safe_branch = re.sub(r"[^A-Za-z0-9_.-]+", "-", branch).strip("-")
+        candidate = CANON_TASKS / f"{project}-{safe_branch}.md"
+        if candidate.exists():
+            return candidate
+
+    # 3. Semantic scan — find task pages referencing this project/branch
+    if CANON_TASKS.exists() and branch:
+        for tf in sorted(CANON_TASKS.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True):
+            content = tf.read_text()
+            if branch in content or repo_root.name in content:
+                return tf
+
+    return None
 
 
-def get_task_files(repo_root: Path, conversation_id: str | None) -> set[str]:
-    """Read task_plan.md and extract mentioned file paths."""
-    if not conversation_id:
+def get_task_files_from_canon(task_page: Path | None) -> set[str]:
+    """Read § Artifacts from a Canon task page to extract file paths."""
+    if not task_page or not task_page.exists():
         return set()
-    plan_file = (
-        repo_root
-        / ".planning"
-        / "conversations"
-        / conversation_id
-        / "task_plan.md"
-    )
-    if not plan_file.exists():
-        return set()
-    content = plan_file.read_text()
-    # Extract file paths from markdown code blocks and inline references
+    content = task_page.read_text()
     files = set()
-    # Match `path/to/file.ext` or "path/to/file.ext" or bare paths
+    # Extract paths from § Artifacts section and inline code references
     for pattern in [
         r'`([^`]+\.(?:py|sh|js|ts|md|yaml|yml|json|txt))`',
+        r'(/[\w\-/]+\.(?:py|sh|js|ts|md|yaml|yml|json|txt))',
         r'\b([\w\-/]+\.(?:py|sh|js|ts|md|yaml|yml|json|txt))\b',
     ]:
         files.update(re.findall(pattern, content))
@@ -65,7 +91,6 @@ def filter_relevant_files(
         return [f[1] for f in changed_files]
     relevant = []
     for _, filepath in changed_files:
-        # Check if any task file is a substring match
         if any(tf in filepath or filepath in tf for tf in task_files):
             relevant.append(filepath)
     return relevant if relevant else [f[1] for f in changed_files]
@@ -79,7 +104,6 @@ def detect_agent() -> str:
         (".codex", "codex"),
         (".kimi", "kimi"),
         (".pi", "pi"),
-        (".hermes", "hermes"),
     ]
     for dirname, agent in checks:
         if (home / dirname).exists():
@@ -88,10 +112,9 @@ def detect_agent() -> str:
 
 
 def generate_commit_message(
-    repo_root: Path, files: list[str], conversation_id: str | None
+    repo_root: Path, files: list[str], task_page: Path | None
 ) -> str:
     """Generate a conventional commit message based on changed files."""
-    # Determine type based on files
     types = []
     for f in files:
         lower = f.lower()
@@ -106,14 +129,11 @@ def generate_commit_message(
         else:
             types.append("feat")
 
-    # Most common type
     commit_type = max(set(types), key=types.count) if types else "chore"
 
-    # Determine scope from common directory
     dirs = [os.path.dirname(f) for f in files if os.path.dirname(f)]
     scope = os.path.commonpath(dirs) if dirs else "repo"
 
-    # Generate description
     file_names = [os.path.basename(f) for f in files[:3]]
     desc = f"update {', '.join(file_names)}"
     if len(files) > 3:
@@ -122,27 +142,27 @@ def generate_commit_message(
     return f"{commit_type}({scope}): {desc}"
 
 
-def update_progress(repo_root: Path, conversation_id: str | None, commit_hash: str, files: list[str]):
-    """Append session log to progress.md."""
-    if not conversation_id:
-        return
-    progress_file = (
-        repo_root
-        / ".planning"
-        / "conversations"
-        / conversation_id
-        / "progress.md"
-    )
-    if not progress_file.exists():
-        return
-
+def canon_update_card_suggestion(
+    repo_root: Path, task_page: Path | None
+) -> dict:
+    """Return Canon paths that should be considered after wrapup."""
+    canon_root = Path("/media/yhr/2T/Canon")
+    branch = run(["git", "branch", "--show-current"], cwd=repo_root)
+    slug_source = (task_page.stem if task_page else
+                   branch or repo_root.name)
+    slug = re.sub(r"[^A-Za-z0-9_.-]+", "-", slug_source.strip()).strip("-").lower() or "wrapup"
     from datetime import datetime
 
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    log = f"""\n## {now}\n- Completed: committed {len(files)} file(s)\n- Committed: `{commit_hash}`\n- Files changed: {', '.join(files[:5])}{'...' if len(files) > 5 else ''}\n"""
-
-    with open(progress_file, "a") as f:
-        f.write(log)
+    date = datetime.now().strftime("%Y%m%d")
+    return {
+        "canon_root": str(canon_root),
+        "schema": str(canon_root / "SCHEMA.md"),
+        "task_page": str(task_page) if task_page else None,
+        "suggested_update_card": str(
+            canon_root / "raw" / "update-cards" / f"{date}-{slug}-wrapup.md"
+        ),
+        "artifact_policy": "reference absolute paths; do not copy repo artifacts by default",
+    }
 
 
 def main():
@@ -154,13 +174,13 @@ def main():
         print("No changes to commit.")
         sys.exit(0)
 
-    # 2. Get conversation + task files
-    conv_id = get_conversation_id(repo_root)
-    task_files = get_task_files(repo_root, conv_id)
+    # 2. Resolve task page via Canon
+    task_page = resolve_task_page(repo_root)
+    task_files = get_task_files_from_canon(task_page)
     relevant = filter_relevant_files(changed, task_files)
 
     # 3. Generate commit message
-    msg = generate_commit_message(repo_root, relevant, conv_id)
+    msg = generate_commit_message(repo_root, relevant, task_page)
     print(f"Commit message: {msg}")
     print(f"Files to commit: {relevant}")
 
@@ -168,16 +188,16 @@ def main():
     agent = detect_agent()
     print(f"Detected agent: {agent}")
 
-    # Output JSON for LLM to consume
     import json
 
     result = {
-        "conversation_id": conv_id,
+        "task_page": str(task_page) if task_page else None,
         "changed_files": [f[1] for f in changed],
         "relevant_files": relevant,
         "commit_message": msg,
         "agent": agent,
         "task_files_found": list(task_files),
+        "canon": canon_update_card_suggestion(repo_root, task_page),
     }
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
