@@ -15,6 +15,29 @@ description: |
 
 Review recent work across all agent runtimes (Codex, Claude Code, Pi) and distill repeated manual workflows into packaged skills, subagents, or automations.
 
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `.agents/session-index.sqlite` 是分析缓存；session JSONL 和 memories 是证据源。
+- 发现的重复工作、自动化候选、创建/跳过决策应沉淀到 Canon `patterns/`、`decisions/`、`tasks/` 和 `raw/update-cards/`。
+- 每次评审创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-doctrinereview-<window>.md`，报告证据范围和 packaging decisions。
+- 如果创建或修改 skill，同时更新 Canon `projects/agent-skills` 和相关 artifact refs。
+
+## Parameters
+
+| 参数 | 默认 | 作用 |
+|------|------|------|
+| `--window <days>` | `60` | 分析最近 N 天 session |
+| `--project <name>` | all | 只分析某个项目或 repo |
+| `--focus <keyword>` | none | 只关注某类 workflow，如 `review`, `build`, `yunxiao` |
+| `--report-only` | true | 只产出报告，不创建或修改 skill/subagent/automation |
+| `--create` | false | 对高置信候选直接创建或修改 skill/subagent/automation |
+
+默认行为是 `--window 60 --report-only`。只有用户明确说“创建/实现/封装”，或传入 `--create`，才进入 Phase 5 的创建动作；否则只输出 shortlist 和 decisions。
+
+参数影响所有 Phase：`--window` 替换 SQL 中的 `-60 days`，`--project` 限制 session/project 分布和 skill coverage 范围，`--focus` 用于过滤 repeated messages、topic clusters 和最终 shortlist。
+
 ## Dependencies
 
 This skill requires the `agent-session-index` toolchain. Before starting:

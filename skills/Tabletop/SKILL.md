@@ -82,3 +82,10 @@ print(f'Saved to {p.stem}.review.md')
 | `<doc>.annotations.json` | User's section annotations |
 | `<doc>.replies.json` | Agent's replies |
 | `<doc>.review.md` | Combined human-readable review log |
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Review UI state and annotations are review artifacts. Promote accepted decisions, action items, or document risks to Canon; do not copy transient annotation state by default.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-tabletop-<topic>.md`.

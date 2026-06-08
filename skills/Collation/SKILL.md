@@ -123,3 +123,11 @@ Read `references/technical-notes.md` before changing the extraction approach, ad
 - Do not bypass WeChat access controls, paywalls, login walls, follower-only content, or captcha.
 - Do not loop through proxy/User-Agent combinations. One normal fetch attempt is enough unless the user provides a new URL.
 - Images may be kept as remote URLs in Markdown, but WeChat CDN hotlinking can prevent later rendering. Do not promise that image downloads will work.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- 微信文章 Markdown 和 `raw/PROCESSED.md` 仍归旧内容 wiki 管理。
+- 只有当文章内容成为项目决策、流程模式、风险记录或任务证据时，创建 `/media/yhr/2T/Canon/raw/update-cards/<date>-collation-<slug>.md`。
+- Canon 记录文章 Markdown 路径、原始 URL 和关联页面，不复制文章全文。

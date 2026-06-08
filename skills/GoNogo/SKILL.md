@@ -55,3 +55,10 @@ description: |
 ### 替代方案（如不创建）
 [用哪些现有 tools/skills 可以实现]
 ```
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Go/no-go recommendations can become Canon decisions when the user accepts them. Create an update-card for accepted skill/tooling decisions; otherwise keep the answer ephemeral.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-gonogo-<topic>.md`.

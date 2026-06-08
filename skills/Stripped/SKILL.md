@@ -40,3 +40,10 @@ Resume caveman after clear part done.
 
 Not: "Sure! I'd be happy to help you with that. The issue you're experiencing is likely caused by..."
 Yes: "Bug in auth middleware. Token expiry check use `<` not `<=`. Fix:"
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- This skill changes communication mode only and normally has no durable artifact. Do not update Canon unless the user turns the preference into a durable policy.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-stripped-<topic>.md`.

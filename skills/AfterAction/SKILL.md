@@ -29,9 +29,26 @@ problem in 6 months. Human language, no AI slop. Specifics over summaries.
 4. **判断** — Pick ONE:
    - `临时 hack` — Works now, needs revisiting. What's the real fix?
    - `彻底修复` — Root cause addressed, won't recur.
-   - `值得沉淀` — Patterns worth capturing as a rule / skill / wiki.
-5. **沉淀**（如果是「值得沉淀」）— Where to put it: `.agent-state/rules/mistakes.md`?
-   A new skill? Wiki?
+   - `值得沉淀` — Patterns worth capturing as a Canon pattern/incident, repo-local rule, or skill.
+5. **沉淀**（如果是「值得沉淀」）— Canon target first: `patterns/`, `incidents/`, `tasks/`, or `raw/update-cards/`; repo-local `.agent-state/rules/mistakes.md` is compatibility only.
+
+## Case Share Page
+
+When the user asks for case share, 分享, 培训, 复盘页面, or a page for other people:
+
+1. Write the 5-section AfterAction record first.
+2. Call `Breach` to turn it into a single-page HTML artifact.
+3. Prefer html-effectiveness `12-incident-report`; use `14-research-feature-explainer` only when the case is more educational than incident-like.
+4. Put the reusable rule, if any, in the final section and trigger `Codify` only when it deserves a durable rule.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- AfterAction 文本是修复记录 artifact；长期根因、失败尝试、防错规则和复用模式优先沉淀到 Canon `incidents/` 或 `patterns/`。
+- 复杂修复完成后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-afteraction-<topic>.md`，引用修复记录、commit、日志和验证证据。
+- 如果调用者是 `Repair Fix`，同时更新对应 `/media/yhr/2T/Canon/tasks/<bug-id>.md`。
+- 如果生成了 case share HTML，也把 Breach 页面路径或 URL 作为 artifact ref 记录。
 
 ## Writing Rules
 

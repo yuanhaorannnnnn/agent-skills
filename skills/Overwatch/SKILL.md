@@ -11,3 +11,10 @@ I don't know this area of code well. Go up a layer of abstraction.
 Give me a map of all the relevant modules and callers, using the
 project's domain glossary vocabulary. Do NOT dive into implementation
 details — this is about orientation, not deep analysis.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Code overview findings are normally conversational context. Promote to Canon only when the overview establishes durable project architecture, pattern, or task state.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-overwatch-<topic>.md`.

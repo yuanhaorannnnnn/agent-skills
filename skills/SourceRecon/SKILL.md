@@ -72,3 +72,11 @@ Then `--latest` fetches candidate articles, verifies the actual WeChat account m
 - Search APIs can return duplicates, stale links, or syndicated copies; verify by running `wechat-markdown` on the generated URLs.
 
 Read `references/tavily-notes.md` before changing the Tavily request shape or adding browser automation fallback.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- URL discovery 结果默认是临时候选清单。
+- 被选中并摄入的 URL 由 `Collation` 或 `Acquisition` 负责生成 artifact；本 skill 只在发现结果本身构成可复用线索时写 Canon update-card。
+- Canon update-card 路径：`/media/yhr/2T/Canon/raw/update-cards/<date>-sourcerecon-<topic>.md`。

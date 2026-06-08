@@ -184,3 +184,10 @@ recognize as "AI-made."
 - Don't include implementation code (CSS, JSX, etc.) — DESIGN.md is a spec, not code.
 - Don't prescribe exact component markup — describe the visual properties
   (border radius, shadow, padding) not the HTML structure.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Generated DESIGN.md files are project artifacts. If a visual/design decision should persist across projects, record it in Canon `decisions/` or `patterns/` and reference the DESIGN.md path.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-cover-<topic>.md`.

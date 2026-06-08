@@ -52,3 +52,10 @@ node ~/.agents/repos/agent-skills/scripts/install.mjs doctor
 - **Per-agent whitelist**: Skills explicitly enabled despite global disable
 - **Self-owned disabled**: Skills with `enabled: false` in `manifest.yaml`
 - **Physically disabled**: Skills moved to `upstream/.disabled/`
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Skill enable/disable status is runtime inspection. Write Canon only when a durable enable/disable policy, incident, or migration decision is made.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-rollcall-<topic>.md`.

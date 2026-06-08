@@ -65,3 +65,10 @@ version: "1.0.0"
 ### 4. 输出
 
 直接在对话中渲染 ASCII 地图。不生成文件，不写入磁盘。
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Skill map output is an inspection artifact. Do not write Canon by default; if the map changes skill architecture decisions, update Canon `projects/agent-skills` or create an update-card with the generated artifact path.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-orderofbattle-<topic>.md`.

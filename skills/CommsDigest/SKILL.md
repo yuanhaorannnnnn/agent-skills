@@ -65,9 +65,14 @@ user_invocable: true
 
 输出到 `queries/{slug}.html`，使用 `templates/discussion-digest.html` 的设计系统。包含参与方卡片、垂直时间线、结论摘要面板。
 
-### Step 4: 更新索引
+### Step 4: Canon promotion
 
-更新 `index.md`、`log.md`、`raw/PROCESSED.md`。
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `queries/{slug}.html` 是讨论可视化 artifact。
+- 讨论中形成的决定、争议、action items 进入 Canon `decisions/`、`tasks/`、`patterns/` 或 `raw/update-cards/`。
+- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-commsdigest-<slug>.md`，记录 HTML 路径、输入来源、参与方和结论。
+- 如果在旧 wiki 环境执行，可兼容更新 `index.md`、`log.md`、`raw/PROCESSED.md`；Canon 是长期优先目标。
 
 ## 依赖
 

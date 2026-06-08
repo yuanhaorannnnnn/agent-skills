@@ -2,14 +2,13 @@
 """
 Kimi Code hooks handler — reminder-only mode.
 
-Instead of auto-running save/restore scripts (which cannot generate AI-quality
-summaries), this handler prints actionable reminders to the terminal so the
-user is prompted to run the skill explicitly.
+Reminds the user to use Secure (Canon task page updater) and Reactivate
+(Canon task resolver) instead of the deprecated save/restore-conversation.
 
 Supported events:
-  - PreCompact:   remind user to $save-conversation before context is lost
-  - SessionStart: remind user to $restore-conversation to resume context
-  - SessionEnd:   remind user to $save-conversation before exiting
+  - PreCompact:   remind user to run Secure before context is lost
+  - SessionStart: remind user to run Reactivate to resume context
+  - SessionEnd:   remind user to run Secure to save progress
 
 Install in ~/.kimi/config.toml:
 
@@ -31,67 +30,50 @@ import sys
 from pathlib import Path
 
 
-def active_conversation(cwd: Path) -> str | None:
-    """Read ACTIVE_CONVERSATION from repo-local .agent-state."""
-    active_file = cwd / ".agent-state" / "ACTIVE_CONVERSATION"
-    if active_file.exists():
-        name = active_file.read_text().strip()
-        if name:
-            return name
-    return None
+def resolve_task_page(cwd: Path) -> str | None:
+    """Resolve likely Canon task page from branch or project name."""
+    import subprocess
+    try:
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=cwd, text=True, capture_output=True
+        ).stdout.strip()
+        if branch:
+            return f"/media/yhr/2T/Canon/tasks/ (project={cwd.name}, branch={branch})"
+    except Exception:
+        pass
+    return f"/media/yhr/2T/Canon/tasks/ (project={cwd.name})"
 
 
 def print_reminder(message: str) -> None:
-    """Print a visible terminal reminder."""
-    # Use stderr so it appears even in non-interactive modes
     print(message, file=sys.stderr)
 
 
 def handle_pre_compact(cwd: Path) -> None:
-    """Remind user to save before context compaction."""
-    conversation = active_conversation(cwd)
-    if conversation:
-        print_reminder(
-            f"\n[⚠️ 上下文即将压缩] 建议先执行保存，防止跨 agent 切换时丢失进度：\n"
-            f"   $save-conversation --conversation {conversation}\n"
-        )
-    else:
-        print_reminder(
-            "\n[⚠️ 上下文即将压缩] 建议先执行保存：\n"
-            "   $save-conversation\n"
-            "   （或先设置 conversation ID：echo 'name' > .agent-state/ACTIVE_CONVERSATION）\n"
-        )
+    task_hint = resolve_task_page(cwd)
+    print_reminder(
+        f"\n[上下文即将压缩] 建议先保存进度到 Canon task page：\n"
+        f"   Secure\n"
+        f"   → {task_hint}\n"
+    )
 
 
 def handle_session_start(cwd: Path) -> None:
-    """Remind user to restore conversation on session start."""
-    conversation = active_conversation(cwd)
-    if conversation:
-        print_reminder(
-            f"\n[💡 会话已启动] 如需恢复之前的上下文，请执行：\n"
-            f"   $restore-conversation --conversation {conversation}\n"
-        )
-    else:
-        print_reminder(
-            "\n[💡 会话已启动] 如需恢复之前的上下文，请执行：\n"
-            "   $restore-conversation\n"
-            "   （或先设置 conversation ID：echo 'name' > .agent-state/ACTIVE_CONVERSATION）\n"
-        )
+    task_hint = resolve_task_page(cwd)
+    print_reminder(
+        f"\n[会话已启动] 如需恢复之前的上下文：\n"
+        f"   Reactivate\n"
+        f"   → {task_hint}\n"
+    )
 
 
 def handle_session_end(cwd: Path) -> None:
-    """Remind user to save before exiting."""
-    conversation = active_conversation(cwd)
-    if conversation:
-        print_reminder(
-            f"\n[⚠️ 会话即将结束] 建议先执行保存：\n"
-            f"   $save-conversation --conversation {conversation}\n"
-        )
-    else:
-        print_reminder(
-            "\n[⚠️ 会话即将结束] 建议先执行保存：\n"
-            "   $save-conversation\n"
-        )
+    task_hint = resolve_task_page(cwd)
+    print_reminder(
+        f"\n[会话即将结束] 建议先保存进度：\n"
+        f"   Secure\n"
+        f"   → {task_hint}\n"
+    )
 
 
 def main() -> int:
@@ -105,8 +87,6 @@ def main() -> int:
         handle_session_start(cwd)
     elif event == "SessionEnd":
         handle_session_end(cwd)
-    else:
-        pass
 
     return 0
 

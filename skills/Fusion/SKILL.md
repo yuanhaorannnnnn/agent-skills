@@ -27,10 +27,11 @@ description: |
 
 ### 信息源优先级（不可颠倒）
 ```
-用户知识库 Wiki（跨项目持久化笔记）> 本地代码（what exists）> 项目知识库（why/constraints）> 外部 web（supplement）
+Canon（跨项目持久图谱）> 本地代码（what exists）> 项目 runtime buffers（current execution context）> 旧 Wiki/外部 web（supplement）
 ```
-- Wiki 是"你过去已经想清楚的事"——有覆盖则外部搜索缩减，避免重复研究
-- 外部最佳实践只有在不与 Wiki 结论和项目约束冲突时才推荐
+- Canon 是新的长期 source of truth；优先检索 `/media/yhr/2T/Canon/index.md`、`projects/`、`tasks/`、`patterns/`、`decisions/`、`incidents/` 和 `artifacts/`。
+- 旧 Wiki `/media/yhr/2T/files/wiki` 仍可作为历史素材库，但不能覆盖 Canon 中更新的结论。
+- 外部最佳实践只有在不与 Canon 结论和项目约束冲突时才推荐。
 
 ## 为什么需要这个 skill
 
@@ -54,9 +55,9 @@ description: |
 
 ```
 Phase 0: 确认研究范围 ──> Phase 1: 本地代码探索 ──> Phase 2: 本地知识库检索
-  │                                                     ├─ 2.1 Wiki（跨项目，始终执行）
-  │                                                     ├─ 2.2 项目 Agent State
-  │                                                     ├─ 2.3 Agent Workspaces
+  │                                                     ├─ 2.1 Canon（跨项目，始终执行）
+  │                                                     ├─ 2.2 项目 Runtime Buffers
+  │                                                     ├─ 2.3 旧 Wiki / Agent Workspaces
   │                                                     └─ 2.4 提取约束与假设
   │                                                            │
   │                                                            ▼
@@ -154,51 +155,57 @@ git status 2>/dev/null && git log --oneline -3
 
 ## Phase 2: 本地知识库检索
 
-> **关键设计：三层知识体系。** 用户级知识库（Wiki）跨项目复用 → 项目 agent-state（当前 repo 上下文）→ agent-workspaces（项目设计文档）。三层逐级收窄，从通用到特定。
+> **关键设计：三层知识体系。** Canon 跨项目持久图谱 → 当前 repo runtime buffers → 旧 Wiki / agent-workspaces 历史材料。三层逐级收窄，从长期结论到当前执行证据。
 
-### 2.1 用户知识库（Wiki）— 始终执行
+### 2.1 Canon（跨项目，始终执行）
 
-**无论当前工作目录在哪里，必须检索用户 Wiki 知识库。** Wiki 是跨项目的持久化个人知识管理系统，包含蒸馏后的技术笔记、概念页和深度研究报告。
+**无论当前工作目录在哪里，必须检索 Canon。** Canon 是跨项目长期 source of truth，包含项目页、任务页、决策、模式、事故和 artifact index。
 
-**Wiki 根目录：** `/media/yhr/2T/files/wiki`
+**Canon 根目录：** `/media/yhr/2T/Canon`
 
 **检索步骤：**
 
-1. **搜索相关笔记：**
+1. **搜索相关页面：**
    ```bash
-   grep -rli "<keyword1\|keyword2\|keyword3>" /media/yhr/2T/files/wiki/queries/ /media/yhr/2T/files/wiki/concepts/ /media/yhr/2T/files/wiki/.research/ 2>/dev/null
+   rg -i "<keyword1>|<keyword2>|<keyword3>" /media/yhr/2T/Canon/{projects,tasks,patterns,decisions,incidents,artifacts,raw/update-cards} 2>/dev/null
    ```
-2. **读取匹配的笔记**（优先 queries/，其次 concepts/，最后 .research/）
+2. **读取匹配页面**（优先 projects/tasks/decisions/patterns/incidents，其次 artifacts/update-cards）。
 3. **检查 index.md** 确认是否有未命中但相关的条目：
    ```bash
-   grep -i "<keyword>" /media/yhr/2T/files/wiki/index.md
+   rg -i "<keyword>" /media/yhr/2T/Canon/index.md /media/yhr/2T/Canon/projects /media/yhr/2T/Canon/tasks 2>/dev/null
    ```
-4. **记录发现：** 已有笔记的结论、概念页的框架、前次研究的推荐方案
+4. **记录发现：** 已确认的项目状态、决策、模式、事故、artifact refs 和跨项目关系。
 
-**Wiki 的定位：** 它是"你过去已经想清楚的事"，避免重复研究。如果 Wiki 中已有充分覆盖的笔记，Phase 3 外部搜索应相应缩减（减少重复劳动）。
+**Canon 的定位：** 它是"长期已经想清楚的事"。如果 Canon 中已有充分覆盖的结论，Phase 3 外部搜索应缩减；旧 Wiki 只能补充历史素材，不能覆盖 Canon 的更新结论。
 
-### 2.2 项目 Agent 状态（当前 Repo）
+### 2.2 项目 Runtime Buffers（当前 Repo）
 
 按优先级读取当前项目的持久化知识：
 
 | 优先级 | 文件 | 目的 |
 |--------|------|------|
 | 1 | `.agent-state/MEMORY.md` | 架构决策、已知问题、历史背景 |
-| 2 | `.agent-state/conversations/*.md` | 历史会话中的相关讨论 |
-| 3 | `.planning/conversations/*/` | 相关任务的 planning 文档 |
-| 4 | `CLAUDE.md` / `AGENTS.md` | 项目级约束和风格指南 |
-| 5 | `.agent-state/rules/mistakes.md` | 已知错误模式和防错规则 |
+| 2 | `/media/yhr/2T/Canon/tasks/*.md` | Canon 任务页面——当前任务的 durable 状态、决策、发现 |
+| 3 | `.agent-state/conversations/*.md` | 历史 runtime recap，作为补充证据 |
+| 4 | `.planning/conversations/*/` | 相关任务的 planning 文档（runtime scratch buffer） |
+| 5 | `CLAUDE.md` / `AGENTS.md` | 项目级约束和风格指南 |
+| 6 | `.agent-state/rules/mistakes.md` | 已知错误模式和防错规则 |
 
-### 2.3 Agent Workspaces（项目设计文档 — 补充源）
+### 2.3 旧 Wiki / Agent Workspaces（历史材料 — 补充源）
 
-如果当前项目有对应的 agent-workspace（通常在 `/media/yhr/2T/agent-workspaces/<project>/`），检查其中是否有相关的设计文档、架构决策记录或技术方案：
+如果 Canon 和当前 repo 信息不足，再读取旧 Wiki 和 agent-workspace 历史材料：
+
+- 旧 Wiki：`/media/yhr/2T/files/wiki`
+- Agent workspaces：`/media/yhr/2T/agent-workspaces/<project>/`
+
+检查其中是否有相关的设计文档、架构决策记录或技术方案：
 
 ```bash
 ls /media/yhr/2T/agent-workspaces/ 2>/dev/null
 # 如果存在与当前项目同名的 workspace，读取其中的 CLAUDE.md、ARCHITECTURE.md 等
 ```
 
-Agent workspaces 的定位是**项目级技术文档的长期存储**，与 repo 内的 .agent-state/（运行时状态）互补。Workspace 存的是"设计意图和架构决策"，.agent-state 存的是"当前会话的上下文和已知坑"。
+旧 Wiki 和 agent workspaces 是历史材料源。Canon 可用时，长期结论应回写 Canon；repo 内 `.agent-state/`、`.planning/`、`.research/` 只作为当前执行证据和 artifact 路径。
 
 ### 2.4 提取约束与假设
 
@@ -424,7 +431,7 @@ mcp__sequential-thinking__sequentialthinking:
 # 深度研究报告：{研究主题}
 
 > 研究范围：{范围描述}
-> 信息源：用户 Wiki（{N} 篇笔记）、本地代码（{N} 个文件）、项目知识库（{N} 个来源）、外部 web（{N} 个来源）
+> 信息源：Canon（{N} 个页面）、本地代码（{N} 个文件）、项目 runtime buffers（{N} 个来源）、旧 Wiki/外部 web（{N} 个来源）
 > 研究深度：{粗略/标准/深度}
 
 ## 1. 研究概述
@@ -507,7 +514,7 @@ mcp__sequential-thinking__sequentialthinking:
 
 ### 5.2 保存位置
 
-研究报告作为独立文档保存，使用 `.research/` 目录（与 `.planning/` 平级），避免与 plan-workspace 输出混淆。
+研究报告作为独立文档保存，使用 `.research/` 目录（与 `.planning/` 平级），避免与 Execute --plan 输出混淆。
 
 默认保存到当前仓库的 research 目录：
 ```
@@ -519,6 +526,15 @@ mcp__sequential-thinking__sequentialthinking:
 .research/standalone/<topic>-YYYYMMDD.md
 ```
 
+### 5.3 Canon promotion
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `.research/` 中的研究报告是 repo-local artifact。
+- 非临时研究必须创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-fusion-<topic>.md`。
+- 把稳定结论合并到相关 Canon project/task/decision/pattern/incident 页面；报告路径只作为 artifact ref。
+- 如果研究只回答一次性问题，仍可只输出报告，但最终回复要说明没有做 Canon promotion。
+
 ### 5.3 质量检查清单
 
 报告输出前自检：
@@ -527,6 +543,7 @@ mcp__sequential-thinking__sequentialthinking:
 - [ ] 推荐方案包含可执行的实施步骤（不是 vague 的"建议采用 X"）
 - [ ] 风险分析覆盖了技术风险、维护风险、兼容性风险
 - [ ] 报告语言与项目 AGENTS.md 一致（中文 prose + 英文技术标识符）
+- [ ] Canon update-card/project/task/decision/pattern refs 已更新，或明确说明本次只生成临时研究 artifact
 
 ## 关键约束
 

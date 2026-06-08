@@ -45,14 +45,15 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 
 1. **当前对话中的设计讨论** — 所有方案决策、trade-off、参数取舍都在这里。
    这是最丰富的信息源，不要只依赖文件而忽略对话。
-2. `.planning/conversations/<id>/` — spec / task_plan / findings / progress。
-   深度研究阶段的输出物，包含架构决策和外部参考。
-3. `.agent-state/conversations/<id>.md` — 关键决策、约束、已知问题。
-   用于验证不遗漏已确认的设计点。
-4. **代码 diff / 参考实现**（可选）— 仅在已有部分代码或参考文件时使用，
+2. `/media/yhr/2T/Canon/tasks/<task>.md` — Canon task page 中的 § Plan / § Findings /
+   § Decisions / § Artifacts。包含架构决策、约束和 artifact 路径。
+3. `.planning/conversations/<id>/` — runtime scratch buffer（spec / task_plan /
+   findings / progress）。历史参考，不作为 durable truth。
+4. `.agent-state/conversations/<id>.md` — 历史 runtime recap，补充参考。
+5. **代码 diff / 参考实现**（可选）— 仅在已有部分代码或参考文件时使用，
    例如 Code Navigation 节需要具体文件路径时。
 
-**如果 planning 文档或 conversation recap 不存在**，直接基于当前对话生成，
+**如果 Canon task page 或 planning 文档不存在**，直接基于当前对话生成，
 并标注缺失的信息源。不要因为文件缺失而拒绝生成。
 
 ---
@@ -84,20 +85,29 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 
 设计方案文档保存到**当前工作仓库的** `.proposal/` 目录（与 `.planning/`、`.research/` 平级）。路径相对于研发所在的仓库，不是 agent 平台仓库。
 
-**有 conversation 时**：
+**有 demand/bug ID 时**（从 Canon task page 或用户参数获取）：
 ```
-<cwd>/.proposal/<conversation-id>/<Feature> 方案评审文档.md
+<cwd>/.proposal/<demand-id>/<Feature> 方案评审文档.md
 ```
 
-**无 conversation 时**：
+**无 ID 时**（按任务标题 kebab-slug）：
 ```
-<cwd>/.proposal/standalone/<Feature> 方案评审文档.md
+<cwd>/.proposal/<task-slug>/<Feature> 方案评审文档.md
 ```
 
 例如开发 CarlaUE5 的 ToF 传感器时，输出：
 ```
 /media/yhr/2T/CarlaUE5/.proposal/tof/ToF Camera Sensor 方案评审文档.md
 ```
+
+### Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `.proposal/` 中的方案文档是评审 artifact，仍保存在当前工作仓库。
+- 方案中的长期事实进入 Canon：需求/任务状态、方案决策、接口约束、风险、评审结论、后续任务。
+- 生成方案后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-conops-<topic>.md`，把方案文档作为 absolute-path artifact ref。
+- 若由 `Tasking Orient` 调用，优先更新 `/media/yhr/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。
 
 ---
 
@@ -205,6 +215,7 @@ If a question can be answered by exploring the codebase, explore instead.
 - [ ] Code Navigation 表中每行都有文件路径 + 职责描述
 - [ ] 全文不超过 10 个"需要"、8 个"建议"、5 个"后续"
 - [ ] 文件已保存到 `.proposal/<conversation-id>/`（如果有 conversation id）
+- [ ] Canon update-card/task/decision/artifact refs 已记录，或明确说明本次只生成临时方案 artifact
 
 ---
 

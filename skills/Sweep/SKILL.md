@@ -33,6 +33,15 @@ The loop is split across two layers:
 State is persisted to `.agent-state/autoresearch-loop-state.yaml` so the
 loop survives conversation compaction and can be resumed after interruption.
 
+## Canon Output Boundary
+
+Read the shared contract: `/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`.
+
+- `.agent-state/autoresearch-loop-state.yaml` is runtime loop state only.
+- Durable results belong in Canon: benchmark baseline, kept/discarded hypotheses, best commit, crash incidents, artifact paths, and follow-up decisions.
+- At termination, create `/media/yhr/2T/Canon/raw/update-cards/<date>-sweep-<loop-id>.md` and update the relevant Canon task/project/pattern/incident pages.
+- Benchmark outputs, metrics JSON, build logs, and patches are referenced by absolute path; do not copy them into Canon by default.
+
 ## Triggering
 
 Trigger this skill when the user:
@@ -237,6 +246,7 @@ When the loop terminates:
 2. If the best result is on a non-baseline commit, remind the user to push
    or save that commit.
 3. Update the conversation recap to reflect the completed work.
+4. Promote durable results to Canon: create/update the sweep update card, artifact refs, benchmark decision, and incident/pattern pages when applicable.
 
 ## State Persistence
 

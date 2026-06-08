@@ -46,7 +46,7 @@ python scripts/generate_cheatsheet.py
 
 ## 输出位置
 
-默认: `~/.agents/skills/skills-cheatsheet.html`
+默认: `/media/yhr/2T/Canon/artifacts/generated/skills-cheatsheet.html`
 
 ## 脚本说明
 
@@ -62,3 +62,11 @@ python scripts/generate_cheatsheet.py --lang zh --no-open
 - `-lang, --lang`: 语言 (`zh` 或 `en`)
 - `-d, --skill-dir`: 追加额外的扫描目录，格式 `path:source`
 - `--no-open`: 生成后不自动打开浏览器
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- 默认输出是 Canon-owned generated artifact：`/media/yhr/2T/Canon/artifacts/generated/skills-cheatsheet.html`。
+- 这是可再生成的全局导航页，不属于单个项目仓库。
+- 每次刷新后，如技能清单变化会影响 workflow、migration 或 skill architecture decision，再创建 Canon update-card：`/media/yhr/2T/Canon/raw/update-cards/<date>-kneeboard-<topic>.md`。

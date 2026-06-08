@@ -17,6 +17,9 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Set, Tuple
 
 
+DEFAULT_OUTPUT_PATH = Path("/media/yhr/2T/Canon/artifacts/generated/skills-cheatsheet.html")
+
+
 @dataclass
 class SkillInfo:
     name: str
@@ -97,11 +100,11 @@ class SkillsScanner:
         'quieter': '降低视觉上过于激进或过度刺激的设计，在保持质量的同时减少强度。用于太大胆、太响亮、压倒性、激进、花哨或想要更平静、更精致的美学',
         'receiving-code-review': '在实现建议之前接收代码审查反馈时使用，特别是当反馈看起来不清楚或技术上值得怀疑时——需要技术严谨性和验证，而不是表演性同意或盲目实施',
         'requesting-code-review': '在完成任务、实施主要功能或合并之前验证工作是否符合要求时使用',
-        'restore-conversation': '当用户想要恢复以前的对话、在重置或清除后恢复上下文、从保存的笔记中恢复工作或从先前进度中找到下一步时使用。触发词："restore conversation"、"recover context"、"resume where we left off"',
+        'restore-conversation': 'DEPRECATED — use Reactivate for Canon task page based resume.',
         'retro': '每周工程回顾。分析提交历史、工作模式和代码质量指标，带有持久历史和趋势跟踪。团队感知：分解个人贡献，表扬和成长领域。用于"weekly retro"、"what did we ship"',
         'review': '着陆前 PR 审查。分析相对于基础分支的差异，检查 SQL 安全性、LLM 信任边界违规、条件副作用和其他结构问题。用于"review this PR"、"code review"、"pre-landing review"',
-        'save-conversation': '当用户想要保存当前对话、持久化工作上下文、存储进度或写下下一步以便以后恢复同一对话时使用。触发词："save conversation"、"save where we are"、"store context"',
-        'scaffold': '将仓库初始化为标准的 repo-local agent 系统布局。用于需要本地 AGENTS.md 索引、.agent-state/ 运行时状态和 .planning/conversations/ 规划约定的仓库',
+        'save-conversation': 'DEPRECATED — use Secure for Canon task page updates.',
+        'scaffold': 'DEPRECATED — AGENTS.md by convention, Canon for project pages.',
         'setup-browser-cookies': '从真实 Chromium 浏览器导入 cookies 到 headless browse 会话。打开交互式选择器 UI，选择要导入的 cookie 域。用于 QA 测试已认证页面之前',
         'setup-deploy': '为 /land-and-deploy 配置部署设置。检测你的部署平台（Fly.io、Render、Vercel、Netlify、Heroku、GitHub Actions、自定义）、生产 URL、健康检查端点和部署状态命令',
         'shape': '在编写代码之前规划功能的 UX 和 UI。运行结构化的发现访谈，然后生成指导实施的设计简报。在规划阶段使用以建立设计方向、约束和策略',
@@ -380,9 +383,9 @@ class CheatsheetGenerator:
                    'brand-guidelines': '品牌', 'animate': '动画', 'shape': '塑形'},
         'code': {'mcp-builder': 'MCP', 'webapp-testing': '测试', 'skill-creator': '技能',
                  'qa': 'QA', 'ship': 'SHIP', 'codex': 'CODEX', 'cso': 'CSO', 'fix-issue': 'FIX',
-                 'investigate': 'DEBUG', 'guard': 'GUARD', 'scaffold': 'SCAF'},
-        'comm': {'doc-coauthoring': '文档', 'internal-comms': '沟通', 'save-conversation': 'SAVE',
-                 'restore-conversation': 'RESTORE', 'office-hours': 'YC', 'onboard': 'ONB',
+                 'investigate': 'DEBUG', 'guard': 'GUARD', 'StandUp': 'SCAF'},
+        'comm': {'doc-coauthoring': '文档', 'internal-comms': '沟通', 'Secure': 'SAVE',
+                 'Reactivate': 'RESTORE', 'office-hours': 'YC', 'onboard': 'ONB',
                  'design-review': 'REV', 'plan-ceo-review': 'CEO', 'plan-eng-review': 'ENG',
                  'plan-design-review': 'DSGN'}
     }
@@ -414,12 +417,12 @@ class CheatsheetGenerator:
         'fix-issue': 'fix this、debug this、root cause',
         'investigate': 'debug this、fix this bug、root cause analysis',
         'cso': 'security audit、threat model、vulnerability scan',
-        'save-conversation': 'save conversation、store context、write recap',
-        'restore-conversation': 'restore conversation、recover context、resume',
+        'Secure': 'save conversation、store context、write recap',
+        'Reactivate': 'restore conversation、recover context、resume',
         'codex': 'codex review、codex challenge、ask codex',
         'browse': 'open in browser、test the site、take screenshot',
         'canary': 'monitor deploy、canary、post-deploy check',
-        'scaffold': 'setup AGENTS.md、initialize repo agent',
+        'StandUp': 'setup AGENTS.md、initialize repo agent',
         'guard': 'guard mode、full safety、maximum safety',
         'autoplan': 'auto review、autoplan、run all reviews',
         'audit': 'accessibility check、performance audit、technical quality',
@@ -934,7 +937,7 @@ def generate(
     生成 Skills 速查表（单 HTML 双视图：功能分类 + 发布商分组）
 
     Args:
-        output: 输出文件路径，默认 ~/.claude/skills/skills-cheatsheet.html
+        output: 输出文件路径，默认 /media/yhr/2T/Canon/artifacts/generated/skills-cheatsheet.html
         lang: 语言，'zh' 或 'en'
         skill_dirs: 额外的 skills 目录列表（格式 path:source）
         open_browser: 是否自动打开浏览器
@@ -942,7 +945,7 @@ def generate(
     Returns:
         生成的文件路径
     """
-    output_path = Path(output) if output else Path.home() / ".claude" / "skills" / "skills-cheatsheet.html"
+    output_path = Path(output) if output else DEFAULT_OUTPUT_PATH
 
     extra_dirs = []
     if skill_dirs:

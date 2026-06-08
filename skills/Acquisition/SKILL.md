@@ -26,7 +26,7 @@ user_invocable: true
   │     下载(yt-dlp) → 音频提取 → FunASR 转录 → 蒸馏 → queries/
   │
   ├─ 普通网页 URL (substack/medium/博客等) → 文章管线
-  │     抓取(trafilatura) → 图片提取 → 蒸馏 → queries/
+  │     抓取(trafilatura) → Cloudflare 被挡 → Jina Reader 回退 → 蒸馏 → queries/
   │
   ├─ PDF URL / 本地 .pdf → PDF 管线
   │     下载/读取 → pymupdf 提取文本 → 保存 raw/papers/ → 蒸馏 → queries/
@@ -103,6 +103,25 @@ python ~/.agents/skills/content-ingest/scripts/extract_article.py "URL" \
 提取正文中的图片到 `raw/articles/images/<slug>/`，过滤 logo/icon/avatar 等噪声。
 
 输出 JSON（含 title/author/date/body/platform/slug/images）。
+
+### Step A1-fallback: Jina Reader（Cloudflare 被挡时）
+
+当目标页面被 Cloudflare/反爬保护 → curl + trafilatura 失败或返回空 → 使用 Jina Reader 抓取：
+
+```bash
+curl -sL "https://r.jina.ai/<TARGET_URL>" --proxy http://127.0.0.1:7890 --connect-timeout 30 --max-time 60 | python3 -c "
+import sys, json
+data = sys.stdin.read()
+print(data)
+" > /tmp/jina_output.md
+```
+
+**适用场景**：platform.openai.com、docs.anthropic.com、及其他 Cloudflare 保护的文档页面。
+**不适用**：X/Twitter、需要登录的页面、JS 重度渲染的 SPA。
+
+> Jina Reader 需要代理访问（r.jina.ai 在国内网络被阻断）。
+> 返回格式为 Markdown，含标题层级、图片链接、表格。质量高于 trafilatura 的纯文本提取。
+> 抓取完成后保存为 `raw/articles/<slug>.md`，后续蒸馏流程不变。
 
 ### Step A2: 本地 Clippings
 
@@ -249,6 +268,7 @@ rating: {1-7}                             # 个人评分：7=改变人生，1=�
 |------|---------|
 | YouTube/Bilibili/X 视频 | `raw/assets/video/` + `raw/transcripts/` |
 | 网页文章 | `raw/articles/` |
+| 网页文章（Cloudflare 被挡，Jina Reader 抓取） | `raw/articles/` |
 | Clippings（浏览器剪藏） | `raw/clippings/`（处理前先复制归档） |
 | 本地 mp4/wav | `raw/transcripts/` |
 | PDF（远程/本地） | `raw/papers/` |
@@ -271,3 +291,11 @@ raw/ 是图书馆——永久留存，不因是否写了笔记而增删。query/
 - `scripts/transcribe_audio.py`：FunASR 转录
 - `scripts/extract_article.py`：文章正文提取 + 图片下载
 - `references/download-notes.md`：平台注意事项和排错
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- 旧内容 wiki `/media/yhr/2T/files/wiki` 仍是文章、视频、PDF、剪藏的内容库和 raw archive；不要把这些 raw assets 复制到 Canon。
+- 当摄入内容影响本地项目、流程、决策、事故或可复用模式时，创建 `/media/yhr/2T/Canon/raw/update-cards/<date>-acquisition-<slug>.md`，把 wiki 笔记和 raw 路径作为 artifact refs。
+- Canon 只保存跨项目长期结论、关联和 artifact refs；`queries/`、`raw/`、`concepts/` 继续由旧内容 wiki 管理。

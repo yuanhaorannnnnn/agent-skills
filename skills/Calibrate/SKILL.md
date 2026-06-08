@@ -26,6 +26,15 @@ Understand current behavior before changing it. Prefer one small, proven
 improvement with before/after numbers over a broad rewrite. Report-only by
 default — do not edit files until the user asks you to implement.
 
+## Canon Output Boundary
+
+Read the shared contract: `/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`.
+
+- Benchmark baselines, ranked hotspot reports, accepted changes, rejected changes, and final verification summaries are durable when they inform future work.
+- Create `/media/yhr/2T/Canon/raw/update-cards/<date>-calibrate-<project>.md` for non-trivial optimization runs.
+- Update Canon task/project pages with current performance state and next steps; use `patterns/` for reusable optimization techniques and `incidents/` for regressions or failed assumptions.
+- Raw benchmark logs and generated reports remain repo-local artifacts referenced by absolute path.
+
 ## Non-Negotiable Constraints
 
 - **Benchmark must exist.** The user provides a measurable benchmark command. If they don't have one, pause and help them create a minimal one before proceeding.
@@ -119,6 +128,7 @@ After all optimizations are applied or discarded:
 - Residual risk and follow-up recommendations.
 - Use the complexity-optimizer report template structure: Summary, Findings,
   Changes Made, Verification.
+- Promote durable findings to Canon update-card/task/project/pattern/incident pages when the run changes future context.
 
 ## Difference from autoresearch-loop
 

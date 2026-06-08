@@ -171,3 +171,10 @@ LLM 输出结构化 JSON,包含:
 执行任何模具前,先 Read `references/taste.md`,作为视觉质量底线贯穿全流程。
 
 核心:反 AI 生成痕迹 —— 禁假关系(没有信号的支撑不画边)、禁三等分对称、禁纯装饰性分组、禁编造 skill 功能。
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- PNG/HTML/ASCII topology outputs are artifacts. Record them in Canon only when they support a durable skill architecture decision or workflow explanation.
+- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-formation-<topic>.md`.
