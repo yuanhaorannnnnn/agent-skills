@@ -214,7 +214,7 @@ If a question can be answered by exploring the codebase, explore instead.
 - [ ] 风险表中有具体文件路径或参数名
 - [ ] Code Navigation 表中每行都有文件路径 + 职责描述
 - [ ] 全文不超过 10 个"需要"、8 个"建议"、5 个"后续"
-- [ ] 文件已保存到 `.proposal/<conversation-id>/`（如果有 conversation id）
+- [ ] 文件已保存到 `.proposal/<demand-id>/` 或 `.proposal/<task-slug>/`，不按 conversation id 建目录
 - [ ] Canon update-card/task/decision/artifact refs 已记录，或明确说明本次只生成临时方案 artifact
 
 ---

@@ -516,14 +516,14 @@ mcp__sequential-thinking__sequentialthinking:
 
 研究报告作为独立文档保存，使用 `.research/` 目录（与 `.planning/` 平级），避免与 Execute --plan 输出混淆。
 
-默认保存到当前仓库的 research 目录：
+默认保存到当前仓库的 research 目录，目录名使用 task slug 或 topic slug，不使用 conversation id：
 ```
-.research/<conversation>/<topic>-YYYYMMDD.md
+.research/<task-or-topic-slug>/<topic>-YYYYMMDD.md
 ```
 
-如果当前没有 conversation context，保存到：
+如果没有明确 task，使用 topic slug：
 ```
-.research/standalone/<topic>-YYYYMMDD.md
+.research/<topic-slug>/<topic>-YYYYMMDD.md
 ```
 
 ### 5.3 Canon promotion

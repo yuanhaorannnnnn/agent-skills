@@ -13,12 +13,12 @@ Do not delete local runtime scratchpads. Demote them from long-term source of tr
 
 ## Durable vs Runtime
 
-Runtime buffers are allowed for in-progress execution:
+Runtime buffers are allowed for in-progress execution, but new artifacts should be task/topic-driven rather than conversation-driven:
 
-- `.agent-state/conversations/<id>.md`
-- `.planning/conversations/<id>/...`
-- `.research/<conversation>/...`
-- `.proposal/<conversation>/...`
+- `.agent-state/conversations/<id>.md` — historical runtime recap only
+- `.planning/<task-or-workflow-slug>/...`
+- `.research/<task-or-topic-slug>/...`
+- `.proposal/<task-or-demand-slug>/...`
 - build logs, temporary reports, local state files
 
 Durable facts belong in Canon when they should survive beyond the current conversation:

@@ -124,7 +124,13 @@ Code that exists but has zero test coverage.
 [what to fix first]
 ```
 
-All three files go to `.planning/conversations/<id>/`.
+All three files go to the repo-local planning artifact directory for the task, not a conversation id:
+
+```text
+.planning/<task-or-workflow-slug>/document-dev-checklist.md
+.planning/<task-or-workflow-slug>/dev-test-coverage-checklist.md
+.planning/<task-or-workflow-slug>/align-summary.md
+```
 
 
 ## Workflow Gate Contract
@@ -149,9 +155,9 @@ It should run after implementation and Review Gate when a design doc, fix plan, 
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- `document-dev-checklist.md`、`dev-test-coverage-checklist.md`、`align-summary.md` 是 alignment artifacts，仍写入 `.planning/conversations/<id>/`。
+- `document-dev-checklist.md`、`dev-test-coverage-checklist.md`、`align-summary.md` 是 alignment artifacts，写入 `.planning/<task-or-workflow-slug>/`，不按 conversation id 建目录。
 - Critical gaps、missing tests、design decisions 和 residual risk 应同步到 Canon task/project/incident/update-card。
-- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-traceback-<conversation-id>.md`，引用三份 checklist 的绝对路径。
+- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-traceback-<task-or-workflow-slug>.md`，引用三份 checklist 的绝对路径。
 - 如果检查结果只是临时草稿，最终回复要说明未做 Canon promotion。
 
 ## Constraints
