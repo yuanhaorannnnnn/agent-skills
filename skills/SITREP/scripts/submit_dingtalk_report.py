@@ -14,7 +14,17 @@ import sys
 
 from anthropic import Anthropic
 
-TEMPLATE_NAME = "每周工作总结"
+TEMPLATE_NAME = "周报"
+
+# OASIS SIM 产品开发群成员。
+# dws report create 当前不会自动继承模板接收人，template detail 也不暴露 receiver IDs，
+# 所以提交脚本必须带默认接收人，避免手动补跑或 cron 环境漏 env 后接收人为空。
+DEFAULT_REPORT_RECEIVERS = (
+    "1629077236740667,12365829611219204,16677841294378345,"
+    "16630305268849065,17113372241822640,16454069611218832,"
+    "1642554671495110,16935374573524248,17119352041538685,"
+    "1753665012576918,16092186407543021,16455842823636252"
+)
 
 SYSTEM_PROMPT = """你是一个技术周报助手。根据 SITREP 自动采集的 coding agent 工作记录，生成一份简洁的钉钉周报。
 
@@ -38,6 +48,10 @@ def read_report(path: str) -> str:
 
 def extract_via_llm(md: str) -> dict:
     """用 LLM 从工作周报中提取钉钉周报三个字段。"""
+    if os.environ.get("SITREP_SKIP_LLM") == "1":
+        print("跳过 LLM 提取，使用基础提取")
+        return _basic_extract(md)
+
     # 截取报告主体（去掉过长内容，保护 token）
     overview = _section(md, "本周概览") or ""
     highlights = _section(md, "重点工作") or md
@@ -64,7 +78,7 @@ def extract_via_llm(md: str) -> dict:
     base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic")
     model = os.environ.get("ANTHROPIC_MODEL", "deepseek-v4-pro[1m]")
 
-    client = Anthropic(api_key=api_key, base_url=base_url)
+    client = Anthropic(api_key=api_key, base_url=base_url, timeout=60.0)
 
     try:
         resp = client.messages.create(
@@ -97,14 +111,35 @@ def _section(md: str, heading: str) -> str:
 
 
 def _basic_extract(md: str) -> dict:
-    """无 LLM 时的降级提取。"""
-    tasks = re.findall(r"###\s+\d+\.\d+\.\s+(.+?)\n", md)
-    done = [t for t in tasks if len(t) < 200][:20]
+    """无 LLM 时的降级提取。
+
+    Rendered weekly reports already carry user-confirmed task status. Split
+    completed items into this week's work and unfinished items into next week's
+    plan instead of emitting a placeholder.
+    """
+    tasks = _parse_report_tasks(md)
+    done = [t["title"] for t in tasks if t["status"] == "已完成"][:20]
+    next_plan = [t["title"] for t in tasks if t["status"] in {"进行中", "受阻"}][:10]
     return {
         "本周完成工作": "\n".join(f"{i}. {t}" for i, t in enumerate(done, 1)) if done else "（无记录）",
-        "下周工作计划": "（通过 SITREP 自动生成）",
+        "下周工作计划": "\n".join(f"{i}. {t}" for i, t in enumerate(next_plan, 1)) if next_plan else "暂无需延续事项。",
         "需协调与帮助": "",
     }
+
+
+def _parse_report_tasks(md: str) -> list[dict]:
+    blocks = re.split(r"(?=^###\s+\d+\.\d+\.\s+)", md, flags=re.MULTILINE)
+    tasks = []
+    for block in blocks:
+        title_match = re.search(r"^###\s+\d+\.\d+\.\s+(.+?)\s*$", block, re.MULTILINE)
+        if not title_match:
+            continue
+        status_match = re.search(r"\*\*状态\*\*:\s*([^|\n]+)", block)
+        title = title_match.group(1).strip()
+        status = status_match.group(1).strip() if status_match else ""
+        if title:
+            tasks.append({"title": title, "status": status})
+    return tasks
 
 
 def get_template_fields() -> tuple[str, list[dict]]:
@@ -161,11 +196,12 @@ def submit(template_id: str, contents_json: str, dry_run: bool) -> bool:
         "--contents", contents_json,
         "--format", "json",
     ]
-    receivers = os.environ.get("REPORT_RECEIVERS", "")
+    receivers = os.environ.get("REPORT_RECEIVERS_OVERRIDE") or DEFAULT_REPORT_RECEIVERS
     if receivers:
         cmd.extend(["--to-user-ids", receivers])
     if dry_run:
         print(f"\n[dry-run] 将执行: dws report create ...")
+        print(f"[dry-run] receivers: {len([r for r in receivers.split(',') if r.strip()])}")
         print(f"[dry-run] contents:")
         for item in json.loads(contents_json):
             if item["type"] == "1":

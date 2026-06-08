@@ -1,5 +1,6 @@
 """Cluster conversation events into tasks."""
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -80,10 +81,13 @@ def cluster_sessions(sessions: list[Session]) -> list[Task]:
         for seg_events in segments:
             all_segments.append((session, seg_events))
 
-    # Step 2: Group segments by save-conversation links
-    linked_groups = _group_by_save_conversation(all_segments)
+    # Step 2: Group segments by Canon task pages (priority)
+    canon_groups = _group_by_canon_tasks(all_segments)
 
-    # Step 3: Further group by time proximity and project
+    # Step 3: Group segments by save-conversation links
+    linked_groups = _group_by_save_conversation(canon_groups)
+
+    # Step 4: Further group by time proximity and project
     tasks = _merge_into_tasks(linked_groups)
 
     return tasks
@@ -138,19 +142,119 @@ def _split_session_into_segments(session: Session) -> list[list[Event]]:
     return segments
 
 
-def _group_by_save_conversation(
+def _group_by_canon_tasks(
     segments: list[tuple[Session, list[Event]]],
+) -> list[list[tuple[Session, list[Event]]]]:
+    """Group segments linked via Canon task pages.
+
+    Uses weighted scoring — not one-to-one mapping — to avoid merging
+    unrelated tasks that happen to share the same project or source.
+
+    Scoring weights:
+      - demand/bug ID exact match: 10
+      - branch name match in task content: 8
+      - task title keywords in branch/event content: 5
+      - project match: 2 (weak signal, insufficient alone)
+      - source match: 1 (very weak, 'user' matches everything)
+    """
+    canon_tasks = Path("/media/yhr/2T/Canon/tasks")
+    if not canon_tasks.exists():
+        return [[seg] for seg in segments]
+
+    # Build scored candidates for each segment
+    MIN_SCORE = 4  # project alone (2) is insufficient
+
+    segment_best: dict[int, tuple[str, int]] = {}  # seg_idx → (task_name, score)
+
+    for i, (session, seg_events) in enumerate(segments):
+        best_name = None
+        best_score = 0
+
+        for tf in canon_tasks.glob("*.md"):
+            content = tf.read_text(encoding="utf-8", errors="replace")
+            task_name = tf.stem
+            score = 0
+
+            # Exact ID match (demand/bug ID)
+            demand_match = re.match(r"(?:feature|bugfix|fix)/([\w-]+)", session.git_branch or "")
+            if demand_match:
+                if demand_match.group(1) == task_name:
+                    score += 10
+                elif demand_match.group(1) in content:
+                    score += 5
+
+            # Branch name appears in task content
+            if session.git_branch and session.git_branch in content:
+                score += 8
+
+            # Task title keywords in events
+            events_text = " ".join(
+                e.content[:200] for e in seg_events if e.content
+            )[:1000]
+            # Extract keywords from task name (kebab → words)
+            task_keywords = set(task_name.replace("-", " ").split())
+            for kw in task_keywords:
+                if len(kw) > 2 and kw.lower() in events_text.lower():
+                    score += 5
+                    break  # one keyword match is enough
+
+            # Project match (weak — same project ≠ same task)
+            frontmatter_project = ""
+            for line in content.split("\n"):
+                if line.startswith("project:"):
+                    frontmatter_project = line.split(":", 1)[1].strip()
+                    break
+            if session.project and frontmatter_project == session.project:
+                score += 2
+
+            # Source match (very weak — 'user' matches everything)
+            frontmatter_source = ""
+            for line in content.split("\n"):
+                if line.startswith("source:"):
+                    frontmatter_source = line.split(":", 1)[1].strip()
+                    break
+            if frontmatter_source and frontmatter_source != "user" and frontmatter_source in (session.project or ""):
+                score += 1
+
+            if score > best_score:
+                best_score = score
+                best_name = task_name
+
+        if best_score >= MIN_SCORE and best_name:
+            segment_best[i] = (best_name, best_score)
+
+    # Group by matched task name
+    groups: dict[str, list[tuple[Session, list[Event]]]] = {}
+    ungrouped: list[tuple[Session, list[Event]]] = []
+    for i, seg in enumerate(segments):
+        match = segment_best.get(i)
+        if match:
+            task_name = match[0]
+            if task_name not in groups:
+                groups[task_name] = []
+            groups[task_name].append(seg)
+        else:
+            ungrouped.append(seg)
+
+    result = list(groups.values())
+    result.extend([[seg] for seg in ungrouped])
+    return result
+
+
+def _group_by_save_conversation(
+    groups: list[list[tuple[Session, list[Event]]]],
 ) -> list[list[tuple[Session, list[Event]]]]:
     """Group segments that are linked via save-conversation.
 
     Check .agent-state/conversations/<name>.md for conversation links.
+    Accepts pre-grouped segments from _group_by_canon_tasks and further
+    merges groups linked by the same conversation name.
     """
+    # Flatten pre-groups into individual segments for conversation matching
     agent_state_dir = Path(".agent-state")
     if not agent_state_dir.exists():
-        # Try to find from any session's cwd
-        return [[seg] for seg in segments]
+        return groups
 
-    # Load all save-conversation summaries
     conv_dir = agent_state_dir / "conversations"
     conversation_names: dict[str, str] = {}  # session_id -> conversation_name
 
@@ -158,27 +262,32 @@ def _group_by_save_conversation(
         for md_file in conv_dir.glob("*.md"):
             name = md_file.stem
             content = md_file.read_text(encoding="utf-8", errors="replace")
-            # Extract session IDs from the content
-            # Look for patterns like session IDs in the text
-            for session, _ in segments:
-                if session.session_id in content:
-                    conversation_names[session.session_id] = name
+            for group in groups:
+                for session, _ in group:
+                    if session.session_id in content:
+                        conversation_names[session.session_id] = name
 
-    # Group segments by conversation name
-    groups: dict[str, list[tuple[Session, list[Event]]]] = {}
-    ungrouped: list[tuple[Session, list[Event]]] = []
+    # Group pre-groups by conversation name
+    conv_groups: dict[str, list[tuple[Session, list[Event]]]] = {}
+    ungrouped: list[list[tuple[Session, list[Event]]]] = []
 
-    for session, seg_events in segments:
-        conv_name = conversation_names.get(session.session_id)
+    for group in groups:
+        # Find the conversation name for this group via any session
+        conv_name = None
+        for session, _ in group:
+            conv_name = conversation_names.get(session.session_id)
+            if conv_name:
+                break
+
         if conv_name:
-            if conv_name not in groups:
-                groups[conv_name] = []
-            groups[conv_name].append((session, seg_events))
+            if conv_name not in conv_groups:
+                conv_groups[conv_name] = []
+            conv_groups[conv_name].extend(group)
         else:
-            ungrouped.append((session, seg_events))
+            ungrouped.append(group)
 
-    result = list(groups.values())
-    result.extend([[seg] for seg in ungrouped])
+    result = list(conv_groups.values())
+    result.extend(ungrouped)
     return result
 
 

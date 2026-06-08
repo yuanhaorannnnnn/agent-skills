@@ -21,12 +21,31 @@ from common_wr import get_report_dir
 
 
 def find_checklist_meta(since, until) -> dict:
-    """查找本周的 checklist 元数据文件。"""
+    """查找同一 week_start 内最新的 checklist 元数据文件。"""
     meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
-    meta_path = meta_dir / f"checklist-{until.strftime('%Y-%m-%d')}.json"
-    if meta_path.exists():
-        return json.loads(meta_path.read_text())
-    return None
+    if not meta_dir.exists():
+        return None
+
+    target_start = since.date()
+    candidates = []
+    for meta_path in meta_dir.glob("checklist-*.json"):
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            week_start = datetime.fromisoformat(meta.get("week_start", meta.get("since", ""))).date()
+            week_end_raw = meta.get("week_end", meta.get("until", ""))
+            week_end = datetime.fromisoformat(week_end_raw) if week_end_raw else datetime.fromtimestamp(meta_path.stat().st_mtime)
+        except Exception as exc:
+            print(f"跳过无效 checklist 元数据 {meta_path.name}: {exc}")
+            continue
+        if week_start == target_start:
+            candidates.append((week_end, meta_path.stat().st_mtime, meta_path, meta))
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    _, _, meta_path, meta = candidates[0]
+    print(f"使用本工作周最新 checklist: {meta_path.name}")
+    return meta
 
 
 def fetch_checklist_md(node_id: str) -> str:
@@ -60,6 +79,8 @@ def parse_checklist(md: str) -> dict:
         if m:
             checked = m.group(1) == "x"
             title = m.group(2).strip()
+            if "发送" in title and "周报" in title:
+                continue
             tasks.append({
                 "title": title,
                 "user_status": "completed" if checked else "in_progress",
@@ -92,16 +113,37 @@ def match_task_by_title(checklist_task: dict, report_tasks: list) -> object:
 
 
 def apply_overrides(tasks: list, checklist_data: dict):
-    """将用户确认的状态覆盖到 Task 对象。"""
+    """Use the confirmed checklist as the final task set.
+
+    Session tasks are evidence only. Anything not present in the confirmed
+    checklist must not leak into the final weekly report.
+    """
+    from task_clustering import Task
+
     ctasks = checklist_data["tasks"]
+    final_tasks = []
     applied = 0
+    added = 0
     for ct in ctasks:
         matched = match_task_by_title(ct, tasks)
         if matched:
             matched.status = ct["user_status"]
+            matched.title = ct["title"]
+            matched.task_description = ct["title"]
+            final_tasks.append(matched)
             applied += 1
-    print(f"状态覆盖: {applied}/{len(ctasks)} 项匹配")
-    return tasks
+        else:
+            final_tasks.append(Task(
+                task_id=f"checklist-{added + 1}",
+                title=ct["title"],
+                task_description=ct["title"],
+                status=ct["user_status"],
+                project="checklist",
+            ))
+            added += 1
+    dropped = max(len(tasks) - applied, 0)
+    print(f"状态覆盖: {applied}/{len(ctasks)} 项匹配, {added} 项按 checklist 新增, {dropped} 项 session-only 已丢弃")
+    return final_tasks
 
 
 def generate_and_submit(tasks, since, until, should_send: bool, dry_run: bool):
@@ -133,32 +175,38 @@ def generate_and_submit(tasks, since, until, should_send: bool, dry_run: bool):
         if r.returncode == 0:
             print("钉钉周报提交成功 ✓")
         else:
-            print(f"提交失败: {r.stderr}")
+            print(f"提交失败: {r.stderr or r.stdout}")
+            raise SystemExit(r.returncode)
     else:
         print("submit_dingtalk_report.py 不存在，无法提交")
+        raise SystemExit(1)
 
 
 def main():
     dry_run = "--dry-run" in sys.argv
+    skip_llm = "--no-llm" in sys.argv or os.environ.get("SITREP_SKIP_LLM") == "1"
     print(f"[sunday_finalize] {datetime.now():%Y-%m-%d %H:%M:%S}")
 
-    # 1. 确定本周范围
-    now = datetime.now()
-    since = now - timedelta(days=now.weekday())
-    since = since.replace(hour=0, minute=0, second=0, microsecond=0)
-    until = since + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    # 1. 确定周范围，支持补发指定周期: --since YYYY-MM-DD --until YYYY-MM-DD
+    args = sys.argv[1:]
+    since_arg = None
+    until_arg = None
+    for i, arg in enumerate(args):
+        if arg == "--since" and i + 1 < len(args):
+            since_arg = args[i + 1]
+        if arg == "--until" and i + 1 < len(args):
+            until_arg = args[i + 1]
 
-    # 或用上周五生成的日期
+    if since_arg and until_arg:
+        since = datetime.strptime(since_arg, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0)
+        until = datetime.strptime(until_arg, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=999999)
+    else:
+        now = datetime.now()
+        since = now - timedelta(days=now.weekday())
+        since = since.replace(hour=0, minute=0, second=0, microsecond=0)
+        until = since + timedelta(days=6, hours=23, minutes=59, seconds=59)
+
     meta = find_checklist_meta(since, until)
-    if not meta:
-        # 从未找到有效checklist中找手动覆盖的 find
-        meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
-        metas = sorted(meta_dir.glob("checklist-*.json")) if meta_dir.exists() else []
-        if metas:
-            meta = json.loads(metas[-1].read_text())
-            print(f"使用最近 checklist: {metas[-1].name}")
-            since = datetime.fromisoformat(meta.get("week_start", meta.get("since", since.isoformat())))
-            until = datetime.fromisoformat(meta.get("week_end", meta.get("until", until.isoformat())))
 
     if not meta:
         print("无 checklist 元数据，跳过")
@@ -200,9 +248,12 @@ def main():
         print("无 session 数据")
         return
     tasks = cluster_sessions(sessions)
-    llm_ok, _ = _check_llm_availability()
-    if llm_ok:
-        tasks = build_stars_for_tasks(tasks, use_cache=True, quiet=True)
+    if skip_llm:
+        print("跳过 LLM STAR 提取，使用基础状态")
+    else:
+        llm_ok, _ = _check_llm_availability()
+        if llm_ok:
+            tasks = build_stars_for_tasks(tasks, use_cache=True, quiet=True)
 
     # 6. 覆盖用户确认状态
     tasks = apply_overrides(tasks, checklist_data)

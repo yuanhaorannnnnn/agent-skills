@@ -1,1 +1,0 @@
-/home/yhr/.claude/skills/SITREP/scripts/friday_review.sh

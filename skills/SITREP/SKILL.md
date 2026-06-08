@@ -28,35 +28,35 @@ description: |
 
 ```bash
 # 生成本周周报（默认：过去7天）
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly
 
 # 生成本月月报（默认：过去30天）
-python3 ~/.agents/skills/.scripts/generate_work_report.py monthly
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py monthly
 
 # 指定日期范围
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --since 2026-04-01 --until 2026-04-07
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --since 2026-04-01 --until 2026-04-07
 
 # 只采集特定 agent
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --agent claude
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --agent claude
 
 # 只输出特定项目
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --project "test"
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --project "test"
 
 # 按主题过滤（主题别名在 ~/.agents/work-reports/topics.yaml 中定义）
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --topic 仿真
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --topic 工作
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --topic 仿真
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --topic 工作
 
 # 列出可用主题
-python3 ~/.agents/skills/.scripts/generate_work_report.py --list-topics
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py --list-topics
 
 # 指定输出路径
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --output ~/reports/week-12.md
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --output ~/reports/week-12.md
 
 # 禁用 LLM 缓存（强制重新提取 STAR）
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --no-cache
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --no-cache
 
 # 自动模式（无交互、日志到文件、适合 cron）
-python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --auto
+python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --auto
 ```
 
 ### 定时自动触发（cron）
@@ -65,13 +65,13 @@ python3 ~/.agents/skills/.scripts/generate_work_report.py weekly --auto
 
 ```bash
 # 1. 确保 cron wrapper 可执行
-chmod +x ~/.agents/skills/.scripts/cron_wrapper.sh
+chmod +x ~/.agents/skills/SITREP/scripts/cron_wrapper.sh
 
 # 2. 编辑 crontab
 crontab -e
 
 # 3. 添加以下行（将 ANTHROPIC_API_KEY 替换为你的实际 key）
-0 23 * * 0 ANTHROPIC_API_KEY=sk-ant-xxxxx ~/.agents/skills/.scripts/cron_wrapper.sh
+0 23 * * 0 ANTHROPIC_API_KEY=sk-ant-xxxxx ~/.agents/skills/SITREP/scripts/cron_wrapper.sh
 ```
 
 **依赖**：
@@ -98,6 +98,35 @@ crontab -e
 ## 输出
 
 报告默认保存到 `~/.agents/work-reports/YYYY-MM/weekly-YYYY-MM-DD.md`
+
+
+## Workflow Gate Contract
+
+SITREP report/checklist automation follows the shared workflow output contract:
+
+```text
+/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+```
+
+Friday checklist and Sunday final report are external handoff artifacts. The confirmed checklist is the final task source for weekly submission; sessions are evidence only unless Canon has no work tasks.
+
+## Gotchas
+
+- Canon task inclusion in normal work reports is strict: `report_scope: work AND weekly: true`. `weekly: true` without `report_scope: work` must not enter the checklist.
+- Sunday finalization must use the confirmed checklist as the final task list. Do not leak session-only tasks into the submitted report.
+- `dws report create` does not inherit template receivers. `submit_dingtalk_report.py` must carry the default receiver IDs or an explicit `REPORT_RECEIVERS_OVERRIDE`.
+- Use template `周报` for title `袁浩然的周报`; template `每周工作总结` produces the wrong report title.
+- In no-LLM mode, never emit placeholder text like `（通过 SITREP 自动生成）`; split completed vs in-progress tasks from rendered report status.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `~/.agents/work-reports/` 中的周报/月报是生成报告 artifact，不是跨项目长期 source of truth。
+- agent session JSONL、save-conversation 摘要和 Yunxiao `state.json` 是采集源；报告中确认的长期事实应提升到 Canon project/task/pattern/incident 页面。
+- 每次生成有价值的周报/月报后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-sitrep-<period>.md`，记录报告路径、时间范围、覆盖项目、关键任务和后续动作。
+- Canon `artifacts/artifact-index.md` 只引用报告绝对路径或钉钉提交 URL，不复制报告。
+
 
 报告采用扁平任务列表，不按项目强行分组。项目名、agent、耗时和状态作为任务元信息展示，正文尽量用自然中文说明“为什么做、做了什么、结果如何”。
 
@@ -153,7 +182,8 @@ crontab -e
 ### 3. STAR 提取
 
 按优先级选择数据来源：
-1. **Save-conversation 摘要**（`~/.agent-state/conversations/*.md`）— 人工编辑过的最高质量摘要
+1. **Canon task pages**（`/media/yhr/2T/Canon/tasks/*.md`）— 结构化的任务进展和决策摘要，优先作为 STAR 来源
+2. **Save-conversation 摘要**（`~/.agent-state/conversations/*.md`）— 历史 runtime recap，作为补充证据
 2. **LLM 提取** — 将 conversation 文本传给 Claude，按 STAR 原则结构化
 
 LLM prompt 要求：
@@ -199,6 +229,12 @@ skills/work-report/
 - 数据采集：本地文件读取，秒级完成
 - STAR 提取：首次需 LLM API 调用（~1-2s/任务），缓存后秒级
 - 100 个任务的全流程约 2-3 分钟（含 LLM）
+
+## Canon promotion checklist
+
+- [ ] 报告路径已作为 artifact ref 记录
+- [ ] 关键任务状态已同步到对应 Canon task/project 页面，或明确说明本次只生成临时报表
+- [ ] 可复用流程/风险已写入 Canon pattern/incident/update-card
 
 ## 已知限制
 

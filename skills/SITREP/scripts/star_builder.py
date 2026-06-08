@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -72,12 +73,113 @@ Guidelines:
 Output ONLY the JSON object, no markdown formatting, no explanation."""
 
 
+def _load_canon_task_for_sessions(sessions) -> Optional[dict]:
+    """Load STAR-relevant fields from the best-matching Canon task page.
+
+    Collects all candidates, scores them, picks the highest above threshold.
+    Does NOT return the first match with score > 0.
+    """
+    canon_tasks = Path("/media/yhr/2T/Canon/tasks")
+    if not canon_tasks.exists():
+        return None
+
+    projects = {s.project for s in sessions if s.project}
+    branches = {s.git_branch for s in sessions if s.git_branch}
+
+    candidates: list[tuple[int, str]] = []  # (score, content)
+    for tf in canon_tasks.glob("*.md"):
+        content = tf.read_text(encoding="utf-8", errors="replace")
+        score = 0
+        # Exact branch/ID match in filename
+        for branch in branches:
+            if branch:
+                # Try demand/bug ID extraction first (feature/JHBN-123 → JHBN-123)
+                id_match = re.match(r"(?:feature|bugfix|fix)/([\w-]+)", branch)
+                if id_match:
+                    if id_match.group(1) == tf.stem:
+                        score += 10
+                    elif id_match.group(1) in content:
+                        score += 5
+                # Then sanitized branch name fallback
+                safe = re.sub(r"[^A-Za-z0-9_.-]+", "-", branch).strip("-")
+                if safe in tf.stem:
+                    score += 8
+        # Project match in content
+        for proj in projects:
+            if proj and proj in content:
+                score += 2
+        # Branch match in content
+        for branch in branches:
+            if branch and branch in content:
+                score += 3
+        if score > 0:
+            candidates.append((score, content))
+
+    if not candidates:
+        return None
+
+    # Sort by score descending, pick best above threshold
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    best_score, best_content = candidates[0]
+    if best_score >= 4:  # project alone (2) insufficient
+        return _parse_canon_task_for_star(best_content)
+    return None
+
+
+def _parse_canon_task_for_star(content: str) -> dict:
+    """Extract STAR-relevant fields from a Canon task page."""
+    result = {
+        "summary": "",
+        "objective": "",
+        "key_decisions": "",
+        "pending_followups": "",
+        "known_issues": "",
+    }
+    sections = {
+        "## Current State": "summary",
+        "## Goal": "objective",
+        "## Key Decisions": "key_decisions",
+        "## Next Step": "pending_followups",
+    }
+    current_key = None
+    buffer: list[str] = []
+
+    for line in content.split("\n"):
+        stripped = line.strip()
+        matched = False
+        for header, key in sections.items():
+            if stripped.startswith(header):
+                if current_key and buffer:
+                    result[current_key] = "\n".join(buffer).strip()
+                    buffer = []
+                current_key = key
+                matched = True
+                break
+        if matched:
+            continue
+        if current_key:
+            buffer.append(line)
+
+    if current_key and buffer:
+        result[current_key] = "\n".join(buffer).strip()
+
+    return result
+
+
 def build_star_for_task(task: Task, use_cache: bool = True) -> Task:
     """Enrich a Task with STAR fields using LLM.
 
     If use_cache is True, cached results are used when available.
     """
-    # Priority 1: Use save-conversation summary if available
+    # Priority 1: Canon task page (durable task state)
+    canon_task = _load_canon_task_for_sessions(task.sessions)
+    if canon_task and canon_task.get("summary"):
+        _apply_save_conversation(task, canon_task)
+        if not task.actions or not task.result:
+            _llm_enrich(task, use_cache=use_cache)
+        return task
+
+    # Priority 2: Save-conversation summary (historical runtime recap)
     save_conv = None
     for session in task.sessions:
         save_conv = load_save_conversation_summary(session.session_id)
@@ -86,12 +188,11 @@ def build_star_for_task(task: Task, use_cache: bool = True) -> Task:
 
     if save_conv and save_conv.get("summary"):
         _apply_save_conversation(task, save_conv)
-        # Still use LLM for actions/result if not detailed enough
         if not task.actions or not task.result:
             _llm_enrich(task, use_cache=use_cache)
         return task
 
-    # Priority 2: Use LLM for full STAR extraction
+    # Priority 3: LLM extraction from raw conversation
     _llm_enrich(task, use_cache=use_cache)
     return task
 

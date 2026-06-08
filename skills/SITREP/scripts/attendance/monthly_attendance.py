@@ -6,6 +6,7 @@
 
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -86,49 +87,131 @@ def count_working_days(year: int, month: int) -> int:
     return count
 
 
-def count_leave_days(year: int, month: int) -> int:
-    """从 OA 审批获取当月请假天数。"""
+def _json_loads_checked(stdout: str, context: str) -> dict:
+    try:
+        return json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{context} 返回非 JSON: {exc}") from exc
+
+
+def _approval_instances_page(process_code: str, start: str, end: str, next_token: int) -> tuple[list[dict], int | None]:
+    r = subprocess.run([
+        "dws", "oa", "approval", "list-initiated",
+        "--process-code", process_code,
+        "--start", start, "--end", end,
+        "--max-results", "20", "--next-token", str(next_token), "--format", "json",
+    ], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"查询请假审批失败: {r.stderr or r.stdout}")
+
+    data = _json_loads_checked(r.stdout, "查询请假审批")
+    result = data.get("result", {})
+    instances = result.get("processInstanceList", []) or result.get("list", []) or []
+    token = result.get("nextToken", result.get("next_token"))
+    try:
+        token = int(token) if token not in (None, "", 0, "0") else None
+    except (TypeError, ValueError):
+        token = None
+    return instances, token
+
+
+def _approval_detail(instance_id: str) -> dict:
+    r = subprocess.run([
+        "dws", "oa", "approval", "detail",
+        "--instance-id", instance_id,
+        "--format", "json",
+    ], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"读取请假审批详情失败 {instance_id}: {r.stderr or r.stdout}")
+    return _json_loads_checked(r.stdout, f"请假审批详情 {instance_id}")
+
+
+def _numbers_from_value(value) -> list[float]:
+    if value is None:
+        return []
+    if isinstance(value, (int, float)):
+        return [float(value)]
+    text = str(value)
+    results = []
+    for m in re.finditer(r"(\d+(?:\.\d+)?)\s*天", text):
+        results.append(float(m.group(1)))
+    if results:
+        return results
+    if re.fullmatch(r"\s*\d+(?:\.\d+)?\s*", text):
+        return [float(text)]
+    return []
+
+
+def _extract_leave_days_from_detail(detail: dict, instance_id: str) -> float:
+    """Extract leave duration from approval detail; fail if ambiguous."""
+    candidates: list[float] = []
+    keywords = ("请假天数", "请假时长", "休假天数", "休假时长", "天数", "时长", "duration", "days")
+
+    def walk(obj, context: str = ""):
+        if isinstance(obj, dict):
+            names = []
+            for key in ("name", "label", "title", "componentName", "bizAlias", "id", "key"):
+                if obj.get(key) is not None:
+                    names.append(str(obj.get(key)))
+            local_context = " ".join([context, *names])
+            for key in ("value", "extValue", "text", "content"):
+                if key in obj and any(k.lower() in local_context.lower() for k in keywords):
+                    candidates.extend(_numbers_from_value(obj.get(key)))
+            for k, v in obj.items():
+                walk(v, f"{local_context} {k}")
+        elif isinstance(obj, list):
+            for item in obj:
+                walk(item, context)
+
+    walk(detail)
+    positive = [v for v in candidates if v > 0]
+    if not positive:
+        raise RuntimeError(f"无法从请假审批详情解析请假天数: {instance_id}")
+    # If several fields repeat the same duration, use the max to avoid double counting duplicates.
+    return max(positive)
+
+
+def count_leave_days(year: int, month: int) -> float:
+    """从 OA 审批获取当月请假天数。失败时抛错，避免把未知当 0。"""
     start = f"{year}-{month:02d}-01T00:00:00+08:00"
     if month == 12:
         end = f"{year+1}-01-01T00:00:00+08:00"
     else:
         end = f"{year}-{month+1:02d}-01T00:00:00+08:00"
 
-    r = subprocess.run([
-        "dws", "oa", "approval", "list-initiated",
-        "--process-code", "PROC-69CDA25A-3952-47AA-AD0C-746BCF066B92",
-        "--start", start, "--end", end,
-        "--max-results", "20", "--format", "json",
-    ], capture_output=True, text=True)
-    if r.returncode != 0:
-        return 0
+    process_code = "PROC-69CDA25A-3952-47AA-AD0C-746BCF066B92"
+    next_token = 0
+    instances: list[dict] = []
+    while True:
+        page, next_token_or_none = _approval_instances_page(process_code, start, end, next_token)
+        instances.extend(page)
+        if next_token_or_none is None:
+            break
+        next_token = next_token_or_none
 
-    try:
-        data = json.loads(r.stdout)
-    except json.JSONDecodeError:
-        return 0
-
-    instances = data.get("result", {}).get("processInstanceList", [])
-    leave_days = 0
+    leave_days = 0.0
     for inst in instances:
-        if inst.get("processInstanceStatus") in ("COMPLETED", "AGREE"):
-            # 审批通过才算请假
-            # OA 内部字段可能是 duration 或 form value，具体看返回
-            title = inst.get("processInstanceTitle", "")
-            # 简单估算：每条通过的请假算 1 天（精确值需读 detail 表单里的 days 字段）
-            leave_days += 1
+        if inst.get("processInstanceStatus") not in ("COMPLETED", "AGREE"):
+            continue
+        instance_id = inst.get("processInstanceId") or inst.get("process_instance_id") or inst.get("id")
+        if not instance_id:
+            raise RuntimeError(f"请假审批缺少 instance id: {inst}")
+        detail = _approval_detail(instance_id)
+        leave_days += _extract_leave_days_from_detail(detail, instance_id)
     return leave_days
 
 
 def send_message(text: str):
     """给自己发钉钉消息。"""
-    subprocess.run([
+    r = subprocess.run([
         "dws", "chat", "message", "send",
         "--user", MY_USER_ID,
         "--title", f"月出勤统计",
         "--text", text,
         "--format", "json",
     ], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"发送出勤统计失败: {r.stderr or r.stdout}")
 
 
 def parse_month() -> tuple[int, int]:
@@ -163,8 +246,8 @@ def main():
     msg = (
         f"## {MY_NAME} {month}月出勤统计\n\n"
         f"- 应出勤：**{total}** 天（工作日 - 法定假 + 调休补班）\n"
-        f"- 请假：**{leave}** 天\n"
-        f"- 实际出勤：**{actual}** 天"
+        f"- 请假：**{leave:g}** 天\n"
+        f"- 实际出勤：**{actual:g}** 天"
     )
 
     print(msg)

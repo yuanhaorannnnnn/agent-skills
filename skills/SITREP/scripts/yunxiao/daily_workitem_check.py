@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """每天 10:00 检查云效待办工作项（仅通知新增），发钉钉消息。"""
 
-import json, subprocess, sys, urllib.request
+import json, os, subprocess, sys, urllib.request
 from datetime import datetime
 from pathlib import Path
 
 API_BASE = "https://openapi-rdc.aliyuncs.com"
-TOKEN = "pt-yaK0iLa8SZasNlLZ6pYSCZBZ_48cb5651-11a3-4df6-b5a0-80dcb5c033f4"
 MY_USER_ID = "16455842823636252"
 YUNXIAO_USER = "623ae63b5330d45819d7c8e7"
 ORG_ID = "5f3f374f6207a1a8b17f933f"
@@ -18,18 +17,24 @@ ACTIVE_PROJECTS = [
 ]
 
 
+def yunxiao_token():
+    token = os.environ.get("YUNXIAO_ACCESS_TOKEN")
+    if not token:
+        raise RuntimeError("YUNXIAO_ACCESS_TOKEN is required")
+    return token
+
+
 def api_call(path, body):
     url = f"{API_BASE}{path}"
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST")
     req.add_header("Content-Type", "application/json")
-    req.add_header("x-yunxiao-token", TOKEN)
+    req.add_header("x-yunxiao-token", yunxiao_token())
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read())
     except Exception as e:
-        print(f"API error: {e}")
-        return {}
+        raise RuntimeError(f"Yunxiao API failed: {path}") from e
 
 
 def search_workitems(space_id):

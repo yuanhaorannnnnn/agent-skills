@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-WORK_REPORT_SCRIPTS = REPO_ROOT / "skills" / "work-report" / "scripts"
+WORK_REPORT_SCRIPTS = REPO_ROOT / "skills" / "SITREP" / "scripts"
 sys.path.insert(0, str(WORK_REPORT_SCRIPTS))
 
 from report_renderer import render_weekly_report  # noqa: E402
