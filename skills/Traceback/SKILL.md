@@ -4,7 +4,7 @@ description: |
   Three-way artifact alignment check: design document → implementation code →
   test coverage. Finds gaps where the design says X but the code doesn't do X,
   or the code does Y but no test covers it. Outputs structured checklists to
-  `.planning/conversations/<id>/`.
+  the Canon task page (§ Findings or dedicated traceback section).
 
   Use this skill whenever the user wants to verify that design, implementation,
   and tests are consistent — at phase completion, before merge, or during review.
@@ -27,16 +27,15 @@ a match to make things look consistent.
 
 ## Input
 
-Resolve the conversation id to find relevant design documents:
-1. Explicit `--conversation <name>` → read `.planning/conversations/<id>/`
-2. Read `.agent-state/ACTIVE_CONVERSATION` if no explicit id
-3. Fall back to scanning recent planning directories
+Resolve the design document via Canon task page:
 
-From the planning context, identify:
-- The **design document(s)** — any `.md` in the conversation directory or
-  referenced from task_plan.md
-- The **implementation directory** — inferred from project structure and
-  conversation context
+1. **Canon task page** — read `/media/yhr/2T/Canon/tasks/<task>.md` § Artifacts for `design_doc_path`
+2. **Project + branch → task page** — use task page resolution logic (matching Secure) to find the relevant task page
+3. **Explicit path** — user provides design document path directly
+
+From the design document and task context, identify:
+- The **design document(s)** — referenced in task page § Artifacts or provided explicitly
+- The **implementation directory** — inferred from project structure and task context
 - The **test directory** — same inference
 
 If no design document is found, ask the user to specify one.
@@ -127,6 +126,34 @@ Code that exists but has zero test coverage.
 
 All three files go to `.planning/conversations/<id>/`.
 
+
+## Workflow Gate Contract
+
+Traceback is the design/code/test alignment gate and follows the shared workflow output contract:
+
+```text
+/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+```
+
+It should run after implementation and Review Gate when a design doc, fix plan, or acceptance checklist exists. Its output is evidence for Sanitize, Turnover, Closeout, or explicit residual-risk handoff.
+
+## Gotchas
+
+- Do not invent requirements from code. Requirements come from the design/fix plan/user-approved checklist.
+- Do not claim test coverage from file proximity or naming alone. Coverage requires a test that calls the symbol, asserts the behavior, or exercises the scenario.
+- `Design -> Dev` passing does not imply `Dev -> Test` passing. Report both stages separately.
+- Keep checklist IDs stable across reruns; updating existing artifacts is better than regenerating incompatible IDs.
+- Critical gaps must be written to Canon, not left only in `.planning/` files.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `document-dev-checklist.md`、`dev-test-coverage-checklist.md`、`align-summary.md` 是 alignment artifacts，仍写入 `.planning/conversations/<id>/`。
+- Critical gaps、missing tests、design decisions 和 residual risk 应同步到 Canon task/project/incident/update-card。
+- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-traceback-<conversation-id>.md`，引用三份 checklist 的绝对路径。
+- 如果检查结果只是临时草稿，最终回复要说明未做 Canon promotion。
+
 ## Constraints
 
 - Work from actual files, not assumptions. If you can't find a match, say so.
@@ -135,3 +162,4 @@ All three files go to `.planning/conversations/<id>/`.
 - If a previous checklist exists, update it in place rather than overwriting.
 - Don't invent requirements that aren't in the design document.
 - Don't claim test coverage unless you've found actual test code.
+- Do not present `.planning/` checklist files as long-term source of truth; Canon owns durable gap and decision state.

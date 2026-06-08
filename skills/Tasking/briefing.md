@@ -4,6 +4,7 @@
 
 1. 确认 CONOPS 方案文档已生成（`state.json` 中 `design_doc_path` 非空）
 2. 确认需求关联人员名单已就绪（`state.json` 中 `participants` + `cc`）
+3. 确认 `participants` + `cc` 已能解析为 dws calendar 需要的 `userId`；姓名解析不唯一时停止确认，不创建日程
 
 ## 执行
 
@@ -18,13 +19,18 @@
 
 用 yunxiao MCP 在需求单评论区发布方案文档链接。
 
-### Step 3: 获取人员名单
+### Step 3: 解析评审人员 userId
 
-从 `state.json` 读取 `participants` + `cc` 合并为完整名单。
+从 `state.json` 读取 `participants` + `cc`，合并去重为完整名单。
+
+- 如果条目已经是 dws `userId`，直接保留。
+- 如果条目是姓名，用 `dws contact user search --query "<name>" --format json` 查询并提取 `userId`。
+- 如果某个姓名查不到或返回多个候选，停止并向用户列出该姓名的候选项；不要猜测，也不要创建日程。
+- 解析成功后，把 `participant_user_ids` 写入 `state.json`，后续日历命令只使用这些 userId。
 
 ### Step 4: 查找空闲时段
 
-对名单中每个人调用 dws calendar busy。
+优先用 `dws calendar event suggest --users <userId1,userId2> --format json` 查询候选时段；如果当前环境不支持 suggest，再用 `dws calendar busy search --users <userId1,userId2> --format json` 读取原始忙闲数据。
 
 在 **14:00-17:00** 时间窗口内，从今天开始逐日查找：
 - 窗口: 14:00-17:00
@@ -41,7 +47,7 @@
 找到空槽后，用 dws calendar event create 创建会议：
 - 标题: `[方案评审] <需求标题>`
 - 时长: 30 分钟
-- 参与人: Step 3 的完整名单
+- 参与人: Step 3 解析出的 `participant_user_ids`
 - 描述: 附上方案文档链接
 
 ### Step 6: 更新 state.json
@@ -50,16 +56,25 @@
 {
   "phase": "plan → review",
   "knowledge_doc_url": "<上传后的文档 URL>",
+  "participant_user_ids": ["<userId1>", "<userId2>"],
   "calendar_event_id": "<日历事件 ID>"
 }
 ```
 
 **注意**: 不修改需求单状态，状态保持 `开发_方案评审`。
 
+### Canon promotion
+
+- 更新 Canon task page：记录知识库文档 URL、评审评论、日程 ID、参与人 userId 和当前阶段 `review`。
+- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-briefing.md`。
+- 知识库文档和日程只保存 URL/ID 引用，不把文档复制进 Canon。
+
 ## 完成检查
 
 - [ ] 方案文档已上传知识库
 - [ ] 评论区已附文档链接
+- [ ] 所有人员姓名已解析为 dws userId
 - [ ] 所有人员空闲时段已查询
 - [ ] 评审会议日程已创建（或 5 天无空槽已上报）
 - [ ] state.json 已更新
+- [ ] Canon task/update-card 已记录评审证据或明确记录未完成原因

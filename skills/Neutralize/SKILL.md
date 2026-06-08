@@ -39,6 +39,33 @@ scan nearby code for the same mistake pattern.
 
 ## Rule Sources
 
-- `.agent-state/MEMORY.md` — project constraints before changing behavior
-- `.agent-state/rules/mistakes.md` — durable mistake guardrails
-- If the same mistake should be remembered, record it via `capture-mistake-rule`.
+- Canon `/media/yhr/2T/Canon/projects`, `patterns`, and `incidents` — durable cross-project constraints and known failure modes
+- `.agent-state/MEMORY.md` — repo-local runtime/project constraints before changing behavior
+- `.agent-state/rules/mistakes.md` — compatibility mirror for project-local mistake guardrails
+- If the same mistake should be remembered, record it via `Codify` and promote durable lessons to Canon.
+
+
+## Workflow Gate Contract
+
+For bug fixes that produce code or durable lessons, follow the shared workflow output contract:
+
+```text
+/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+```
+
+Small local fixes may stop at validation. Complex fixes, repeated mistake patterns, build failures, and cross-project lessons must promote evidence to Canon before handoff.
+
+## Gotchas
+
+- Do not patch from the symptom alone. If reproduction is impractical, record the strongest available evidence and the reason reproduction was skipped.
+- Do not turn a bugfix into a broad refactor. Fix the minimum root cause first; adjacent cleanup is only allowed when it reduces the same failure pattern.
+- Do not claim validation from a narrow command when the changed behavior requires a broader build/test. State the validation scope and remaining risk explicitly.
+- If the same mistake appears in multiple places, either fix all confirmed instances or trigger `Codify`/Canon incident so the pattern is not lost.
+
+## Canon 输出边界
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- Ordinary small fixes do not need Canon updates.
+- Complex root causes, repeated mistake patterns, build failures, and cross-project lessons should create/update `/media/yhr/2T/Canon/raw/update-cards/<date>-neutralize-<topic>.md`, `incidents/`, or `patterns/`.
+- Validation logs, commits, screenshots, and local reports stay as artifact refs; do not copy them into Canon by default.

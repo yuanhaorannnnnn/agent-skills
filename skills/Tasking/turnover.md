@@ -28,14 +28,31 @@
 
 ### Step 2: 变更需求单状态
 
-用 yunxiao MCP 将需求单状态改为 `系统测试`。
+1. 用 yunxiao MCP `get_work_item_workflow` 查询需求单的工作流，获取 `系统测试` 对应的 status ID
+2. 用 yunxiao MCP `update_work_item` 将需求单状态改为该 ID
+
+**不要直接传中文状态名**——yunxiao API 只接受 status ID，传中文名会 400。
+
+### Step 3: 变更需求单负责人
+
+1. 用 yunxiao MCP `search_organization_members` 按姓名 `樊亮亮` 查询 userId
+2. 用 yunxiao MCP `update_work_item` 将 `assignedTo` 设为该 userId
+
+**不要直接传中文名**——先解析为 userId 再更新。
+
+### Step 4: Canon promotion
+
+- 更新 Canon task page：记录状态 `test`、交付物 URL、系统测试负责人 `樊亮亮`、云效评论证据和后续测试入口。
+- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-turnover.md`。
+- 交付物只作为 URL/artifact refs 记录，不复制到 Canon。
 
 ## 更新 state.json
 
 ```json
 {
   "phase": "dev → test",
-  "deliverable_url": "<url1> <url2>"
+  "deliverable_url": "<url1> <url2>",
+  "system_test_assignee": "樊亮亮"
 }
 ```
 
@@ -43,4 +60,6 @@
 
 - [ ] 评论区已附交付物链接清单
 - [ ] 需求单状态已改为 `系统测试`
+- [ ] 需求单负责人已改为 `樊亮亮`
 - [ ] state.json 已更新
+- [ ] Canon task/update-card 已记录交付证据或明确记录未完成原因
