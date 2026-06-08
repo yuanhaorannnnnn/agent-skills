@@ -33,22 +33,22 @@ Architecture mold visualizes the layered structure and functional clustering of 
 ```mermaid
 flowchart TD
     subgraph 基础设施层
-        A["scaffold"] 
+        A["StandUp (deprecated)"]
     end
-    
+
     subgraph 持久化层
-        B["save-conversation"]
-        C["restore-conversation"]
+        B["Secure"]
+        C["Reactivate"]
     end
-    
+
     subgraph 质量层
         D["code-reviewer"]
         E["fix-issue"]
         F["capture-mistake-rule"]
     end
-    
-    A -->|creates| B
-    A -->|creates| C
+
+    A -->|legacy fallback| B
+    B -->|task page read by| C
     D -->|finds issues| E
     E -->|records| F
 ```

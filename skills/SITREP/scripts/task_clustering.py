@@ -84,7 +84,7 @@ def cluster_sessions(sessions: list[Session]) -> list[Task]:
     # Step 2: Group segments by Canon task pages (priority)
     canon_groups = _group_by_canon_tasks(all_segments)
 
-    # Step 3: Group segments by save-conversation links
+    # Step 3: Group segments by historical runtime recap links
     linked_groups = _group_by_save_conversation(canon_groups)
 
     # Step 4: Further group by time proximity and project
@@ -244,7 +244,7 @@ def _group_by_canon_tasks(
 def _group_by_save_conversation(
     groups: list[list[tuple[Session, list[Event]]]],
 ) -> list[list[tuple[Session, list[Event]]]]:
-    """Group segments that are linked via save-conversation.
+    """Group segments that are linked via historical runtime recap.
 
     Check .agent-state/conversations/<name>.md for conversation links.
     Accepts pre-grouped segments from _group_by_canon_tasks and further
@@ -962,7 +962,7 @@ def _detect_status(task: Task, events: list[Event]) -> str:
 
 
 def load_save_conversation_summary(session_id: str) -> Optional[dict]:
-    """Load save-conversation summary for a session if available.
+    """Load historical runtime recap for a session if available.
 
     Returns dict with keys: summary, objective, key_decisions, pending_followups
     """

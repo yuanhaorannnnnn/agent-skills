@@ -38,7 +38,7 @@ Workflow mold visualizes the execution order and information flow between skills
 
 ```mermaid
 flowchart LR
-    A["dev-wrapup"] -->|includes step| B["save-conversation"]
-    B -->|saved data| C["restore-conversation"]
-    A -->|triggers| D["git push"]
+    A["Sanitize"] -->|updates| B["Secure"]
+    B -->|Canon task page| C["Reactivate"]
+    A -->|runs| D["git push"]
 ```

@@ -196,7 +196,7 @@ active_time = sum(gaps <= 2h between consecutive events)
 
 每个任务的 STAR 提取按以下优先级选择数据源：
 
-1. **Save-conversation summary**（`~/.agent-state/conversations/*.md`）— 人工编辑过的最高质量摘要
+1. **Historical runtime recap**（`~/.agent-state/conversations/*.md`）— 旧保存摘要，作为补充证据
 2. **LLM 提取** — 将 conversation 文本传给 Claude，按 STAR 原则结构化
 
 LLM 提取结果通过 SHA256 缓存到 `~/.agents/work-reports/.cache/`，重复任务秒级复用。
@@ -239,7 +239,7 @@ LLM 提取结果通过 SHA256 缓存到 `~/.agents/work-reports/.cache/`，重�
 | `task_clustering.py` | `_extract_task_title()`, `_detect_status()`, `_is_noise_task()` | Title extraction, status detection, noise filtering |
 | `star_builder.py` | `build_stars_for_tasks()`, `build_star_for_task()` | STAR extraction orchestration |
 | `star_builder.py` | `_llm_enrich()`, `_call_llm()`, `_parse_json_response()` | LLM API call for STAR extraction |
-| `star_builder.py` | `_apply_save_conversation()`, `_compute_cache_key()` | Save-conversation integration, caching |
+| `star_builder.py` | `_apply_save_conversation()`, `_compute_cache_key()` | Historical runtime recap integration, caching |
 | `report_renderer.py` | `render_weekly_report()`, `_render_task()` | Markdown report generation |
 | `report_renderer.py` | `save_report()` | File I/O, directory creation |
 | `cron_wrapper.sh` | `source env`, `exec python` | Cron environment setup and execution |

@@ -563,4 +563,4 @@ mcp__sequential-thinking__sequentialthinking:
 
 ## 文件位置
 
-- Skill: `~/.agents/skills/deep-research/SKILL.md`
+- Skill: `~/.agents/skills/Fusion/SKILL.md`

@@ -1,5 +1,5 @@
 {
-  "skill_name": "deep-research",
+  "skill_name": "Fusion",
   "evals": [
     {
       "id": 1,
@@ -45,7 +45,7 @@
     },
     {
       "id": 7,
-      "prompt": "deep-research skill 的 Phase 1/2/3 分别对应什么信息源？信息优先级顺序是什么？",
+      "prompt": "Fusion skill 的 Phase 1/2/3 分别对应什么信息源？信息优先级顺序是什么？",
       "expected_output": "简要回答（200-400 字），包含：1) Phase 1（本地代码）、Phase 2（本地知识库）、Phase 3（外部 web）；2) 优先级顺序（本地代码 > 本地知识库 > 外部 web）；3) Phase 3 的动态降级逻辑（深度型研究可降级为可选快速扫描）；4) 信息来源标注（引用 SKILL.md 中的 Phase 描述）",
       "effort_tier": "light",
       "files": []
@@ -66,7 +66,7 @@
     },
     {
       "id": 10,
-      "prompt": "研究 deep-research skill 的 sequential-thinking 集成设计：工具化模式（Claude/Codex）和显式框架模式（Kimi/Pi/Hermes）有什么区别？为什么要做这种双模式设计？",
+      "prompt": "研究 Fusion skill 的 sequential-thinking 集成设计：工具化模式（Claude/Codex）和显式框架模式（Kimi/Pi/Hermes）有什么区别？为什么要做这种双模式设计？",
       "expected_output": "中等深度研究报告（1000-2000 字），包含：1) 工具化模式的实现（mcp__sequential-thinking__sequentialthinking 工具调用）；2) 显式框架模式的实现（5 个文本化思考框架：迭代深化、修订机制、假设-验证循环、分支探索、不确定性标记）；3) 双模式设计的 rationale（跨 runtime 兼容性）；4) 两种模式在实际使用中的等价性评估；5) 信息来源标注（引用 SKILL.md 4.2 和 4.3 节）",
       "effort_tier": "medium",
       "files": []
@@ -94,8 +94,8 @@
     },
     {
       "id": 14,
-      "prompt": "分析 dev-wrapup 的完整工作流：从用户说'开发完成了'到最终 git commit + push + save conversation + update planning，涉及哪些步骤、哪些文件、哪些潜在的失败点？",
-      "expected_output": "中等深度流程分析报告（1000-2000 字），包含：1) 完整工作流图（用户触发 → git status → 识别相关文件 → 生成 commit message → commit → push → save conversation → update planning）；2) 每个步骤的工具调用和文件读写；3) 失败模式和恢复策略（如 commit 失败、push 冲突、planning 文件不存在）；4) 与 work-report 的关联（dev-wrapup 的 commit 会被 work-report 收集）；5) 信息来源标注（引用 dev-wrapup/SKILL.md 和实际使用记录）",
+      "prompt": "分析 Sanitize 的完整工作流：从用户说'开发完成了'到最终 git commit + push + update Canon task + update planning，涉及哪些步骤、哪些文件、哪些潜在的失败点？",
+      "expected_output": "中等深度流程分析报告（1000-2000 字），包含：1) 完整工作流图（用户触发 → git status → 识别相关文件 → 生成 commit message → commit → push → update Canon task → update planning）；2) 每个步骤的工具调用和文件读写；3) 失败模式和恢复策略（如 commit 失败、push 冲突、planning 文件不存在）；4) 与 work-report 的关联（Sanitize 的 commit 会被 work-report 收集）；5) 信息来源标注（引用 Sanitize/SKILL.md 和实际使用记录）",
       "effort_tier": "medium",
       "files": []
     },
@@ -108,8 +108,8 @@
     },
     {
       "id": 16,
-      "prompt": "深入研究 multi-agent skill 基础设施的 conversation 身份管理：save/restore、plan-workspace、ACTIVE_CONVERSATION 指针、branch fallback 等机制。分析这些组件之间的依赖关系、数据流和潜在的一致性问题。",
-      "expected_output": "深度研究报告（3000-5000 字），包含：1) 组件架构图（save-conversation、restore-conversation、plan-workspace 的关系）；2) 数据流分析（conversation id 的解析优先级：显式 > CODEX_THREAD_ID > ACTIVE_CONVERSATION > branch）；3) 每个组件的持久化存储位置和格式；4) 潜在一致性问题（如 ACTIVE_CONVERSATION 指向不存在的 conversation、branch fallback 在 multi-worktree 场景下的歧义）；5) 改进建议（如 conversation id 验证、orphan detection）；6) 信息来源标注（引用各 SKILL.md 和 AGENTS.md）",
+      "prompt": "深入研究 multi-agent skill 基础设施的 conversation 身份管理：Secure/Reactivate、Canon task、Canon task 解析、runtime fallback 等机制。分析这些组件之间的依赖关系、数据流和潜在的一致性问题。",
+      "expected_output": "深度研究报告（3000-5000 字），包含：1) 组件架构图（Secure、Reactivate、Canon task 的关系）；2) 数据流分析（task identity 的解析优先级：显式 task page/slug > Canon search > runtime fallback）；3) 每个组件的持久化存储位置和格式；4) 潜在一致性问题（如 runtime fallback 指向旧 recap、multi-worktree 下任务身份歧义）；5) 改进建议（如 Canon task slug 验证、artifact orphan detection）；6) 信息来源标注（引用各 SKILL.md 和 AGENTS.md）",
       "effort_tier": "deep",
       "files": []
     },
@@ -122,8 +122,8 @@
     },
     {
       "id": 18,
-      "prompt": "对 deep-research skill 本身做元分析：它的 sequential-thinking 集成、跨 runtime 兼容性设计、Phase 动态降级机制、设计文档 vs 代码一致性检查。这些设计决策的 trade-off 是什么？有没有更好的替代方案？",
-      "expected_output": "深度元分析报告（3000-5000 字），包含：1) 每个核心设计决策的详细分析（为什么这样设计、解决了什么问题）；2) trade-off 分析（如 cross-runtime 兼容性的代价是提示词长度增加、Phase 动态降级可能遗漏外部关键信息）；3) 替代方案评估（如用 MCP server 替代 SKILL.md 的显式框架、用 true parallel subagents 替代 sequential-thinking、用 static RAG 替代动态搜索）；4) 量化影响评估（如 eval 数据：with-skill 100% vs without-skill 61.5%）；5) 推荐演进路径（短期/中期/长期）；6) 信息来源标注（引用 deep-research/SKILL.md、evals.json、Anthropic blog）",
+      "prompt": "对 Fusion skill 本身做元分析：它的 sequential-thinking 集成、跨 runtime 兼容性设计、Phase 动态降级机制、设计文档 vs 代码一致性检查。这些设计决策的 trade-off 是什么？有没有更好的替代方案？",
+      "expected_output": "深度元分析报告（3000-5000 字），包含：1) 每个核心设计决策的详细分析（为什么这样设计、解决了什么问题）；2) trade-off 分析（如 cross-runtime 兼容性的代价是提示词长度增加、Phase 动态降级可能遗漏外部关键信息）；3) 替代方案评估（如用 MCP server 替代 SKILL.md 的显式框架、用 true parallel subagents 替代 sequential-thinking、用 static RAG 替代动态搜索）；4) 量化影响评估（如 eval 数据：with-skill 100% vs without-skill 61.5%）；5) 推荐演进路径（短期/中期/长期）；6) 信息来源标注（引用 Fusion/SKILL.md、evals.json、Anthropic blog）",
       "effort_tier": "deep",
       "files": []
     },

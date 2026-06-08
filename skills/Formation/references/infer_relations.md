@@ -27,7 +27,7 @@ Return a single JSON object:
 
 ```json
 {
-  "title": "Human-readable system name (e.g., 'Conversation Persistence Workflow')",
+  "title": "Human-readable system name (e.g., 'Canon Task Persistence Workflow')",
   "cohesion": "strong|weak|none",
   "summary": "One sentence describing what this system does",
   "nodes": [
@@ -59,13 +59,13 @@ Return a single JSON object:
 ## Rules
 
 ### Cohesion Assessment
-- **`none`**: If skills are from completely unrelated domains (e.g., a work-report generator, a deep-research tool, and a CARLA LiDAR optimizer), output `cohesion: "none"`. Return empty `edges` and `groups`. Do NOT try to force connections.
+- **`none`**: If skills are from completely unrelated domains (e.g., a SITREP generator, a Fusion research tool, and a CARLA LiDAR optimizer), output `cohesion: "none"`. Return empty `edges` and `groups`. Do NOT try to force connections.
 - **`weak`**: If skills share a broad theme but have no explicit cross-references, output `cohesion: "weak"`. Only include edges with `confidence: "high"` (max 2-3 edges).
 - **`strong`**: If descriptions mention shared files (e.g., `.agent-state/`), explicit triggers, or clear data flow, output `cohesion: "strong"`. Include all high-confidence edges.
 
 ### Edge Rules
 - **NEVER invent edges without evidence**. If two skills' descriptions do not mention each other or share no files/concepts, do NOT connect them.
-- `trigger`: Skill A explicitly causes Skill B to be used (e.g., "dev-wrapup...saves conversation" → dev-wrapup triggers save-conversation)
+- `trigger`: Skill A explicitly causes Skill B to be used (e.g., "Sanitize...updates Canon task" → Sanitize triggers Secure)
 - `data`: Skill A produces output that Skill B consumes
 - `depends`: Skill B requires Skill A to have run first (setup dependency)
 - `extends`: Skill B builds on or enhances Skill A's functionality
@@ -88,37 +88,37 @@ Return a single JSON object:
 
 ## Examples
 
-### Example 1: Strong Cohesion (save/restore/dev-wrapup)
+### Example 1: Strong Cohesion (Secure/Reactivate/Sanitize)
 
 Input skills:
-- save-conversation: "Save the current conversation...so the same conversation can be resumed later"
-- restore-conversation: "Restore a previous conversation...resume work from saved notes"
-- dev-wrapup: "Auto-execute git commit/push, save conversation, update planning docs"
+- Secure: "Save current work progress to Canon task pages"
+- Reactivate: "Resume work from a Canon task page"
+- Sanitize: "Commit/push work and update Canon task/update-card state"
 
 Expected output:
 ```json
 {
-  "title": "Conversation Persistence Workflow",
+  "title": "Canon Task Persistence Workflow",
   "cohesion": "strong",
-  "summary": "A workflow for saving, restoring, and wrapping up agent conversations with git integration",
+  "summary": "A workflow for saving, restoring, and wrapping up task state through Canon with git integration",
   "nodes": [...],
   "edges": [
-    {"from": "dev-wrapup", "to": "save-conversation", "label": "includes step", "type": "includes", "confidence": "high"},
-    {"from": "save-conversation", "to": "restore-conversation", "label": "saved data read by", "type": "data", "confidence": "high"}
+    {"from": "Sanitize", "to": "Secure", "label": "updates task state", "type": "includes", "confidence": "high"},
+    {"from": "Secure", "to": "Reactivate", "label": "Canon task read by", "type": "data", "confidence": "high"}
   ],
   "groups": [
-    {"name": "Persistence", "members": ["save-conversation", "restore-conversation"]},
-    {"name": "Automation", "members": ["dev-wrapup"]}
+    {"name": "Persistence", "members": ["Secure", "Reactivate"]},
+    {"name": "Automation", "members": ["Sanitize"]}
   ]
 }
 ```
 
-### Example 2: No Cohesion (work-report/deep-research/autoresearch-loop)
+### Example 2: No Cohesion (SITREP/Fusion/Sweep)
 
 Input skills:
-- work-report: "Generate weekly work reports from coding agent conversations"
-- deep-research: "Deep research on technical topics based on local codebase"
-- autoresearch-loop: "CARLA LiDAR performance optimization automation loop"
+- SITREP: "Generate weekly work reports from coding agent sessions and Canon tasks"
+- Fusion: "Deep research on technical topics using Canon, local code, and external sources"
+- Sweep: "Compile, benchmark, analyze, and improve optimization loop"
 
 Expected output:
 ```json
@@ -143,7 +143,7 @@ Beyond concrete data-flow edges, identify **abstract thematic associations** tha
    - The metaphor should make sense for the MAJORITY of skills; do not force a skill into a metaphor that clearly does not fit
 
 2. **Map each skill to a metaphorical role** within that scenario.
-   - Example (house-building): scaffold = foundation/land-surveying, save-conversation = laying bricks/phase-completion, plan-workspace = blueprints/architecture, report = final inspection certificate
+   - Example (house-building): StandUp = legacy foundation, Secure = phase checkpoint, Canon task = blueprints/current plan, FieldReport = final inspection certificate
 
 3. **Identify abstract edges** — conceptual flows that exist in the metaphor even if not explicitly stated in descriptions.
    - Abstract edges connect skills that share a conceptual domain or form a natural sequence in the metaphorical workflow
@@ -156,21 +156,21 @@ Beyond concrete data-flow edges, identify **abstract thematic associations** tha
 
 ### Example: Abstract Mapping for Dev Skills
 
-Input: scaffold, save-conversation, plan-workspace, fix-issue, capture-mistake-rule
+Input: StandUp, Secure, Canon task, Neutralize, Codify
 Metaphor: **Building a House**
 
 | Skill | Metaphorical Role | Abstract Connection |
 |-------|-------------------|---------------------|
-| scaffold | Land survey & foundation | Everything builds on this |
-| plan-workspace | Blueprints & permits | Guides all construction |
-| save-conversation | Laying bricks / phase checkpoints | Periodic固化 of progress |
-| fix-issue | Repairing cracks / quality inspection | Fixes defects found during build |
-| capture-mistake-rule | Building codes & lessons learned | Prevents same defect twice |
+| StandUp | Legacy land survey & foundation | Historical initialization reference |
+| Canon task | Blueprints & permits | Guides all construction |
+| Secure | Laying bricks / phase checkpoints | Periodic固化 of progress into Canon |
+| Neutralize | Repairing cracks / quality inspection | Fixes defects found during build |
+| Codify | Building codes & lessons learned | Prevents same defect twice |
 
 Abstract edges:
-- plan-workspace -.->|"guided by blueprints"| scaffold (abstract: planning precedes building)
-- fix-issue -.->|"feeds lessons into"| capture-mistake-rule (abstract: both quality-related)
-- save-conversation -.->|"固化阶段性成果"| dev-wrapup (abstract: checkpoints in a process)
+- Canon task -.->|"guided by blueprints"| StandUp (abstract: planning precedes building)
+- Neutralize -.->|"feeds lessons into"| Codify (abstract: both quality-related)
+- Secure -.->|"固化阶段性成果"| Sanitize (abstract: checkpoints in a process)
 
 ### Rules for Abstract Edges
 

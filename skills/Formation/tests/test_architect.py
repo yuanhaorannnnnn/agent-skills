@@ -48,11 +48,11 @@ Some content.
 def test_render_workflow_single_node():
     """Test workflow render with a single node."""
     topology = {
-        "nodes": [{"id": "save", "name": "save-conversation"}],
+        "nodes": [{"id": "secure", "name": "Secure"}],
         "edges": [],
     }
     result = render_workflow(topology)
-    assert "save-conversation" in result
+    assert "Secure" in result
     assert "┌" in result  # box-drawing char
 
 
@@ -60,14 +60,14 @@ def test_render_workflow_chain():
     """Test workflow render with a linear chain."""
     topology = {
         "nodes": [
-            {"id": "save", "name": "save"},
-            {"id": "restore", "name": "restore"},
+            {"id": "secure", "name": "secure"},
+            {"id": "reactivate", "name": "reactivate"},
         ],
-        "edges": [{"from": "save", "to": "restore", "label": "triggers"}],
+        "edges": [{"from": "secure", "to": "reactivate", "label": "triggers"}],
     }
     result = render_workflow(topology)
-    assert "save" in result
-    assert "restore" in result
+    assert "secure" in result
+    assert "reactivate" in result
     assert "──▶" in result
 
 
@@ -75,20 +75,20 @@ def test_render_architecture_layers():
     """Test architecture render with groups."""
     topology = {
         "nodes": [
-            {"id": "scaffold", "name": "scaffold"},
-            {"id": "save", "name": "save"},
+            {"id": "StandUp", "name": "StandUp"},
+            {"id": "secure", "name": "secure"},
         ],
-        "edges": [{"from": "scaffold", "to": "save", "label": "creates"}],
+        "edges": [{"from": "StandUp", "to": "secure", "label": "creates"}],
         "groups": [
-            {"name": "Infra", "members": ["scaffold"]},
-            {"name": "Persist", "members": ["save"]},
+            {"name": "Infra", "members": ["StandUp"]},
+            {"name": "Persist", "members": ["secure"]},
         ],
     }
     result = render_architecture(topology)
     assert "[Infra]" in result
     assert "[Persist]" in result
-    assert "scaffold" in result
-    assert "save" in result
+    assert "StandUp" in result
+    assert "secure" in result
 
 
 def test_render_architecture_no_groups():
@@ -114,17 +114,17 @@ def test_workflow_with_branching():
     """Test workflow with a branching edge."""
     topology = {
         "nodes": [
-            {"id": "dev", "name": "dev-wrapup"},
-            {"id": "save", "name": "save"},
+            {"id": "dev", "name": "Sanitize"},
+            {"id": "secure", "name": "secure"},
             {"id": "git", "name": "git-push"},
         ],
         "edges": [
-            {"from": "dev", "to": "save", "label": "includes"},
+            {"from": "dev", "to": "secure", "label": "includes"},
             {"from": "dev", "to": "git", "label": "triggers"},
         ],
     }
     result = render_workflow(topology)
-    assert "dev-wrapup" in result
+    assert "Sanitize" in result
     assert "──▶" in result
 
 

@@ -1,10 +1,10 @@
 {
-  "skill_name": "dev-wrapup",
+  "skill_name": "Sanitize",
   "evals": [
     {
       "id": 1,
       "prompt": "开发完成了，帮我收尾",
-      "expected_output": "执行 git status -> 识别相关文件 -> 生成 commit message -> commit + push -> 保存 conversation -> 更新 planning 文档",
+      "expected_output": "执行 git status -> 识别相关文件 -> 生成 commit message -> commit + push -> 更新 Canon task/update-card",
       "files": []
     },
     {
@@ -16,7 +16,7 @@
     {
       "id": 3,
       "prompt": "提交并保存当前进度",
-      "expected_output": "只提交当前任务相关文件，生成 commit message，push，保存 conversation，更新 planning",
+      "expected_output": "只提交当前任务相关文件，生成 commit message，push，更新 Canon task/update-card",
       "files": []
     }
   ]

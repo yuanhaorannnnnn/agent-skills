@@ -179,7 +179,7 @@ def build_star_for_task(task: Task, use_cache: bool = True) -> Task:
             _llm_enrich(task, use_cache=use_cache)
         return task
 
-    # Priority 2: Save-conversation summary (historical runtime recap)
+    # Priority 2: Historical runtime recap
     save_conv = None
     for session in task.sessions:
         save_conv = load_save_conversation_summary(session.session_id)
@@ -198,7 +198,7 @@ def build_star_for_task(task: Task, use_cache: bool = True) -> Task:
 
 
 def _apply_save_conversation(task: Task, save_conv: dict) -> None:
-    """Apply save-conversation summary to task fields."""
+    """Apply historical runtime recap to task fields."""
     task.situation = save_conv.get("summary", "")[:500]
     task.task_description = save_conv.get("objective", "")[:300]
     # LLM-extracted objective is a better title than the first user prompt
@@ -270,7 +270,7 @@ def _call_llm(conversation: str, task: Task) -> Optional[dict]:
 
     save_ctx = ""
     if task.situation:
-        save_ctx = f"\n- Save-conversation summary: {task.situation[:200]}"
+        save_ctx = f"\n- Historical runtime recap: {task.situation[:200]}"
 
     prompt = _STAR_PROMPT.format(
         conversation=conversation,

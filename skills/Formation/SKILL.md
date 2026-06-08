@@ -68,7 +68,7 @@ version: "1.0.0"
 输出 JSON 格式:
 ```json
 [
-  {"name": "save-conversation", "description": "...", "version": "1.0.0", "category": "conversation", "path": "..."},
+  {"name": "Secure", "description": "...", "version": "1.0.0", "category": "conversation", "path": "..."},
   ...
 ]
 ```

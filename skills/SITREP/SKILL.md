@@ -123,7 +123,7 @@ Friday checklist and Sunday final report are external handoff artifacts. The con
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - `~/.agents/work-reports/` 中的周报/月报是生成报告 artifact，不是跨项目长期 source of truth。
-- agent session JSONL、save-conversation 摘要和 Yunxiao `state.json` 是采集源；报告中确认的长期事实应提升到 Canon project/task/pattern/incident 页面。
+- agent session JSONL、historical runtime recap 和 Yunxiao `state.json` 是采集源；报告中确认的长期事实应提升到 Canon project/task/pattern/incident 页面。
 - 每次生成有价值的周报/月报后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-sitrep-<period>.md`，记录报告路径、时间范围、覆盖项目、关键任务和后续动作。
 - Canon `artifacts/artifact-index.md` 只引用报告绝对路径或钉钉提交 URL，不复制报告。
 
@@ -183,7 +183,7 @@ Friday checklist and Sunday final report are external handoff artifacts. The con
 
 按优先级选择数据来源：
 1. **Canon task pages**（`/media/yhr/2T/Canon/tasks/*.md`）— 结构化的任务进展和决策摘要，优先作为 STAR 来源
-2. **Save-conversation 摘要**（`~/.agent-state/conversations/*.md`）— 历史 runtime recap，作为补充证据
+2. **Historical runtime recap**（`~/.agent-state/conversations/*.md`）— 旧保存摘要，作为补充证据
 2. **LLM 提取** — 将 conversation 文本传给 Claude，按 STAR 原则结构化
 
 LLM prompt 要求：

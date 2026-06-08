@@ -24,7 +24,7 @@ version: "1.0.0"
 | 认知原子 | ◆ | 内容处理的原子操作 | ljg-plain, ljg-word, ljg-writes, ljg-paper |
 | 输出铸造 | ▲ | 将内容转化为可交付物 | ljg-card |
 | 联网触达 | ● | 与外部世界交互 | agent-reach |
-| 系统运维 | ■ | Agent 自身的维护和管理 | datetime-check, memory-review, save-conversation, skill-creator, skill-map |
+| 系统运维 | ■ | Agent 自身的维护和管理 | datetime-check, memory-review, Secure, Reactivate, skill-creator, skill-map |
 | 环境部署 | ★ | 一次性安装和配置 | Her-init |
 
 归类依据名称前缀和描述关键词判断。遇到新技能无法归类时，放入「未分类」。

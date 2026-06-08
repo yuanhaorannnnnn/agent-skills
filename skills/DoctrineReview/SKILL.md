@@ -219,7 +219,7 @@ Always structure the final report like this:
 
 - `/tmp` sessions are noise (AGENTS.md injections) — always exclude them
 - `pi-mono` sessions are mostly runtime config tests — weight them lower
-- Session management commands (`$restore-conversation`, `$save-conversation`) appearing as user messages don't indicate a gap — they're usage of already-existing skills
+- Session management commands (`$Reactivate`, `$Secure`) appearing as user messages do not indicate a gap — they are usage of existing skills. Historical `$restore-conversation` / `$save-conversation` mentions are legacy aliases, not new-skill opportunities
 - The goal is finding **uncovered** gaps, not validating what's already automated
 - Prefer skipping over creating — a false positive skill is worse than a missed opportunity
 - If an existing skill covers 80% of a need, recommend extending it rather than creating a new one
