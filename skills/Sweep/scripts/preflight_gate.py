@@ -10,7 +10,7 @@ from pathlib import Path
 
 TARGET_REPO = Path("/media/yhr/2T/CarlaUE5")
 CTRL_REPO = Path("/media/yhr/2T/autoresearch")
-STATE_FILE = Path(".agent-state/autoresearch-loop-state.yaml")
+STATE_FILE = CTRL_REPO / ".agent-state" / "autoresearch-loop-state.yaml"
 
 def run(cmd, cwd=None, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, **kw).stdout.strip()

@@ -37,10 +37,20 @@ def check_assignee_changed(sp):
     try:
         d = json.loads(sp.read_text()) if sp.exists() else {}
         new = d.get("system_test_assignee", "")
-        ok = bool(new)
-        return ok, f"assignee: new={'OK' if ok else 'EMPTY'}" + (" OK" if ok else " FAIL (should be 樊亮亮)")
+        ok = new == "樊亮亮"
+        return ok, f"assignee: {new}" + (" OK" if ok else f" FAIL (expected 樊亮亮, got '{new}')")
     except Exception:
         return False, "assignee: error FAIL"
+
+def check_phase(sp):
+    if not sp.exists():
+        return False, "state.json: missing FAIL"
+    try:
+        d = json.loads(sp.read_text())
+        ok = d.get("phase") == "test"
+        return ok, f"phase: {d.get('phase','EMPTY')}" + (" OK" if ok else " FAIL (expected test)")
+    except Exception as e:
+        return False, f"phase: error {e} FAIL"
 
 def check_status_updated(sp):
     return False, "yunxiao-status: SKIPPED — MCP auth required, verify manually"
@@ -61,7 +71,7 @@ def main():
     repo = Path(args.repo)
 
     checks = []
-    checks.append(("1.state", check_state_phase(sp)))
+    checks.append(("1.phase", check_phase(sp)))
     checks.append(("2.deliverables", check_deliverables(sp)))
     checks.append(("3.comment", check_comment_evidence(sp)))
     checks.append(("4.assignee", check_assignee_changed(sp)))

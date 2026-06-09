@@ -81,6 +81,12 @@ def _build_unresolved(items: list) -> str:
     lis = "\n".join(f"        <li>{_html(item)}</li>" for item in items)
     return f"<ul>\n{lis}\n      </ul>"
 
+def _build_action_items(items: list) -> str:
+    if not items:
+        return "<ul><li>无</li></ul>"
+    lis = "\n".join(f"        <li>{_html(item)}</li>" for item in items)
+    return f"<ul>\n{lis}\n      </ul>"
+
 
 def _build_meta_pills(data: dict) -> str:
     p_count = data.get("participant_count", 0)
@@ -104,6 +110,7 @@ def render(data: dict, template: str) -> str:
         "PLACEHOLDER_TIMELINE": _build_timeline(data.get("timeline", [])),
         "PLACEHOLDER_DECISIONS": _build_decisions(data.get("decisions", [])),
         "PLACEHOLDER_UNRESOLVED": _build_unresolved(data.get("unresolved", [])),
+        "PLACEHOLDER_ACTION_ITEMS": _build_action_items(data.get("action_items", [])),
     }
     html = template
     for placeholder, value in subs.items():

@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""Intake gate checker — machine-readable pass/block/warn verdict.
-
-Usage:
-  python3 intake_gate.py <bug-id> [--repo <path>] [--json]
-"""
-
 import json, os, sys, subprocess
 from pathlib import Path
 
@@ -27,8 +20,9 @@ def check_state_json(p):
         return False, "state.json: missing FAIL"
     try:
         d = json.loads(p.read_text())
-        ok = d.get("phase") in ("intake", "new") and bool(d.get("title"))
-        return ok, f"state.json: phase={d.get('phase')}" + (" OK" if ok else " FAIL")
+        # Gate must verify Intake completed — only accept intake phase
+        ok = d.get("phase") == "intake" and bool(d.get("title"))
+        return ok, f"state.json: phase={d.get('phase','EMPTY')}" + (" OK" if ok else " FAIL (expected phase=intake)")
     except Exception as e:
         return False, f"state.json: error {e} FAIL"
 
@@ -39,8 +33,21 @@ def check_fix_plan_json(p):
         d = json.loads(p.read_text())
         rc = d.get("root_cause", {})
         fp = d.get("fix_plan", {})
-        ok = bool(rc.get("hypothesis")) and bool(fp.get("modified_files"))
-        return ok, f"fix_plan.json: root_cause={'OK' if rc.get('hypothesis') else 'EMPTY'} files={'OK' if fp.get('modified_files') else 'EMPTY'}" + (" OK" if ok else " FAIL (proxy)")
+        has_hypothesis = bool(rc.get("hypothesis"))
+        has_files = bool(fp.get("modified_files"))
+        
+        # Schema gate rules: speculative → blocked, blocking uncertainty → blocked
+        confidence = rc.get("confidence", "")
+        if confidence == "speculative":
+            return False, f"fix_plan.json: confidence=speculative FAIL (must confirm root cause)"
+        
+        uncertainties = d.get("uncertainties", [])
+        blocking = [u for u in uncertainties if u.get("impact") == "blocking"]
+        if blocking:
+            return False, f"fix_plan.json: {len(blocking)} blocking uncertainty(s) FAIL (resolve before Fix)"
+        
+        ok = has_hypothesis and has_files
+        return ok, f"fix_plan.json: root_cause={'OK' if has_hypothesis else 'EMPTY'} files={'OK' if has_files else 'EMPTY'} confidence={confidence}" + (" OK" if ok else " FAIL")
     except Exception as e:
         return False, f"fix_plan.json: error {e} FAIL"
 
@@ -79,7 +86,8 @@ def main():
     checks.append(("8.state.json", check_state_json(sp)))
     checks.append(("9.canon", check_canon(Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md"), args.bug_id)))
 
-    hard = {"2","4","5","8","9"}
+    # Fix: "3" must be in hard — fix_plan.json is Fix's primary source
+    hard = {"2","3","4","5","8","9"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     warns = [c for c in checks if c[0].split(".")[0] not in hard and c[0].split(".")[0] not in ("6","7") and not c[1][0]]
 

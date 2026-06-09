@@ -64,7 +64,7 @@ def main():
             ("3.based-on", check_based_on_checklist(args.path, args.checklist)),
             ("4.not-empty", check_not_empty(args.path, "report")),
         ]
-        hard = {"1","2"}
+        hard = {"1","2","3"}
 
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"
