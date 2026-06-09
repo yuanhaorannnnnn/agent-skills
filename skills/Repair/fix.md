@@ -44,7 +44,18 @@ gate 通过后继续以下预检：
 5. 跑相关测试或命令验证
 6. 搜索邻近文件和相似调用点
 7. 编译/自测验证：
-   - 需要长时间构建、打包或测试时，调用 `Sentinel`，不要手写 `ghostty -e ...`。
+
+   **自测 (self-check) — 必做：**
+
+   - 构造本地复现条件：缺陷复现所需的环境配置、参数组合。
+   - 编写可重复执行的验证脚本（如 `self_check_<bug-id>.py`），不做一次性手动验证。
+   - 跑脚本，输出摘要写入 `state.json.self_check_summary`。
+   - self-check 脚本是 Fix 交付物，下次同类问题可直接复用。
+   - self-check 未完成 → 不能进 Step 3 (Review Gate)。
+
+   **编译 (Sentinel) — 需要长时间构建/打包时调用：**
+
+   - 不需要 Sentinel 的场景：纯 Python API 修改、配置变更、文档修复——本地 `cmake --build` 或 `python3 -c "import ..."` 即可。
    - Server 端修改示例：
      ```bash
      ~/.agents/repos/agent-skills/skills/Sentinel/scripts/sentinel.sh run \
@@ -134,7 +145,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 {
   "phase": "intake -> fixing -> fixed",
   "fix_summary": "...",
-  "self_check_summary": "...",
+  "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
   "sentinel_task_ids": ["<bug-id>-package"],
   "build_artifacts": ["/media/yhr/2T/carla_images/<artifact>"],
   "commit_sha": "<git commit>",
