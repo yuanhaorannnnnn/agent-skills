@@ -53,8 +53,9 @@ Machine-readable evidence (`.agent-state/neutralize-gate.json`):
 
 ## Rule Sources
 
-- Canon `/media/yhr/2T/Canon/incidents` and `patterns` — primary source for known failure modes and reusable fixes. Query first.
-- `.agent-state/MEMORY.md` and `.agent-state/rules/mistakes.md` — compatibility fallback. Canon overrides when both exist.
+- Canon `/media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}` — primary source for durable context, known failure modes, reusable fixes. Query first.
+- Canon overrides `.agent-state/` when both exist. Code overrides Canon when they conflict — Canon captures intent, code captures current reality.
+- `.agent-state/MEMORY.md` and `.agent-state/rules/mistakes.md` — compatibility fallback only.
 
 
 ## Workflow Gate Contract

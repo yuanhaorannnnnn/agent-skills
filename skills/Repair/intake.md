@@ -45,9 +45,11 @@
 
 以缺陷标题、模块名、错误类型为线索，搜 Canon 是否有相关历史：
 ```bash
-rg -i "<keyword1>|<keyword2>" /media/yhr/2T/Canon/incidents /media/yhr/2T/Canon/patterns
+rg -i "<keyword1>|<keyword2>" /media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}
 ```
 如果命中同类缺陷→参考历史根因和修复方案。Canon 无命中→继续。
+
+Canon 提供 durable context（历史经验、长期决策），代码是 current facts。Canon 和代码冲突时标注，代码优先。
 
 ### Step 4: 结合代码分析
 

@@ -49,7 +49,7 @@ If the current agent cannot directly inject the runtime slash command, stop afte
 - 当前项目、语言、仓库根目录
 - 最近修改的文件（`git diff --stat HEAD` 或未提交改动）
 - 任务描述中提到或涉及到的模块名/接口名
-- Canon 相关决策或约束（`rg` /media/yhr/2T/Canon/decisions/ 和 patterns/）
+- Canon 相关约束（`rg` /media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}）。Canon-first for durable context; code-first for current implementation facts
 
 ### Step 2: 编写执行目标
 
