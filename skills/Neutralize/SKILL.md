@@ -53,10 +53,8 @@ Machine-readable evidence (`.agent-state/neutralize-gate.json`):
 
 ## Rule Sources
 
-- Canon `/media/yhr/2T/Canon/projects`, `patterns`, and `incidents` — durable cross-project constraints and known failure modes
-- `.agent-state/MEMORY.md` — repo-local runtime/project constraints before changing behavior
-- `.agent-state/rules/mistakes.md` — compatibility mirror for project-local mistake guardrails
-- If the same mistake should be remembered, record it via `Codify` and promote durable lessons to Canon.
+- Canon `/media/yhr/2T/Canon/incidents` and `patterns` — primary source for known failure modes and reusable fixes. Query first.
+- `.agent-state/MEMORY.md` and `.agent-state/rules/mistakes.md` — compatibility fallback. Canon overrides when both exist.
 
 
 ## Workflow Gate Contract

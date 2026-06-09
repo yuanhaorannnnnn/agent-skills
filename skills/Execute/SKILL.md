@@ -44,11 +44,12 @@ If the current agent cannot directly inject the runtime slash command, stop afte
 
 ### Step 1: 感知战场
 
-快速扫描当前代码上下文——不是深度分析：
+快速扫描当前上下文——不是深度分析：
 
 - 当前项目、语言、仓库根目录
 - 最近修改的文件（`git diff --stat HEAD` 或未提交改动）
 - 任务描述中提到或涉及到的模块名/接口名
+- Canon 相关决策或约束（`rg` /media/yhr/2T/Canon/decisions/ 和 patterns/）
 
 ### Step 2: 编写执行目标
 

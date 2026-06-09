@@ -41,9 +41,17 @@
 - `--base <branch>`: 切换到 base 后创建 `bugfix/<bug-id>`。
 - 不自动 stash，不覆盖用户未提交修改。
 
-### Step 3: 结合代码分析
+### Step 3: 查询 Canon
 
-以缺陷标题、复现步骤、错误日志、截图文字、关联需求为线索定位代码：
+以缺陷标题、模块名、错误类型为线索，搜 Canon 是否有相关历史：
+```bash
+rg -i "<keyword1>|<keyword2>" /media/yhr/2T/Canon/incidents /media/yhr/2T/Canon/patterns
+```
+如果命中同类缺陷→参考历史根因和修复方案。Canon 无命中→继续。
+
+### Step 4: 结合代码分析
+
+以缺陷标题、复现步骤、错误日志、截图文字、关联需求、Canon 检索结果为线索定位代码：
 
 - 先用 `rg` 搜索错误文本、模块名、接口名、场景名、传感器名等关键词
 - 必要时用 Overwatch 拉远看模块位置
@@ -51,7 +59,7 @@
 - 输出根因假设、受影响文件、最小修复点、验证命令
 - 不确定点列出给用户，不要自行假设
 
-### Step 4: 生成修复方案
+### Step 5: 生成修复方案
 
 写入两份文件：
 
@@ -80,7 +88,7 @@
 
 **2. `fix_plan.json`**（Machine 读）— 按 `references/fix_plan_schema.md` 的 schema 生成。Fix Agent 以此为主源。`root_cause.confidence` 为 `speculative` 的项 + `uncertainties` 中 `impact: blocking` 的项会在 gate 检查时导致 blocked。
 
-### Step 5: 生成 Breach 对齐页
+### Step 6: 生成 Breach 对齐页
 
 调用 Breach 生成 `.proposal/repair/<bug-id>/index.html`。页面类型按 `12-incident-report.html` 的单页报告结构组织：
 
@@ -100,7 +108,7 @@ Breach 页面是快速对齐材料，不替代 `fix_plan.md`。
 cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
 ```
 
-### Step 6: 评论区 + 云效状态
+### Step 7: 评论区 + 云效状态
 
 **评论区**格式（只写分行 + HTTP 链接，不贴文件路径）：
 
