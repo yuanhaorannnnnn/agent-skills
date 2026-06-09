@@ -415,24 +415,24 @@ def parse_claude(path: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Extract handoff context from coding agent sessions")
-    parser.add_argument("--former", choices=["codex", "pi", "claude"], help="Alias for --source (preferred in handoff context)")
-    parser.add_argument("--source", choices=["codex", "pi", "claude"], help="Which agent session to read")
-    parser.add_argument("--cwd", help="Source working directory to match sessions")
-    parser.add_argument("--dir", dest="source_dir", help="Alias for --cwd; useful for cross-directory handoff")
+    parser.add_argument("--former", help="Source agent: codex|pi|claude. Auto-detect if omitted.")
+    parser.add_argument("--source", help="Alias for --former")
+    parser.add_argument("--cwd", help="Source working directory to match sessions (default: current cwd)")
+    parser.add_argument("--dir", dest="source_dir", help="Alias for --cwd")
     parser.add_argument("--file", help="Direct session JSONL path; bypass session discovery")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
     parser.add_argument("--json", action="store_true", help="Output raw JSON (default: human-readable)")
     args = parser.parse_args()
 
-    source = args.former or args.source
-    if not source:
-        print("Error: --former (or --source) is required", file=sys.stderr)
-        return 1
-
-    source_cwd = args.source_dir or args.cwd
+    source = args.former or args.source  # None = auto-detect
+    source_cwd = args.source_dir or args.cwd or os.getcwd()
     if not source_cwd and not args.file:
         print("Error: --cwd/--dir is required unless --file is provided", file=sys.stderr)
         return 1
+
+    ALL_RUNTIMES = ["codex", "pi", "claude"]
+    candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
+    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
 
     parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
     candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
@@ -440,6 +440,7 @@ def main() -> int:
 
     candidates = []
     multi_session = False
+    resolved_source = source
     if args.file:
         session_path = Path(args.file).expanduser().resolve()
         if not session_path.is_file():
@@ -449,24 +450,44 @@ def main() -> int:
         total_candidates = 1
         matched = [{"path": session_path, "direct_file": True, "mtime": _mtime(session_path)}]
     else:
-        candidates = candidate_finders[source](str(Path(source_cwd).expanduser().resolve()), args.focus)
-        if not candidates:
-            print(f"No session found for source={source} cwd={source_cwd} focus={args.focus or ''}", file=sys.stderr)
+        # Determine which runtimes to scan
+        runtimes_to_scan = [source] if source else ALL_RUNTIMES
+        all_candidates = []
+        for rt in runtimes_to_scan:
+            try:
+                rt_candidates = candidate_finders[rt](str(Path(source_cwd).expanduser().resolve()), args.focus)
+                for c in rt_candidates:
+                    c["runtime"] = rt
+                all_candidates.extend(rt_candidates)
+            except Exception:
+                continue
+
+        if not all_candidates:
+            rt_list = ",".join(runtimes_to_scan)
+            print(f"No session found for source={rt_list} cwd={source_cwd} focus={args.focus or ''}", file=sys.stderr)
             return 1
+
+        # Sort by mtime desc — most recent first across all runtimes
+        all_candidates.sort(key=lambda c: c.get("mtime", 0), reverse=True)
+        candidates = all_candidates
 
         # When focus is active, extract from ALL matching sessions (not just top 1)
         total_candidates = len(candidates)
         if args.focus:
-            # Collect all candidates with non-zero focus score
             matched = [c for c in candidates if c.get("focus_score", 0) > 0]
             if not matched:
-                # Fallback: if focus matched nothing by score, use top 3
                 matched = candidates[:3]
             session_paths = [c["path"] for c in matched]
             multi_session = len(session_paths) > 1
         else:
             session_paths = [candidates[0]["path"]]
             matched = [candidates[0]]
+
+        # Resolve parser for each session
+        if source:
+            parser_fn = parsers[source]
+        else:
+            resolved_source = matched[0].get("runtime", "claude") if matched else "claude"
 
         session_path = session_paths[0]
 
@@ -475,11 +496,19 @@ def main() -> int:
     modes = set()
     total_lines = 0
     for sp in session_paths:
-        result = parser_fn(sp)
-        mtime = _mtime(sp)
+        # Look up parser per session (auto-detect may mix runtimes)
+        rt = resolved_source
+        if not source:
+            # Find which runtime this session came from
+            for m in matched:
+                if m.get("path") == sp:
+                    rt = m.get("runtime", "claude")
+                    break
+        result = parsers.get(rt, parsers["claude"])(sp)
+        smtime = _mtime(sp)
         for idx, t in enumerate(result["turns"]):
             t["session_file"] = str(sp)
-            t["session_mtime"] = mtime
+            t["session_mtime"] = smtime
             t["session_ordinal"] = idx
         all_turns.extend(result["turns"])
         modes.add(result["mode"])
@@ -501,8 +530,14 @@ def main() -> int:
     total_words = sum(len(t["text"].split()) for t in turns)
     total_tokens = sum(estimate_tokens(t["text"]) for t in turns)
 
+    # Record which runtimes contributed
+    contributing_runtimes = sorted(set(
+        [m.get("runtime", resolved_source) for m in matched]
+    ))
+
     output = {
-        "source": source,
+        "source": source or "auto",
+        "contributing_runtimes": contributing_runtimes,
         "current_cwd": str(Path.cwd().resolve()),
         "source_cwd": str(Path(source_cwd).expanduser().resolve()) if source_cwd else None,
         "focus": args.focus,

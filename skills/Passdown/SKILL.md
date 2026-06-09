@@ -1,17 +1,14 @@
 ---
 name: Passdown
 description: |
-  Transfer raw conversation context from another coding agent (Codex, Pi,
-  Claude Code) into the current session. Supports same-directory and
-  cross-directory handoff by reading the source agent's persistent JSONL
-  session log directly. Use --focus to choose the relevant session when a
-  source workspace has many sessions. Artifacts stay in the source workspace
-  and are referenced by absolute path.
+  Transfer context from another coding agent session into the current session.
+  Auto-detects runtime (Codex/Pi/Claude Code). Defaults to current directory —
+  no parameters needed for same-repo handoff. Multi-runtime sessions merged by
+  recency with focus filtering and deduplication.
 
-  Trigger on: "agent handoff", "handoff from codex", "接手 codex 的上下文",
-  "从 pi 切换过来", "继续 codex 的会话", "handoff from pi",
-  "switch from claude", "agent交接", "上下文切换", "接管会话",
-  "attach codex session", "继续上一个agent的对话".
+  Trigger on: "agent handoff", "handoff", "接手上下文", "agent交接",
+  "上下文切换", "attach session", "继续上一个agent的对话",
+  "上次在这个目录做了什么".
 ---
 
 # Agent Handoff
@@ -30,39 +27,44 @@ Transfer the conversation and relationship map, not the implementation files. Th
 
 ## Modes
 
-### Same-directory handoff
+`--former` is optional. When omitted, auto-detects sessions from all three runtimes (Codex + Pi + Claude Code) and merges by recency.
 
-Use when the current agent is already in the same repo/workspace as the source session:
+`--dir` defaults to current working directory when not specified.
+
+### Same-directory handoff（最简）
 
 ```bash
-python3 <skill-dir>/scripts/extract_handoff.py --former <codex|pi|claude> --cwd <current-repo> --focus "<topic>" --json
+python3 <skill-dir>/scripts/extract_handoff.py --focus "<topic>" --json
 ```
+
+Auto-detect runtime, default to current cwd.
 
 ### Cross-directory handoff
 
-Use when the current agent is in workspace A but needs to attach context from workspace B:
-
 ```bash
-python3 <skill-dir>/scripts/extract_handoff.py --former <codex|pi|claude> --dir /absolute/source/workspace --focus "<topic>" --json
+python3 <skill-dir>/scripts/extract_handoff.py --dir /absolute/source/workspace --focus "<topic>" --json
 ```
 
-`--dir` is an alias for source `--cwd`. It does not change the current shell directory and does not copy source artifacts.
+Auto-detect runtime in given directory.
+
+### Specific runtime
+
+```bash
+python3 <skill-dir>/scripts/extract_handoff.py --former claude --dir /absolute/workspace --focus "<topic>" --json
+```
 
 ### Direct session file
 
-Use when the user provides the session JSONL path or discovery is wrong:
-
 ```bash
-python3 <skill-dir>/scripts/extract_handoff.py --former <codex|pi|claude> --file /absolute/session.jsonl --focus "<topic>" --json
+python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --former claude --json
 ```
 
 ## Parameters
 
-- `--former <codex|pi|claude>` — source agent. Required unless obvious from a wrapper command.
-- `--cwd <path>` — source workspace path. Defaults conceptually to current cwd for same-directory handoff.
-- `--dir <path>` — alias for `--cwd`, clearer for cross-directory handoff.
+- `--former <codex|pi|claude>` — optional. Auto-detect from all three runtimes if omitted. Multi-runtime matches sorted by mtime desc.
+- `--dir <path>` — optional. Defaults to current working directory.
 - `--file <path>` — direct session JSONL path; bypass discovery.
-- `--focus "<topic>"` — find ALL matching sessions across the source workspace (not just the best one). Extracts and deduplicates turns from every session with a non-zero focus score. Without focus, returns only the top-ranked session.
+- `--focus "<topic>"` — find ALL matching sessions across runtimes. Extracts and deduplicates turns from every session with a non-zero focus score.
 
 ## Non-Negotiable Constraints
 
