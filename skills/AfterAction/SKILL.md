@@ -56,3 +56,11 @@ When the user asks for case share, 分享, 培训, 复盘页面, or a page for o
 - 用断言句。"改了三行代码" not "进行了相关调整".
 - 数字和文件名前置。"`server.py` 第 87 行超时设了 5 秒" not "超时配置方面做了优化".
 - 每个尝试说清"为什么不行"，不是"尝试了方案 A，不可行".
+
+## Gate
+
+写入后跑：
+```bash
+python3 ~/.claude/skills/AfterAction/scripts/aar_gate.py <report.md>
+```
+blocked → 缺节或未选判断。4 项：文件存在、5 节完整、判断选了三选一、禁词命中（warn）。

@@ -124,13 +124,19 @@ Code that exists but has zero test coverage.
 [what to fix first]
 ```
 
-All three files go to the repo-local planning artifact directory for the task, not a conversation id:
+All three files go to `.planning/<task-or-workflow-slug>/`，不按 conversation id 建目录：
 
-```text
+```
 .planning/<task-or-workflow-slug>/document-dev-checklist.md
 .planning/<task-or-workflow-slug>/dev-test-coverage-checklist.md
 .planning/<task-or-workflow-slug>/align-summary.md
 ```
+
+输出后跑 gate：
+```bash
+python3 ~/.claude/skills/Traceback/scripts/traceback_gate.py --dir .planning/<slug>/
+```
+blocked → 缺文件或缺覆盖率数据。5 项：3 个 checklist 文件存在、summary 含 Design→Dev 和 Dev→Test、Critical Gaps 引 Canon（warn）。
 
 
 ## Workflow Gate Contract

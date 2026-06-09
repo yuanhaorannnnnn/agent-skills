@@ -60,6 +60,18 @@ Each mode must leave a clear phase gate in `state.json`, a Canon task/update-car
 - Do not create `.planning/conversations/<demand-id>/` as the durable plan. Canon task page is durable state; `goal.md` is runtime execution brief.
 - Do not enter Turnover unless build/validation evidence and Review Gate/Traceback results are recorded or explicitly waived.
 
+## Resources
+
+- `orient.md` — Orient phase: intel analysis + design doc generation
+- `briefing.md` — Briefing phase: KB upload + review meeting scheduling
+- `engage.md` — Engage phase: status change + goal.md + dev launch
+- `turnover.md` — Turnover phase: deliverable posting + status/assignee change
+- `scripts/orient_gate.py` — Orient gate checker (pass/blocked/ready/warn, human gate: user confirms intel)
+- `scripts/briefing_gate.py` — Briefing gate checker (pass/blocked/ready/warn, human gate: review passed)
+- `scripts/engage_gate.py` — Engage gate checker (pass/blocked/warn, all machine checks)
+- `scripts/turnover_gate.py` — Turnover gate checker (pass/blocked, terminal gate)
+- Runtime artifacts: `orient_gate.json`, `briefing_gate.json`, `engage_gate.json`, `turnover_gate.json`
+
 ## Canon 输出边界
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。

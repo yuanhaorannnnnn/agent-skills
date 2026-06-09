@@ -130,6 +130,12 @@ Pi runtime 使用：
 
 触发后，agent 读取 `goal.md` 执行；Canon task page 用于持久记录进度、证据和回写结果。
 
+**Step 4 后跑 gate**：
+```bash
+python3 ~/.claude/skills/Execute/scripts/execution_gate.py --goal <goal-md> --task <canon-task-path>
+```
+blocked → goal.md 缺失或 Canon task page 未更新。pass → /goal 已准备好。
+
 ### Step 5: Review Gate
 
 实现完成后、Traceback/Sanitize 前，读取共享质量门：

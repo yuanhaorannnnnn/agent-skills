@@ -2,6 +2,20 @@
 
 ## 预检
 
+**第一步：读 gate。在操作知识库或日历之前。**
+
+```bash
+cat .proposal/<demand-id>/orient_gate.json
+```
+
+| gate verdict | 行为 |
+|-------------|------|
+| **pass** | 正常进入 Briefing（用户已确认情报摘要，human gate cleared） |
+| **ready** | 提示用户"方案已生成，确认情报摘要后回复 OK"——等待用户手动清除 human gate |
+| **blocked** | **拒绝启动。** 列出缺失项，提示"回 Orient 补"，停止 |
+
+gate 通过后继续：
+
 1. 确认 CONOPS 方案文档已生成（`state.json` 中 `design_doc_path` 非空）
 2. 确认需求关联人员名单已就绪（`state.json` 中 `participants` + `cc`）
 3. 确认 `participants` + `cc` 已能解析为 dws calendar 需要的 `userId`；姓名解析不唯一时停止确认，不创建日程
@@ -71,10 +85,15 @@
 
 ## 完成检查
 
-- [ ] 方案文档已上传知识库
-- [ ] 评论区已附文档链接
-- [ ] 所有人员姓名已解析为 dws userId
-- [ ] 所有人员空闲时段已查询
-- [ ] 评审会议日程已创建（或 5 天无空槽已上报）
-- [ ] state.json 已更新
-- [ ] Canon task/update-card 已记录评审证据或明确记录未完成原因
+Briefing 完成跑 gate 脚本：
+
+```bash
+python3 ~/.claude/skills/Tasking/scripts/briefing_gate.py <demand-id> --json
+```
+
+输出 `briefing_gate.json`。verdict 四态：
+- **pass** — machine + human 全过，可以进 Engage
+- **ready** — machine 全过，human gate pending（"方案评审待用户确认"）
+- **blocked** — machine 有失败，列出缺失项
+
+`ready` 状态时提示用户"方案评审完成后回复 OK，我进 Engage 开发"。

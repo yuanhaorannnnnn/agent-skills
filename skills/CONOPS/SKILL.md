@@ -203,19 +203,21 @@ If a question can be answered by exploring the codebase, explore instead.
 
 ---
 
-## 质量检查（输出前自检）
+## 质量检查
 
-- [ ] 文档包含全部 14 节
-- [ ] "本次不包含"清单长度 ≥ "本次包含"清单
-- [ ] 每段第一句能直接回答"这和我的工作有什么关系"
-- [ ] 没有禁词清单中的任何词汇
-- [ ] 没有"建议..."句式（除了第 8 节产品评审点）——第 8 节用选择问句
-- [ ] 测试评审点按层级（编译 → API → Runtime → DFS → 一致性）拆分
-- [ ] 风险表中有具体文件路径或参数名
-- [ ] Code Navigation 表中每行都有文件路径 + 职责描述
-- [ ] 全文不超过 10 个"需要"、8 个"建议"、5 个"后续"
-- [ ] 文件已保存到 `.proposal/<demand-id>/` 或 `.proposal/<task-slug>/`，不按 conversation id 建目录
-- [ ] Canon update-card/task/decision/artifact refs 已记录，或明确说明本次只生成临时方案 artifact
+文档完成后跑 gate —— 机械检查脚本化：
+
+```bash
+python3 ~/.claude/skills/CONOPS/scripts/quality_gate.py <path/to/design_doc.md>
+```
+
+blocked → 禁词命中 / 节缺失 / scope 不平衡 → 修后重跑。pass → 可以发评审。
+
+脚本检查 5 项：文件存在、禁词命中（regex）、14 节完整、本次不包含≥本次包含、建议/需要/后续字数。以下仍靠人判：
+- 每段第一句能否回答"这和我的工作有什么关系"
+- 风险表中具体文件路径/参数名
+- Code Navigation 每行都有文件路径
+- Canon 是否已更新
 
 ---
 

@@ -2,8 +2,21 @@
 
 ## 预检
 
-1. 确认方案已通过线下评审
-2. 确认 `state.json` 中 `phase: review`，`design_doc_path` 非空
+**第一步：读 gate。在改状态或启动开发之前。**
+
+```bash
+cat .proposal/<demand-id>/briefing_gate.json
+```
+
+| gate verdict | 行为 |
+|-------------|------|
+| **pass** | 正常进入 Engage |
+| **ready** | 提示用户"方案评审是否已通过？"——等待用户下令 |
+| **blocked** | **拒绝启动。** 列出缺失项，提示"回 Briefing 补"，停止 |
+
+gate 通过后继续：
+
+1. 确认 `state.json` 中 `phase: review`，`design_doc_path` 非空
 
 ## 执行
 
@@ -95,12 +108,10 @@ Traceback 完成后停止——需手动编译验证，通过后手动运行 San
 
 ## 完成检查
 
-- [ ] 需求单状态已改为 `开发中`
-- [ ] 开发任务已从方案中提取
-- [ ] `.planning/conversations/<demand-id>/` 工作区不再创建——Canon task page 已包含 § Plan / § Findings / § Progress
-- [ ] `goal.md` 已生成，Canon task page § Goal + § Plan 已同步
-- [ ] `state.json.goal_path` 已更新为 `goal.md` 路径，`state.json.canon_task_path` 已更新为 Canon task page 路径
-- [ ] `/goal <goal.md>` 或 `/loop custom <goal.md>` 已真实触发，或已明确停在“等待用户触发 runtime command / runtime 不支持等价执行命令”状态
-- [ ] Review Gate 已通过，或 blocker 已修复/用户明确豁免
-- [ ] state.json 已更新
-- [ ] Canon task/update-card 已记录开发目标或明确记录未完成原因
+Engage 完成跑 gate 脚本：
+
+```bash
+python3 ~/.claude/skills/Tasking/scripts/engage_gate.py <demand-id> --json
+```
+
+输出 `engage_gate.json`。Engage 无 human gate——全部 machine check：state phase、goal.md 存在、review gate 通过、traceback 完成、Canon 更新。

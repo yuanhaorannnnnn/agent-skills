@@ -127,7 +127,16 @@ It consumes prior implementation, validation, Review Gate, and Traceback evidenc
 
 旧版 `.planning/conversations/` 下的 progress.md 不再更新——task page 是唯一的进度记录点。
 
-## Step 7: Canon promotion
+## Step 7: Gate
+
+收尾完成跑 gate——验证 commit、push、Canon 更新都落地了：
+
+```bash
+python3 ~/.claude/skills/Sanitize/scripts/wrapup_gate.py --task <canon-task-path> --repo <path>
+```
+blocked → commit 缺失 / 未 push / Canon 未更新。pass → 收尾完成。
+
+## Step 8: Canon promotion
 
 对有长期价值的收尾，创建或更新：
 

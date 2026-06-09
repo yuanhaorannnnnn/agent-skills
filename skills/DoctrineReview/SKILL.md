@@ -215,6 +215,14 @@ Always structure the final report like this:
 - **Needs evidence**: what might be worth packaging if more evidence accumulates
 ```
 
+## Gate
+
+报告输出后跑：
+```bash
+python3 ~/.claude/skills/DoctrineReview/scripts/report_gate.py <report.md>
+```
+blocked → 缺节。3 项：文件存在且≥100字、Data Scope/Shortlist/Decisions 三节完整、shortlist 表格非空（warn）。
+
 ## Remember
 
 - `/tmp` sessions are noise (AGENTS.md injections) — always exclude them

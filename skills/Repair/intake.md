@@ -53,8 +53,9 @@
 
 ### Step 4: 生成修复方案
 
-写入 `<repo_root>/.proposal/repair/<bug-id>/fix_plan.md`。`<bug_root>` 只保留 Phase 0 原始材料
-和 `state.json`，不写入任何 agent 生成的产物。
+写入两份文件：
+
+**1. `fix_plan.md`**（人读）— `<repo_root>/.proposal/repair/<bug-id>/fix_plan.md`。
 
 ```markdown
 # <bug-id> 修复方案
@@ -76,6 +77,8 @@
 ## 待确认
 - ...
 ```
+
+**2. `fix_plan.json`**（Machine 读）— 按 `references/fix_plan_schema.md` 的 schema 生成。Fix Agent 以此为主源。`root_cause.confidence` 为 `speculative` 的项 + `uncertainties` 中 `impact: blocking` 的项会在 gate 检查时导致 blocked。
 
 ### Step 5: 生成 Breach 对齐页
 
@@ -147,12 +150,21 @@ cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/d
 
 ## 完成检查
 
-- [ ] 缺陷上下文已读取
-- [ ] 分支已按参数切换或创建
-- [ ] 代码分析已完成
-- [ ] `fix_plan.md` 已生成
-- [ ] Breach 页面已生成
-- [ ] 云效状态已改为 `修复中`
-- [ ] 未修改负责人
-- [ ] `state.json` 已更新
-- [ ] Canon task/update-card 已记录 Intake 证据或明确记录未完成原因
+Intake 完成必须跑 gate 脚本——不再靠 Agent 自己打勾：
+
+```bash
+python3 ~/.claude/skills/Repair/scripts/intake_gate.py <bug-id> --json
+```
+
+输出 `fix_gate.json`，verdict 三态：
+- **pass** — 可以进 Fix
+- **blocked** — 不可进 Fix，列出缺失项
+- **warn** — 可以进 Fix 但某几项有警告（`root_cause.confidence: speculative` / `uncertainties` 有 `clarifying`）
+
+gate 脚本会检查 9 项中的 7 项（yunxiao 状态和负责人检查需要 MCP auth，本地跳过）。
+
+## Handoff to Fix
+
+Intake 写入 `fix_plan.json`（按 `references/fix_plan_schema.md` 的 schema），Fix Agent 的独立判定由此 JSON 做出。gate 脚本检查 `fix_plan.json` 的 `root_cause.hypothesis` 和 `fix_plan.modified_files` 非空——不通过则 blocked。
+
+`fix_gate.json` 是 Fix 的入口防线。Fix Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。

@@ -18,7 +18,10 @@ description: |
 ### Step 1: Start server + open page
 
 ```bash
-lsof -i :8766 >/dev/null 2>&1 || python3 <agent-platform>/../projects/review/server.py &
+# Pre-check: server.py must exist
+test -f ~/.agents/repos/projects/review/server.py || { echo "server.py not found"; exit 1; }
+# Start if not already running
+lsof -i :8766 >/dev/null 2>&1 || python3 ~/.agents/repos/projects/review/server.py &
 open http://localhost:8766/?file=<absolute-path-to-md>
 ```
 

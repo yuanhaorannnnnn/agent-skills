@@ -90,6 +90,15 @@ If any durable target is updated, create a bridge update card:
 /media/yhr/2T/Canon/raw/update-cards/YYYYMMDD-<slug>.md
 ```
 
+## Gate
+
+写入后跑 gate——验证 task page 确实写进去了：
+
+```bash
+python3 ~/.claude/skills/Secure/scripts/write_gate.py --task <canon-task-path>
+```
+blocked → task page 缺失 / frontmatter 缺 status 或 updated / 缺 Goal/Current State/Next Step 节。
+
 ## Workflow Integration
 
 Workflow skills call Secure as a phase-closeout side effect:

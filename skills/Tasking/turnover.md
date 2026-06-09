@@ -2,6 +2,19 @@
 
 ## 预检
 
+**第一步：读 gate。在发评论或改状态之前。**
+
+```bash
+cat .proposal/<demand-id>/engage_gate.json
+```
+
+| gate verdict | 行为 |
+|-------------|------|
+| **pass** | 正常进入 Turnover |
+| **blocked** | **拒绝启动。** 列出缺失项，提示"回 Engage 补"，停止 |
+
+gate 通过后继续：
+
 1. 确认编译验证已通过
 2. 确认交付物链接已准备好（手动打包产生的 URL）
 3. 确认 `state.json` 中 `phase: dev`
@@ -58,8 +71,10 @@
 
 ## 完成检查
 
-- [ ] 评论区已附交付物链接清单
-- [ ] 需求单状态已改为 `系统测试`
-- [ ] 需求单负责人已改为 `樊亮亮`
-- [ ] state.json 已更新
-- [ ] Canon task/update-card 已记录交付证据或明确记录未完成原因
+Turnover 完成跑 gate 脚本——验证需求被干净地移交：
+
+```bash
+python3 ~/.claude/skills/Tasking/scripts/turnover_gate.py <demand-id> --json
+```
+
+输出 `turnover_gate.json`。Turnover 无下游 phase——gate 验证移交状态完整（state/deliverables/comment/assignee/Canon）。

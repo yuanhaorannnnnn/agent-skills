@@ -2,21 +2,36 @@
 
 ## 预检
 
-1. 确认 `<bug_root>/state.json` 中 `phase: intake` 或状态为 `修复中`。
-2. 确认 `state.json.fix_plan_path` 指向的 `<repo_root>/.proposal/repair/<bug-id>/fix_plan.md` 存在；若旧 state 缺少该字段，再兼容检查 `<bug_root>/fix_plan.md`。
-3. 确认当前分支与 `state.json.fix_branch` 或用户指定分支一致。
-4. 检查 worktree：`git diff --quiet && git diff --cached --quiet`，不通过则停止。未跟踪文件（`??`）不计。
+**第一步：读 gate。在碰任何代码之前。**
+
+```bash
+cat .proposal/repair/<bug-id>/fix_gate.json
+```
+
+| gate verdict | 行为 |
+|-------------|------|
+| **pass** | 正常进入 Fix |
+| **warn** | 进入 Fix 但把警告内容告知用户（"root_cause.confidence 为 speculative，修复可能不准"） |
+| **blocked** | **拒绝启动。** 列出缺失项，提示"回 Intake 补"，停止 |
+
+gate blocked 时不要"顺便补一下就可以继续"——回 Intake 正式补完后重新跑 gate 生成新的 fix_gate.json。
+
+gate 通过后继续以下预检：
+
+1. 确认 `<bug_root>/state.json` 中 `phase` 为 `intake`。
+2. 确认 `fix_plan.json` 存在——Fix 以此为主源，`fix_plan.md` 为人工阅读补充。
+3. 确认当前分支与 `state.json.fix_branch` 一致。
+4. 检查 worktree：`git diff --quiet && git diff --cached --quiet`，不通过则停止。
 
 ## 执行
 
 ### Step 1: 读取修复方案
 
-读取：
+按顺序读取：
 
-1. `state.json`
-2. `detail.md`
-3. `state.json.fix_plan_path` 指向的 `fix_plan.md`
-4. 必要附件和日志
+1. `fix_plan.json` — **主源**。含 root_cause/confidence/files/modified_files/uncertainties/related_code/attachments。修复决策基于此 JSON 做出。
+2. `fix_plan.md` — 人工阅读补充。
+3. `state.json` + `detail.md` + 附件（按 `fix_plan.json.attachments` 列表读取）
 
 ### Step 2: 调用 Neutralize
 
@@ -138,16 +153,21 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 
 ## 完成检查
 
-- [ ] 根因已定位
-- [ ] 最小修复已完成
-- [ ] 相关验证已运行，或未运行原因已写明
-- [ ] Server 端修改 → Sentinel 监控的 `./package.sh` 编译通过，或 Python API 修改 → Sentinel/本地 `cmake --build` 通过
-- [ ] Sentinel task id 和构建产物已写入 `state.json`
-- [ ] 修复分支已 commit 并 push，commit_sha/pushed_branch 已写入 `state.json`
-- [ ] Review Gate 已通过，或 blocker 已修复/用户明确豁免
-- [ ] 相似问题已检查
-- [ ] 必要时已触发 Codify
-- [ ] 必要时已触发 AfterAction
-- [ ] 未修改负责人
-- [ ] `state.json` 已更新
-- [ ] Canon task/update-card 已记录 Fix 证据或明确记录未完成原因
+Fix 完成必须跑 gate 脚本——不再靠 Agent 自己打勾：
+
+```bash
+python3 ~/.claude/skills/Repair/scripts/fix_gate.py <bug-id> --json
+```
+
+输出 `fix_gate.json`，verdict 三态：
+- **pass** — 可以进 Closeout
+- **blocked** — 不可进 Closeout，列出缺失项
+- **warn** — 可以进 Closeout 但 review 豁免/部分验证不完整
+
+gate 脚本检查 7 项硬条件：branch 一致、fix_plan.json 存在（已消费 Intake 产物）、Sentinel 状态、review verdict、commit/push 完成、fix_result.json 存在、Canon 已更新。
+
+## Handoff to Closeout
+
+Fix 写入 `fix_result.json`（按 `references/fix_result_schema.md` 的 schema），Closeout Agent 以此为主源。
+
+`fix_gate.json` 是 Closeout 的入口防线。Closeout Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。

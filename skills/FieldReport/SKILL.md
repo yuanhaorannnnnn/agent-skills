@@ -44,4 +44,11 @@ historical evidence.
 - Keep it narrow — about the task, not the whole repository.
 - Every claim traces back to a planning doc, commit, test result, or decision record.
 - Do not use while the task is still being implemented unless explicitly asked.
-- After producing a non-trivial report, create/update `/media/yhr/2T/Canon/raw/update-cards/<date>-fieldreport-<topic>.md` with report path, source evidence, claims, and follow-ups.
+
+## Gate
+
+报告完成后跑：
+```bash
+python3 ~/.claude/skills/FieldReport/scripts/source_gate.py <report.md>
+```
+blocked → 缺节或缺源。3 项：文件存在且 ≥200 字、6 节完整、引用了至少一个 Canon task / planning doc / commit。pass → 继续 Canon promotion。

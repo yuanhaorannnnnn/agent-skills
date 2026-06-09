@@ -50,7 +50,19 @@ Repair modes must satisfy the shared workflow output contract:
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
-Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`fix_plan.md`, Breach page, Sentinel state, commit/MR, or Closeout comment).
+Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`fix_plan.md` + `fix_plan.json`, Breach page, `fix_gate.json`, Sentinel state, commit/MR, or Closeout comment).
+
+## Resources
+
+- `intake.md` — Intake phase execution instructions
+- `fix.md` — Fix phase execution instructions
+- `closeout.md` — Closeout phase execution instructions
+- `references/fix_plan_schema.md` — fix_plan.json schema + gate behavior
+- `references/fix_result_schema.md` — fix_result.json schema + gate behavior
+- `scripts/intake_gate.py` — Intake gate checker
+- `scripts/fix_gate.py` — Fix gate checker
+- `scripts/closeout_gate.py` — Closeout gate checker
+- Runtime artifacts: `fix_gate.json`, `closeout_gate.json` (each phase's entry defense)
 
 ## Gotchas
 

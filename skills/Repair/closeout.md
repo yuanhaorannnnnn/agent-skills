@@ -2,7 +2,24 @@
 
 ## 预检
 
-1. 确认 `<bug_root>/state.json` 存在。
+**第一步：读 gate。在发评论或改状态之前。**
+
+```bash
+cat .proposal/repair/<bug-id>/fix_gate.json
+```
+
+| gate verdict | 行为 |
+|-------------|------|
+| **pass** | 正常进入 Closeout |
+| **warn** | 进入 Closeout 但告知用户警告项（"review 豁免 / 部分验证不完整"） |
+| **blocked** | **拒绝启动。** 列出缺失项，提示"回 Fix 补"，停止 |
+
+gate blocked 时不要"顺便补一下就可以继续"——回 Fix 正式补完后重新跑 gate 生成新的 fix_gate.json。
+
+gate 通过后继续：
+
+1. 读取 `fix_result.json` — **Closeout 主源**。从 `fix_result.verdict/verification/delivery/side_effects/risks` 提取所有需要的数据。
+2. 确认 `<bug_root>/state.json` 存在。
 2. 确认 `--outcome` 和 `--comment` 已提供。
 3. 如果 `--outcome fixed`，确认 Fix 阶段已完成 commit/push，且 `--deliverables` 包含：
    - 代码提交：git commit SHA 或 MR/PR URL（优先使用 Fix 阶段记录的 `commit_sha` / `mr_url`）
@@ -117,9 +134,12 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
 
 ## 完成检查
 
-- [ ] `--comment` 已写入云效评论区
-- [ ] `fixed` 已附 commit、构建产物链接和来自 Fix/Sentinel 的研发自测摘要
-- [ ] 云效状态已按 outcome 更新
-- [ ] 未修改负责人
-- [ ] `state.json` 已更新
-- [ ] Canon task/update-card 已记录 Closeout 证据或明确记录未完成原因
+Closeout 完成跑 gate 脚本验证收尾干净：
+
+```bash
+python3 ~/.claude/skills/Repair/scripts/closeout_gate.py <bug-id> --json
+```
+
+输出 `closeout_gate.json`。4 项检查：state outcome/status 已填、comment 证据存在、owner 未变（skipped，需 MCP）、Canon 已更新。
+
+Closeout 没有下游 phase——gate 目的不是 gate 下一个 phase 进入，而是验证缺陷被干净地关上。

@@ -25,17 +25,31 @@ scan nearby code for the same mistake pattern.
 4. Apply the minimum safe correction.
 5. Verify by rerunning the relevant test or command.
 6. Search adjacent files and similar call sites for the same error shape.
-7. Summarize: what was fixed, what similar issues were checked, remaining risk.
+7. Write gate evidence file — `rerun_command`, `rerun_exit_code`, `adjacent_searches`, `adjacent_findings`, `remaining_risk` → `.agent-state/neutralize-gate.json`.
+8. Run gate:
+   ```bash
+   python3 ~/.claude/skills/Neutralize/scripts/verify_fix_gate.py
+   ```
+   blocked → 补证据后重跑。pass → 继续总结。
 
 ## Output
 
-- **Observed Error** — the relevant log line, screenshot clue, or failure symptom
-- **Root Cause** — the specific cause in code or configuration
-- **Fix Applied** — what was changed
-- **Similar Issues Checked** — where you looked for the same error shape
-- **Additional Similar Issues Found** — similar mistakes fixed or flagged
-- **Validation** — what you reran
-- **Remaining Risk** — anything still uncertain
+Human-readable summary:
+- **Observed Error** / **Root Cause** / **Fix Applied**
+- **Similar Issues Checked** / **Additional Similar Issues Found**
+- **Validation** / **Remaining Risk**
+
+Machine-readable evidence (`.agent-state/neutralize-gate.json`):
+```json
+{
+  "rerun_command": "pytest tests/test_foo.py -v",
+  "rerun_exit_code": 0,
+  "rerun_output_sample": "...",
+  "adjacent_searches": ["rg 'same_pattern' src/", "rg 'similar_call' lib/"],
+  "adjacent_findings": ["src/bar.py:42 same pattern"],
+  "remaining_risk": "only checked Python side; C++ callers not scanned"
+}
+```
 
 ## Rule Sources
 

@@ -15,312 +15,106 @@ description: |
 
 # Autoresearch Loop
 
-This skill orchestrates a supervised automation loop for optimizing CARLA
-LiDAR sensor performance. The user provides the optimization configuration;
-the AI handles code analysis, hypothesis generation, patch application,
-build, benchmark, and keep/discard decisions — iterating until termination
-conditions are met.
+compile→benchmark→analyze→improve loop。AI 驱动假设生成+打补丁+构建+基准测试+keep/discard 判定的自动化优化管道。
 
-## Architecture
+## 硬规则
 
-The loop is split across two layers:
+**进入 patch/build/benchmark 前必须读取对应 reference：**
+- 改代码前 → `references/safety-guardrails.md`
+- 跑 benchmark 前 → `references/benchmark-contract.md`
+- 决策 keep/discard 前 → `references/loop-policy.md`
 
-- **This skill (AI layer)**: Analyzes code, generates hypotheses, applies
-  patches with Write/Edit tools, makes decisions, and coordinates the loop.
-- **`loop.py` (mechanical layer)**: Handles state persistence, build execution,
-  external benchmark launching, and result comparison via CLI commands.
+## 架构
 
-State is persisted to `.agent-state/autoresearch-loop-state.yaml` so the
-loop survives conversation compaction and can be resumed after interruption.
+两层分离：
+- **AI 层（此 skill）**：代码分析、假设生成、patch 应用、决策
+- **机械层（`loop.py`）**：状态持久化、构建执行、benchmark 启动/poll、结果比较
 
-## Canon Output Boundary
+状态文件：`.agent-state/autoresearch-loop-state.yaml`，proposal 压缩后仍可恢复。
 
-Read the shared contract: `/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`.
+## 状态机
 
-- `.agent-state/autoresearch-loop-state.yaml` is runtime loop state only.
-- Durable results belong in Canon: benchmark baseline, kept/discarded hypotheses, best commit, crash incidents, artifact paths, and follow-up decisions.
-- At termination, create `/media/yhr/2T/Canon/raw/update-cards/<date>-sweep-<loop-id>.md` and update the relevant Canon task/project/pattern/incident pages.
-- Benchmark outputs, metrics JSON, build logs, and patches are referenced by absolute path; do not copy them into Canon by default.
-
-## Triggering
-
-Trigger this skill when the user:
-
-- Asks to start an optimization loop or automatic benchmark
-- Wants AI to generate and test optimization hypotheses
-- Mentions `/autoresearch-loop` or similar command
-- Wants to iterate on CARLA LiDAR performance without manual build/benchmark
-  per round
+```
+[INIT] → [ANALYZING] → [PATCHING] → [BUILDING] → [BENCHMARKING] → [DECIDING]
+                ↑                                                          |
+                |◄──────── revert + next hypothesis (discard/crash) ──────┤
+                |◄──────── update baseline + next hypothesis (keep) ──────┤
+                                                                          ▼
+                                                                   [TERMINATED]
+```
 
 ## Phase 1: Initialize
 
-### 1.1 Verify prerequisites
-
-Before starting, confirm:
-
-1. **Target repository** (`/media/yhr/2T/CarlaUE5`) is on the correct branch
-   (`feature/carla-lidar-optimization` by default).
-2. **Controller repository** (`/media/yhr/2T/autoresearch`) is on the correct
-   branch (`feature/carla-lidar-autoresearch` by default).
-3. A baseline metrics file exists (from a prior manual run or the loop itself).
-   If not, run one manual baseline experiment first:
-   ```bash
-   cd /media/yhr/2T/autoresearch
-   python3 -m carla_autoresearch.experiment \
-     --workspace runs/baseline \
-     --description "baseline for autoresearch loop"
-   ```
-
-### 1.2 Initialize loop state
-
-Run the init command to create the state file:
+**第一步：pre-flight gate。** 在碰任何代码之前。
 
 ```bash
-cd /media/yhr/2T/autoresearch
-python3 -m carla_autoresearch.loop init \
-  --target <target_name> \
-  --metric scan_latency_ms_median \
-  --dimensions model-logic \
-  --max-rounds 10 \
-  --max-duration 240 \
-  --baseline-latency <latency_from_baseline> \
-  --baseline-commit <baseline_commit_hash> \
-  --baseline-metrics <path_to_baseline_metrics.json>
+python3 ~/.claude/skills/Sweep/scripts/preflight_gate.py
 ```
 
-Parameters:
-- `--target`: Name of the LiDAR target (e.g., `RayCastMemsLidar`)
-- `--metric`: Primary metric to optimize (default: `scan_latency_ms_median`)
-- `--dimensions`: Comma-separated optimization dimensions (default: `model-logic`)
-- `--max-rounds`: Maximum optimization rounds (default: 10)
-- `--max-duration`: Maximum duration in minutes (default: 240)
-- `--baseline-latency`: Baseline median latency in ms
-- `--baseline-commit`: Git commit hash of baseline
-- `--baseline-metrics`: Path to baseline metrics.json
+blocked → 停止，修复后重跑。pass → 继续。
 
-### 1.3 Generate hypothesis queue
-
-Analyze the target codebase (typically in `CarlaUE5` under the LiDAR sensor
-implementation) and generate N optimization hypotheses. Each hypothesis
-should include:
-
-- `id`: Short identifier (e.g., `h1`, `h2`)
-- `description`: What the optimization does
-- `target_file`: File path to modify in CarlaUE5
-- `dimension`: Optimization dimension (e.g., `model-logic`, `compiler-flags`)
-
-Add hypotheses to the loop state:
-
-```bash
-python3 -m carla_autoresearch.loop add-hypotheses \
-  --hypotheses "h1:description1:model-logic;h2:description2:model-logic"
-```
+1. 无 baseline → 手动跑一次 baseline experiment（见 `references/benchmark-contract.md`）
+2. `loop init`：指定 target、metric、dimensions、max_rounds、max_duration、baseline
+3. 分析 codebase，生成 hypothesis queue → `loop add-hypotheses`
 
 ## Phase 2: Loop Execution
 
-For each pending hypothesis, execute the following state machine:
+对每个 pending hypothesis 执行状态机。
 
-```
-[INIT] (done in Phase 1)
-  |
-  ▼
-[ANALYZING] ──pop next pending hypothesis──► [PATCHING]
-  |                                              |
-  |◄───────revert + next hypothesis──────────────┘
-  |         (on discard/crash)
-  |
-  |◄───────update baseline + next hypothesis─────┘
-  |         (on keep)
-  |
-  ▼
-[TERMINATED] (max_rounds / max_duration / no_improvement_streak)
-```
-
-### 2.1 Patching
-
-1. Read the target file(s) for the current hypothesis.
-2. Apply the optimization patch using Write/Edit tools.
-3. Verify the change compiles syntactically (if possible, a quick check).
-4. Stage changes with `git add`.
-5. Commit with a descriptive message including the hypothesis ID.
-
-### 2.2 Building
-
-1. Update loop state to `BUILDING`.
-2. Run headless build:
-   ```bash
-   python3 -m carla_autoresearch.loop build \
-     --workspace runs/<loop_id>/r<round>
-   ```
-3. If build fails (non-zero exit code):
-   - Mark hypothesis result as `crash`
-   - Revert the commit: `git reset --hard HEAD~1`
-   - Proceed to next hypothesis
-   - Increment `no_improvement_streak`
-
-### 2.3 Benchmarking
-
-1. Update loop state to `BENCHMARKING`.
-2. Launch external benchmark runner (non-blocking):
-   ```bash
-   python3 -m carla_autoresearch.loop benchmark-launch \
-     --workspace runs/<loop_id>/r<round>
-   ```
-   This opens a gnome-terminal running `external_runner.sh`, which handles
-   server startup, benchmark execution, and server shutdown independently.
-3. Use `ScheduleWakeup` to poll for completion:
-   - Initial delay: 120 seconds (server startup + benchmark typically takes
-     60-90 seconds)
-   - On wake, poll status:
-     ```bash
-     python3 -m carla_autoresearch.loop benchmark-poll
-     ```
-   - If `state == "success"`: proceed to Analyzing Results
-   - If `state == "failed"`: mark as `crash`, revert commit, next hypothesis
-   - If `state` in `("starting_server", "running_benchmark")`:
-     ScheduleWakeup with 60s delay and go idle again
-
-### 2.4 Analyzing Results
-
-1. Read the metrics.json produced by the benchmark.
-2. Run the decision command:
-   ```bash
-   python3 -m carla_autoresearch.loop decide \
-     --metrics-path runs/<loop_id>/r<round>/metrics.json
-   ```
-3. The decision output includes:
-   - `status`: `keep` or `discard`
-   - `reason`: Explanation
-   - `candidate_latency_ms`: New latency
-   - `baseline_latency_ms`: Current baseline
-
-### 2.5 Deciding
-
-Based on the decision output:
-
-**If `keep`:**
-1. Update baseline to the new result:
-   ```bash
-   # The baseline is updated implicitly by loop.py when recording
-   ```
-2. Reset `no_improvement_streak` to 0.
-3. Update `best` record.
-4. Proceed to next hypothesis.
-
-**If `discard`:**
-1. Revert the commit: `git reset --hard HEAD~1`
-2. Increment `no_improvement_streak`.
-3. Proceed to next hypothesis.
-
-**If `crash`:**
-1. Revert the commit: `git reset --hard HEAD~1`
-2. Increment `no_improvement_streak`.
-3. Proceed to next hypothesis.
-
-### 2.6 Termination Check
-
-After each decision, check termination conditions:
-
+**每轮开始跑 round gate**：
 ```bash
-python3 -m carla_autoresearch.loop status
+python3 ~/.claude/skills/Sweep/scripts/round_gate.py
 ```
+blocked → 停止 loop，报告。pass → 继续。改代码前读 `references/safety-guardrails.md`。
 
-Terminate if any of:
-- `round >= max_rounds` (default: 10)
-- `total_duration >= max_duration_minutes` (default: 240)
-- `no_improvement_streak >= 3` (3 consecutive discards/crashes)
+### Patch → Build → Benchmark → Decide
 
-If terminating, summarize results and output the best found optimization.
+- **Patch**：读 target file，apply optimization，commit with hypothesis ID
+- **Build**：`loop build` 构建，失败 → crash + revert
+- **Benchmark**：`loop benchmark-launch` → ScheduleWakeup poll → `loop benchmark-poll`
+- **Decide**：`loop decide` 判定 keep/discard。策略见 `references/loop-policy.md`
+
+### Termination Check
+
+每轮后跑 `loop status`。终止条件：`round >= max_rounds` / `total_duration >= max_duration_minutes` / `no_improvement_streak >= 3`。
 
 ## Phase 3: Terminate
 
-When the loop terminates:
-
-1. Print final summary:
-   - Best latency achieved
-   - Commit hash of best result
-   - Round number of best result
-   - Total rounds executed
-   - Total hypotheses tested
-   - Keep/discard/crash counts
-2. If the best result is on a non-baseline commit, remind the user to push
-   or save that commit.
-3. Update the conversation recap to reflect the completed work.
-4. Promote durable results to Canon: create/update the sweep update card, artifact refs, benchmark decision, and incident/pattern pages when applicable.
+- 打印最终摘要：best latency、commit、round、counts
+- best 为非 baseline commit → 提醒用户 push/save
+- Canon promotion：创建 update card，更新 Canon task/project/pattern/incident
+- 不自动 push/merge
 
 ## State Persistence
 
-The loop state is stored in `.agent-state/autoresearch-loop-state.yaml`.
-Key fields:
+Key fields in `.agent-state/autoresearch-loop-state.yaml`:
 
 | Field | Description |
 |-------|-------------|
-| `loop_id` | Unique identifier for this loop instance |
+| `loop_id` | Unique loop instance ID |
 | `state` | Current state machine state |
 | `config` | Optimization configuration |
-| `baseline` | Current baseline metrics and commit |
-| `best` | Best result found so far |
+| `baseline` | Current baseline metrics + commit |
+| `best` | Best result found |
 | `current` | Current round, hypothesis, workspace paths |
-| `hypotheses` | Queue of hypotheses with status |
-| `termination` | Streak counters and termination reason |
+| `hypotheses` | Hypothesis queue with status |
+| `termination` | Streak counters, termination reason |
 
-If the state file is missing or corrupted on load, the loop must be
-re-initialized from scratch.
+State 丢失或损坏 → 必须从头重新初始化。
 
 ## Error Handling
 
-| Scenario | Handling |
-|----------|----------|
-| Build failure | Mark `crash`, revert, next hypothesis |
+| Scenario | Action |
+|----------|--------|
+| Build failure | Mark crash, revert, next |
 | Server fails to start | External runner reports failure, revert, next |
-| Benchmark crashes | External runner reports failure, revert, next |
-| Point count mismatch | Decision = `discard`, revert, next |
-| Patch apply failure | Log error, skip hypothesis (no revert needed) |
-| Git commit failure | Log error, abort round |
+| Benchmark crash | External runner reports failure, revert, next |
+| Point count mismatch | Discard, revert, next |
+| Patch apply failure | Log, skip hypothesis |
 | All hypotheses tested | Terminate with current best |
 
-## Key Constraints
+## 资源
 
-- **Build runs headless** in the AI process (subprocess, ~10 min timeout).
-- **Server + benchmark run externally** in gnome-terminal, polled via
-  `status.json` and `ScheduleWakeup`.
-- **Patches use `acceptEdits` mode**: AI applies changes automatically.
-- **Hypothesis generation is one-shot**: Generate all upfront, test sequentially.
-- **Point count consistency is mandatory**: Any mismatch = discard, regardless
-  of latency improvement.
-- **Current fixed benchmark contract**: Town05, static ego + static lidar,
-  primary metric `scan_latency_ms_median`.
-
-## CLI Quick Reference
-
-```bash
-# Initialize
-python3 -m carla_autoresearch.loop init --target T --baseline-latency N --baseline-metrics P
-
-# Add hypotheses
-python3 -m carla_autoresearch.loop add-hypotheses --hypotheses "h1:desc:dim;h2:desc:dim"
-
-# Run build
-python3 -m carla_autoresearch.loop build --workspace W
-
-# Launch benchmark
-python3 -m carla_autoresearch.loop benchmark-launch --workspace W
-
-# Poll benchmark
-python3 -m carla_autoresearch.loop benchmark-poll
-
-# Decide
-python3 -m carla_autoresearch.loop decide --metrics-path P
-
-# Check status
-python3 -m carla_autoresearch.loop status
-```
-
-## File Locations
-
-- Skill: `~/.agents/skills/autoresearch-loop/SKILL.md`
-- Loop controller: `/media/yhr/2T/autoresearch/carla_autoresearch/loop.py`
-- Build adapter: `/media/yhr/2T/autoresearch/carla_autoresearch/controller.py`
-- External runner: `/media/yhr/2T/autoresearch/carla_autoresearch/external_runner.sh`
-- Experiment entry: `/media/yhr/2T/autoresearch/carla_autoresearch/experiment.py`
-- State file: `.agent-state/autoresearch-loop-state.yaml`
+- `references/safety-guardrails.md` — 硬规则：patch/build/benchmark 前必读
+- `references/benchmark-contract.md` — Metrics 格式、benchmark 执行协议、decide contract
+- `references/loop-policy.md` — Hypothesis queue、keep/discard/crash 判定、termination、Canon

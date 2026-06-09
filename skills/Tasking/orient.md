@@ -80,12 +80,16 @@
 
 ## 完成检查
 
-- [ ] worktree 已确认干净
-- [ ] base 分支已确认
-- [ ] 分支已创建/切换
-- [ ] 需求文档已全部读取
-- [ ] 代码分析已完成
-- [ ] 待确认清单已获用户确认
-- [ ] CONOPS 方案文档已生成
-- [ ] state.json 已更新
-- [ ] Canon task/update-card 已创建或明确记录未完成原因
+Orient 完成跑 gate 脚本：
+
+```bash
+python3 ~/.claude/skills/Tasking/scripts/orient_gate.py <demand-id> --json
+```
+
+输出 `orient_gate.json`。verdict 四态：
+- **pass** — machine + human 全过，可以进 Briefing
+- **ready** — machine 全过，human gate pending（"情报摘要待用户确认"）
+- **blocked** — machine 有失败，列出缺失项
+- **warn** — machine 全过但有轻微问题
+
+`ready` 状态时提示用户"情报摘要已生成，请确认后说 OK"。不自动进 Briefing。

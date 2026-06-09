@@ -117,8 +117,22 @@ Adapt the token set to what matters for the project. Don't include every
 possible token — include what the AI agent needs to render the product's
 core screens consistently.
 
-After the DESIGN.md, list which references were studied and what was adapted
-from each.
+After the DESIGN.md, list which references were studied and what was adapted from each.
+
+Write evidence to `.design/evidence.json`:
+```json
+{
+  "references_studied": ["vercel-DESIGN.md", "linear-DESIGN.md"],
+  "adaptations": {"vercel-DESIGN.md": "dark color palette", "linear-DESIGN.md": "keyboard-first interaction"},
+  "wholesale_copy": false
+}
+```
+
+Run gate:
+```bash
+python3 ~/.claude/skills/Cover/scripts/synthesis_gate.py --design <path> --evidence .design/evidence.json
+```
+blocked → DESIGN.md 缺失 或 <2 references。pass → 完成。
 
 ## Implementation Anti-Slop Rules
 

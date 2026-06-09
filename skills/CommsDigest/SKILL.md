@@ -6,7 +6,7 @@ description: |
   "digest this thread", "summarize this email chain", "这个 GitHub issue 到底
   决定了什么". Handles email threads, GitHub issues/PRs, chat logs, and forum
   posts. Output is an interactive HTML visualization, not a markdown note.
-version: "1.0.0"
+version: "2.0.0"
 user_invocable: true
 ---
 
@@ -14,70 +14,79 @@ user_invocable: true
 
 从多人讨论中提取决策结构，输出为交互式 HTML 可视化页面。
 
+## 架构：两阶段管线
+
+```
+Phase 1: 讨论分析（AI 语义理解）
+  原始讨论文本
+    → 结构化 JSON（按固定 schema）
+    → 保存为 raw/discussions/<slug>.json
+
+Phase 2: HTML 渲染（脚本化，零 AI）
+  raw/discussions/<slug>.json
+    → scripts/render_discussion.py
+    → queries/<slug>.html
+```
+
+## Phase 1: 讨论分析
+
+### Step 1.1: 获取讨论内容
+
+- GitHub issue/PR URL：`gh issue view` / `gh pr view` 获取讨论内容
+- 邮件/聊天/论坛：直接读取用户粘贴的文本
+- 网页 URL：WebFetch 获取内容
+
+### Step 1.2: 生成结构化 JSON
+
+按 `references/schema.md` 的 schema 分析讨论，输出 JSON。**必须先读 schema 再生成。**
+
+关键约束：
+- participants[].role 必须是枚举值：OP / Core / Reviewer / Commenter / Observer
+- timeline 最多 30 条，is_key 条目 ≤ 8 个
+- decisions 至少 1 条，没有明确结论写"无明确结论"
+- unresolved 不能空
+- 所有 name/author 使用原始显示名，不翻译
+
+### Step 1.3: 保存 JSON artifact
+
+```bash
+mkdir -p raw/discussions
+```
+
+写入 `raw/discussions/<slug>.json`。如果用户没说 slug，从讨论标题/source 生成。
+
+## Phase 2: HTML 渲染
+
+```bash
+python3 ~/.claude/skills/CommsDigest/scripts/render_discussion.py raw/discussions/<slug>.json -o queries/<slug>.html
+```
+
+渲染器完全脚本化——JSON → HTML 模板注入，零 AI 参与。模板位于 `templates/discussion-digest.html`。
+
+## Canon promotion
+
+读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+
+- `queries/{slug}.html` 是讨论可视化 artifact
+- `raw/discussions/{slug}.json` 是可审计的中间产物
+- 讨论中形成的决定、争议、action items 进入 Canon `decisions/`、`tasks/`、`patterns/` 或 `raw/update-cards/`
+- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-commsdigest-<slug>.md`
+
 ## 与 content-ingest 的区别
 
 | 维度 | content-ingest | discussion-digest |
 |------|---------------|-------------------|
 | 输入 | 单人叙述（视频/文章） | 多人对话（线程/issue/聊天） |
 | 提取目标 | 可操作知识（how） | 决策过程（who decided what） |
-| 输出格式 | Markdown → queries/ | HTML → queries/ |
+| 输出格式 | Markdown → queries/ | JSON → HTML → queries/ |
 | 核心问题 | "这篇文章讲了什么有用的" | "这群人到底怎么决定的" |
-
-## 输入格式
-
-- GitHub issue / PR 讨论（URL 或粘贴文本）
-- 邮件线程（粘贴原文）
-- 聊天记录（微信/Slack/Discord 导出）
-- 论坛帖子（URL 或粘贴文本）
-
-## 提取三层
-
-### 1. 参与方
-
-- 谁参与了讨论，每个人的初始立场
-- 谁在哪个时间点改变了立场，为什么
-- 每人的代表性发言
-
-### 2. 时间线
-
-- 按时间排列的关键事件
-- 标注转折点：什么信息改变了讨论走向
-
-### 3. 结论
-
-- 最终决定 / 达成的共识
-- 未解决的争议
-- 待办事项（action items）
-
-## 工作流
-
-### Step 1: 获取讨论内容
-
-- 如果是 GitHub URL：用 `gh issue view` / `gh pr view` 获取讨论内容
-- 如果是邮件/聊天/论坛：直接读取用户粘贴的文本
-- 如果是网页 URL：WebFetch 获取内容
-
-### Step 2: 阅读理解
-
-按三层框架阅读全部讨论内容。
-
-### Step 3: 生成交互式 HTML 可视化
-
-输出到 `queries/{slug}.html`，使用 `templates/discussion-digest.html` 的设计系统。包含参与方卡片、垂直时间线、结论摘要面板。
-
-### Step 4: Canon promotion
-
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
-
-- `queries/{slug}.html` 是讨论可视化 artifact。
-- 讨论中形成的决定、争议、action items 进入 Canon `decisions/`、`tasks/`、`patterns/` 或 `raw/update-cards/`。
-- 创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-commsdigest-<slug>.md`，记录 HTML 路径、输入来源、参与方和结论。
-- 如果在旧 wiki 环境执行，可兼容更新 `index.md`、`log.md`、`raw/PROCESSED.md`；Canon 是长期优先目标。
 
 ## 依赖
 
-无外部脚本依赖。纯 LLM 阅读理解 + HTML 模板渲染。
+- Python 3.9+（Phase 2 渲染器）
 
 ## 资源
 
-- `templates/discussion-digest.html`：交互式 HTML 模板（CSS 设计系统）
+- `references/schema.md`：JSON schema 规范（Phase 1 输出契约）
+- `scripts/render_discussion.py`：JSON → HTML 渲染器（Phase 2）
+- `templates/discussion-digest.html`：HTML 设计系统模板
