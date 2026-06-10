@@ -56,7 +56,17 @@ gate 通过后继续：
 
 ## 执行
 
-### Step 1: 组织评论
+### Step 1: 上传 self-check 脚本
+
+`fixed` 时，将 self-check 脚本上传为云效附件：
+
+```
+mcp__yunxiao__create_workitem_attachment <bug-id> <self_check_script_path>
+```
+
+脚本附件的 `fileIdentifier` 记录到 `state.json` 的 `attachment_ids` 中。
+
+### Step 2: 组织评论
 
 所有 outcome 都必须写云效评论。
 
@@ -72,7 +82,9 @@ gate 通过后继续：
 提交：<commit_sha 或 MR URL>
 镜像：<http://172.16.19.158:8080/... 格式的构建产物链接>
 
-自测：<--self-check，包含 Sentinel task id/状态/关键日志结论，或明确的本地验证命令>。运行时验证需在稳定性环境回测。
+自测：<--self-check，包含 Sentinel task id/状态/关键日志结论>。运行时验证需在稳定性环境回测。
+
+自测脚本：已上传至附件。用法：python3 <script_name> --host <host> --port <port> --duration <duration>
 ```
 
 Breach 链接不重复贴——Intake 已经发过。
@@ -84,7 +96,7 @@ Breach 链接不重复贴——Intake 已经发过。
 说明：<--comment>
 ```
 
-### Step 2: 更新状态
+### Step 3: 更新状态
 
 云效状态字段必须传 status ID，不要传中文状态名。
 
@@ -106,11 +118,11 @@ Breach 链接不重复贴——Intake 已经发过。
 
 如果找不到目标状态的 status ID，停止并把 workflow 返回的可用状态列给用户确认；不要尝试传中文名。不修改负责人。
 
-### Step 3: 不修改负责人
+### Step 4: 不修改负责人
 
 Repair 全流程不修改负责人。不要转派给验证者、提单人或其他人。
 
-### Step 4: Canon promotion
+### Step 5: Canon promotion
 
 - 更新 Canon task page：记录 outcome、目标云效状态、评论证据、deliverable URLs、commit/MR 和下一步。
 - `fixed` 的下一步：测试同事在稳定性环境集成测试，通过后改状态为回归验证，再进入 Clear 阶段合入主分支。
