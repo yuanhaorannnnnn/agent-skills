@@ -79,6 +79,11 @@ gate 通过后继续以下预检：
    - `run` 会在 agent 侧阻塞到最终状态，只返回最终摘要、最后日志和错误摘要；失败时 Fix 未完成。
    - 编译失败则视为 fix 未完成，不能进入 Closeout。
 8. 总结修复、相似问题、剩余风险
+9. 对齐 Intake 产物与实际：
+   - 更新 `fix_plan.md`：将定位结论和修复方案修正为真实根因和实际改动。
+   - 更新 Breach 页面（`.proposal/repair/<bug-id>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
+   - 如果 Intake 假设被否决（如 FOV 减半→实际是 FaceScale），必须在更新中标注"已否决的原假设"。
+   - 更新后同步 LAN 分享目录：`cp .../index.html /media/yhr/2T/carla_images/doc/<bug-id>.html`
 
 ### Step 3: Review Gate
 

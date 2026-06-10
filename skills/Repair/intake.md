@@ -9,17 +9,14 @@
 
 ## 参数
 
-必须显式指定分支参数，不允许无参自动创建。
+必须显式指定 `--base <branch>`，不允许无参或 `--branch`。
 
 | 参数 | 必填 | 行为 |
 |------|------|------|
 | `<bug-id>` | 是 | 定位缺陷目录和云效缺陷单 |
-| `--base` (无值) | 二选一 | 从当前分支创建 `bugfix/<bug-id>` |
-| `--base <branch>` | 二选一 | 从指定 base 创建 `bugfix/<bug-id>` |
-| `--branch` (无值) | 二选一 | 使用当前分支，不切换不创建 |
-| `--branch <name>` | 二选一 | 切换到指定已有分支，不创建 |
+| `--base <branch>` | 是 | 从指定 base 分支创建 `bugfix/<bug-id>` |
 
-不传任何分支参数 → 报错，提示用户必须指定 `--base` 或 `--branch`。
+不传 `--base` → 报错，提示用户必须指定。
 
 ## 执行
 
@@ -33,13 +30,9 @@
 
 如果 `severity`、`priority`、`repo_path` 等修复字段缺失，尝试从云效实时补查并写回 `state.json`。补不到关键字段时停止向用户确认。
 
-### Step 2: 切换分支
+### Step 2: 创建修复分支
 
-- `--branch` (无值): 使用当前分支，不切换。
-- `--branch <name>`: 非破坏性切换到已有分支。
-- `--base` (无值): 从当前分支创建 `bugfix/<bug-id>`。
-- `--base <branch>`: 切换到 base 后创建 `bugfix/<bug-id>`。
-- 不自动 stash，不覆盖用户未提交修改。
+从 `--base <branch>` 创建 `bugfix/<bug-id>`。不自动 stash，不覆盖用户未提交修改。
 
 ### Step 3: 查询 Canon
 

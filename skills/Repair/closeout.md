@@ -39,7 +39,7 @@ gate 通过后继续：
 
 | outcome | 必填参数 | 默认目标状态 |
 |---------|----------|--------------|
-| `fixed` | `--comment`, `--deliverables`, `--self-check` | `回归验证` |
+| `fixed` | `--comment`, `--deliverables`, `--self-check` | `集成测试中` |
 | `false-positive` | `--comment` | `关闭` |
 | `requirement` | `--comment` | `转需求` |
 | `cannot-reproduce` | `--comment` | `开发挂起` |
@@ -92,7 +92,7 @@ Breach 链接不重复贴——Intake 已经发过。
 
    | outcome | 状态 |
    |---------|------|
-   | `fixed` | `回归验证` |
+   | `fixed` | `集成测试中` |
    | `false-positive` | `关闭` |
    | `requirement` | `转需求` |
    | `cannot-reproduce` | `开发挂起` |
@@ -113,7 +113,7 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
 ### Step 4: Canon promotion
 
 - 更新 Canon task page：记录 outcome、目标云效状态、评论证据、deliverable URLs、commit/MR 和下一步。
-- `fixed` 的下一步通常是测试同事回归验证；`false-positive`/`requirement`/`blocked` 记录澄清理由和后续归属。
+- `fixed` 的下一步：测试同事在稳定性环境集成测试，通过后改状态为回归验证，再进入 Clear 阶段合入主分支。
 - 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md`。
 - Closeout 不复制构建产物，只保存 HTTP 链接和绝对路径 artifact refs。
 
@@ -121,13 +121,13 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
 
 ```json
 {
-  "phase": "fixed -> regression|requirement|closed|suspended",
+  "phase": "fixed -> integration",
   "outcome": "fixed|false-positive|requirement|cannot-reproduce|blocked",
   "commit_sha": "<git commit>",
   "image_path": "/media/yhr/2T/carla_images/<image_file>",
   "deliverable_urls": ["http://..."],
   "comment_ids": ["<Intake comment ID>", "<Closeout comment ID>"],
-  "status": "回归验证|转需求|关闭|开发挂起",
+  "status": "集成测试中|转需求|关闭|开发挂起",
   "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md"
 }
 ```
@@ -142,4 +142,4 @@ python3 ~/.claude/skills/Repair/scripts/closeout_gate.py <bug-id> --json
 
 输出 `closeout_gate.json`。4 项检查：state outcome/status 已填、comment 证据存在、owner 未变（skipped，需 MCP）、Canon 已更新。
 
-Closeout 没有下游 phase——gate 目的不是 gate 下一个 phase 进入，而是验证缺陷被干净地关上。
+Closeout 下游 phase 是 Clear — 测试同事验证通过后，Clear 合入主分支、打包、关闭缺陷。

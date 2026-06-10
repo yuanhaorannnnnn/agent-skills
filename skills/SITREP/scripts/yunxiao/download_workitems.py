@@ -65,6 +65,13 @@ def search(space_id, category):
     return items
 
 
+def get_item_status(workitem_id):
+    """查询单个工作项的 displayName 状态。"""
+    path = f"/oapi/v1/projex/organizations/{ORG_ID}/workitems/{workitem_id}"
+    item = api(path, method="GET")
+    return item.get("status", {}).get("displayName", "")
+
+
 def html_to_text(html):
     if not html: return ""
     t = re.sub(r'<[^>]+>', '', str(html))
@@ -420,6 +427,39 @@ def main():
                 lines.append(f"- **{sn}** {old} → {new}")
         else:
             lines.append("🔄 状态变更：无")
+
+        # --- Clear-ready scan (phase=integration, 集成测试中→回归验证) ---
+        clear_ready = []
+        bugs_root = OUT_DIR / "bugs"
+        if bugs_root.exists():
+            for bug_dir in sorted(bugs_root.iterdir()):
+                if not bug_dir.is_dir():
+                    continue
+                sp = bug_dir / "state.json"
+                if not sp.exists():
+                    continue
+                try:
+                    st = json.loads(sp.read_text())
+                except Exception:
+                    continue
+                if st.get("phase") != "integration":
+                    continue
+                if st.get("status") != "集成测试中":
+                    continue
+                wid = st.get("workitem_id", "")
+                if not wid:
+                    continue
+                yunxiao_status = get_item_status(wid)
+                if yunxiao_status == "回归验证":
+                    clear_ready.append((bug_dir.name, st.get("title", ""), st.get("fix_branch", "")))
+
+        if clear_ready:
+            lines.append("")
+            lines.append(f"🧹 Clear Ready: {len(clear_ready)} 项")
+            for bug_id, title, branch in clear_ready:
+                lines.append(f"- **{bug_id}** {title[:50]} · `/Repair Clear {bug_id}`")
+        # --- end Clear scan ---
+
         send_msg("\n".join(lines))
 
 if __name__ == "__main__":

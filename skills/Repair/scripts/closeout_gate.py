@@ -5,13 +5,13 @@ Usage:
   python3 closeout_gate.py <bug-id> [--repo <path>] [--json]
 """
 
-import json, os, sys, subprocess
+import json, os, sys, subprocess, urllib.request
 from pathlib import Path
 
 BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
 
 OUTCOME_STATUS_MAP = {
-    "fixed": "回归验证",
+    "fixed": "集成测试中",
     "false-positive": "关闭",
     "requirement": "转需求",
     "cannot-reproduce": "开发挂起",
@@ -40,10 +40,35 @@ def check_phase(sp):
         return False, "state.json: missing FAIL"
     try:
         d = json.loads(sp.read_text())
-        ok = d.get("phase") in ("regression", "requirement", "closed", "suspended", "fixed")
+        ok = d.get("phase") in ("integration", "regression", "requirement", "closed", "suspended", "fixed")
         return ok, f"phase: {d.get('phase','EMPTY')}" + (" OK" if ok else " FAIL")
     except Exception as e:
         return False, f"phase: error {e} FAIL"
+
+def check_deliverable_urls(sp):
+    """Verify deliverable URLs are reachable."""
+    if not sp.exists():
+        return False, "deliverable: state.json missing FAIL"
+    try:
+        d = json.loads(sp.read_text())
+        urls = d.get("deliverable_urls", [])
+        if not urls:
+            return False, "deliverable: no deliverable_urls FAIL"
+        unreachable = []
+        for url in urls:
+            try:
+                req = urllib.request.Request(url, method="HEAD")
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    if resp.status >= 400:
+                        unreachable.append(f"{url} (HTTP {resp.status})")
+            except Exception as e:
+                unreachable.append(f"{url} ({e})")
+        if unreachable:
+            return False, f"deliverable: {len(unreachable)}/{len(urls)} unreachable: {unreachable[0]} FAIL"
+        return True, f"deliverable: {len(urls)} url(s) reachable OK"
+    except Exception as e:
+        return False, f"deliverable: error {e} FAIL"
+
 
 def check_comment_evidence(sp):
     """comment_ids or --comment evidence exists."""
@@ -79,10 +104,11 @@ def main():
     checks.append(("1.phase", check_phase(sp)))
     checks.append(("2.state-outcome", check_state_outcome(sp)))
     checks.append(("3.comment", check_comment_evidence(sp)))
+    checks.append(("3b.deliverable", check_deliverable_urls(sp)))
     checks.append(("4.owner", check_owner_unchanged(sp, args.bug_id)))
     checks.append(("5.canon", check_canon(canon_task, args.bug_id)))
 
-    hard = {"1", "2", "3", "5"}
+    hard = {"1", "2", "3", "3b", "5"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
 
     if fails:
