@@ -9,7 +9,7 @@ description: |
 
   Make sure to use this skill when the user says 处理缺陷、修复缺陷单、
   bug 单、云效缺陷、进入修复中、提交回归验证、缺陷误报、缺陷转需求，
-  or invokes `/Repair Intake`, `/Repair Fix`, `/Repair Closeout`.
+  or invokes `/Repair Intake`, `/Repair Fix`, `/Repair Closeout`, `/Repair Clear`.
 
   Do NOT use for general code debugging without a Yunxiao bug id; use Neutralize
   for ordinary bugfix/debug requests. Repair never changes bug assignee/owner.

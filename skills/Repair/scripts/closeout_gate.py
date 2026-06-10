@@ -40,17 +40,23 @@ def check_phase(sp):
         return False, "state.json: missing FAIL"
     try:
         d = json.loads(sp.read_text())
-        ok = d.get("phase") in ("integration", "regression", "requirement", "closed", "suspended", "fixed")
-        return ok, f"phase: {d.get('phase','EMPTY')}" + (" OK" if ok else " FAIL")
+        phase = d.get("phase", "")
+        outcome = d.get("outcome", "")
+        if outcome == "fixed" and phase != "integration":
+            return False, f"phase: fixed outcome requires phase=integration, got {phase or 'EMPTY'} FAIL"
+        ok = phase in ("integration", "regression", "requirement", "closed", "suspended", "fixed", "done")
+        return ok, f"phase: {phase or 'EMPTY'}" + (" OK" if ok else " FAIL")
     except Exception as e:
         return False, f"phase: error {e} FAIL"
 
 def check_deliverable_urls(sp):
-    """Verify deliverable URLs are reachable."""
+    """Verify deliverable URLs are reachable. Only required for fixed outcome."""
     if not sp.exists():
         return False, "deliverable: state.json missing FAIL"
     try:
         d = json.loads(sp.read_text())
+        if d.get("outcome") != "fixed":
+            return True, "deliverable: skipped (not fixed outcome) OK"
         urls = d.get("deliverable_urls", [])
         if not urls:
             return False, "deliverable: no deliverable_urls FAIL"

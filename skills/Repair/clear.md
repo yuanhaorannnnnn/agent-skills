@@ -73,7 +73,7 @@ git push origin <base_branch>
 
 ```json
 {
-  "phase": "integration -> cleared",
+  "phase": "integration -> done",
   "status": "关闭",
   "merge_commit_sha": "<merge commit>",
   "clear_build_artifact": "carlaue5:202606XXXXXX",
