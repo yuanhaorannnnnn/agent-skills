@@ -91,6 +91,19 @@ def check_owner_unchanged(sp, bug_id):
     """Compare current assignee with original. SKIPPED offline."""
     return False, "owner: SKIPPED — MCP auth required, verify manually"
 
+def check_worktree_clean():
+    """Verify git worktree is clean — no unstaged or staged changes."""
+    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    ok = not unstaged and not staged
+    parts = []
+    if unstaged:
+        parts.append("unstaged changes")
+    if staged:
+        parts.append("staged changes")
+    msg = f"worktree: {'clean' if ok else ', '.join(parts)}" + (" OK" if ok else " FAIL")
+    return ok, msg
+
 def check_canon(task_path, bug_id):
     ok = task_path.exists()
     return ok, f"Canon task: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
@@ -107,6 +120,7 @@ def main():
     canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
 
     checks = []
+    checks.append(("0.worktree", check_worktree_clean()))
     checks.append(("1.phase", check_phase(sp)))
     checks.append(("2.state-outcome", check_state_outcome(sp)))
     checks.append(("3.comment", check_comment_evidence(sp)))
@@ -114,7 +128,7 @@ def main():
     checks.append(("4.owner", check_owner_unchanged(sp, args.bug_id)))
     checks.append(("5.canon", check_canon(canon_task, args.bug_id)))
 
-    hard = {"1", "2", "3", "3b", "5"}
+    hard = {"0", "1", "2", "3", "3b", "5"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
 
     if fails:

@@ -5,7 +5,7 @@
 **第一步：读 gate。在碰任何代码之前。**
 
 ```bash
-cat .proposal/repair/<bug-id>/fix_gate.json
+cat .proposal/repair/<bug-id>/intake_gate.json
 ```
 
 | gate verdict | 行为 |
@@ -14,7 +14,7 @@ cat .proposal/repair/<bug-id>/fix_gate.json
 | **warn** | 进入 Fix 但把警告内容告知用户（"root_cause.confidence 为 speculative，修复可能不准"） |
 | **blocked** | **拒绝启动。** 列出缺失项，提示"回 Intake 补"，停止 |
 
-gate blocked 时不要"顺便补一下就可以继续"——回 Intake 正式补完后重新跑 gate 生成新的 fix_gate.json。
+gate blocked 时不要"顺便补一下就可以继续"——回 Intake 正式补完后重新跑 gate 生成新的 intake_gate.json。
 
 gate 通过后继续以下预检：
 
@@ -48,10 +48,34 @@ gate 通过后继续以下预检：
    **自测 (self-check) — 必做：**
 
    - 构造本地复现条件：缺陷复现所需的环境配置、参数组合。
-   - 编写可重复执行的验证脚本（如 `self_check_<bug-id>.py`），不做一次性手动验证。
+   - 编写可重复执行的验证脚本，不做一次性手动验证。
+     - **传感器相关缺陷** → 必须用三层架构（见下方规则），写入 `PythonAPI/examples/`。
+     - **非传感器缺陷** → 单文件 `self_check_<bug-id>.py` 即可。
    - 跑脚本，输出摘要写入 `state.json.self_check_summary`。
    - self-check 脚本是 Fix 交付物，下次同类问题可直接复用。
    - self-check 未完成 → 不能进 Step 3 (Review Gate)。
+
+   **传感器 self-check 三层架构规则（必须遵守）：**
+
+   传感器类缺陷必须拆成三个入口，避免把研发环境搭建逻辑交给测试同事：
+
+   | 文件 | 职责 | 使用者 |
+   |------|------|--------|
+   | `<bug-id>_<sensor>.py` | 共享检查模块：发现目标 sensor、采集数据、判定结果；**不创建 world/actor** | 研发 + 测试 |
+   | `test_<bug-id>_<sensor>.py` | 测试入口：连接现有环境，通过 role_name 或参数找到已有 sensor，运行共享检查 | 测试同事 |
+   | `dev_test_<bug-id>_<sensor>.py` | 研发入口：创建最小复现场景、spawn actor/sensor、调用共享检查、cleanup | 研发自测 |
+
+   规则：
+
+   - Layer 1 环境搭建只允许出现在 `dev_test_*` 中。
+   - 共享模块和测试入口不能 spawn world/vehicle/sensor。
+   - 通过 `role_name` 或显式参数连接三层，不通过硬编码 actor id。
+   - 三个文件都放在 `PythonAPI/examples/` 下，并写入 `state.json.self_check_summary`。
+
+   参考实现：
+
+   - 优先搜索 `PythonAPI/examples/` 下已有三层文件：`test_*.py`、`dev_test_*.py` 及对应的共享模块。
+   - 若已有真实三层样例 → 按其结构改写；若只有旧式单文件（如 `self_check_<bug-id>.py`）→ 按上表 contract 新建三文件，旧文件的结构可作为处理逻辑参考。
 
    **编译 (Sentinel) — 需要长时间构建/打包时调用：**
 

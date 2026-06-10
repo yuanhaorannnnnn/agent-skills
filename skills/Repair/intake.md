@@ -159,15 +159,15 @@ Intake 完成必须跑 gate 脚本——不再靠 Agent 自己打勾：
 python3 ~/.claude/skills/Repair/scripts/intake_gate.py <bug-id> --json
 ```
 
-输出 `fix_gate.json`，verdict 三态：
+输出 `intake_gate.json`，verdict 三态：
 - **pass** — 可以进 Fix
 - **blocked** — 不可进 Fix，列出缺失项
 - **warn** — 可以进 Fix 但某几项有警告（`root_cause.confidence: speculative` / `uncertainties` 有 `clarifying`）
 
-gate 脚本会检查 9 项中的 7 项（yunxiao 状态和负责人检查需要 MCP auth，本地跳过）。
+gate 脚本会检查 10 项中的 7 项 hard（yunxiao 状态和负责人检查需要 MCP auth，本地跳过）。第 0 项 `worktree` 检查 git 工作区必须干净——dirty worktree 直接 blocked。
 
 ## Handoff to Fix
 
 Intake 写入 `fix_plan.json`（按 `references/fix_plan_schema.md` 的 schema），Fix Agent 的独立判定由此 JSON 做出。gate 脚本检查 `fix_plan.json` 的 `root_cause.hypothesis` 和 `fix_plan.modified_files` 非空——不通过则 blocked。
 
-`fix_gate.json` 是 Fix 的入口防线。Fix Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。
+`intake_gate.json` 是 Fix 的入口防线。Fix Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。

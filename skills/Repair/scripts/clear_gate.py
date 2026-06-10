@@ -72,6 +72,19 @@ def check_deliverable_urls(sp):
         return False, f"deliverable: error {e} FAIL"
 
 
+def check_worktree_clean():
+    """Verify git worktree is clean — no unstaged or staged changes."""
+    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    ok = not unstaged and not staged
+    parts = []
+    if unstaged:
+        parts.append("unstaged changes")
+    if staged:
+        parts.append("staged changes")
+    msg = f"worktree: {'clean' if ok else ', '.join(parts)}" + (" OK" if ok else " FAIL")
+    return ok, msg
+
 def check_canon(task_path, bug_id):
     ok = task_path.exists()
     return ok, f"Canon task: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
@@ -89,13 +102,14 @@ def main():
     canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
 
     checks = []
+    checks.append(("0.worktree", check_worktree_clean()))
     checks.append(("1.state", check_state_cleared(sp)))
     checks.append(("2.merge", check_merge_commit(sp)))
     checks.append(("3.build", check_build_artifact(sp)))
     checks.append(("4.deliverable", check_deliverable_urls(sp)))
     checks.append(("5.canon", check_canon(canon_task, args.bug_id)))
 
-    hard = {"1", "2", "3"}
+    hard = {"0", "1", "2", "3"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
 
     verdict = "blocked" if fails else "pass"

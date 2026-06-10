@@ -52,6 +52,19 @@ def check_fix_plan_json(p):
     except Exception as e:
         return False, f"fix_plan.json: error {e} FAIL"
 
+def check_worktree_clean():
+    """Verify git worktree is clean — no unstaged or staged changes."""
+    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    ok = not unstaged and not staged
+    parts = []
+    if unstaged:
+        parts.append("unstaged changes")
+    if staged:
+        parts.append("staged changes")
+    msg = f"worktree: {'clean' if ok else ', '.join(parts)}" + (" OK" if ok else " FAIL")
+    return ok, msg
+
 def check_canon(task_path, bug_id):
     ok = task_path.exists()
     return ok, f"Canon task: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
@@ -77,6 +90,7 @@ def main():
     branch = state.get("fix_branch") or state.get("base_branch") or run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
 
     checks = []
+    checks.append(("0.worktree", check_worktree_clean()))
     checks.append(("1.context-loaded", check_state_json(sp)))
     checks.append(("2.branch", check_git_branch(branch)))
     checks.append(("3.analyzed", check_fix_plan_json(prop / "fix_plan.json")))
@@ -88,7 +102,7 @@ def main():
     checks.append(("9.canon", check_canon(Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md"), args.bug_id)))
 
     # Fix: "3" must be in hard — fix_plan.json is Fix's primary source
-    hard = {"2","3","4","5","8","9"}
+    hard = {"0","2","3","4","5","8","9"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     warns = [c for c in checks if c[0].split(".")[0] not in hard and c[0].split(".")[0] not in ("6","7") and not c[1][0]]
 
@@ -107,11 +121,11 @@ def main():
         for n, (ok, msg) in checks:
             print(f"  [{n}] {msg}")
 
-    gate_path = prop / "fix_gate.json"
+    gate_path = prop / "intake_gate.json"
     gate_path.parent.mkdir(parents=True, exist_ok=True)
     gate = {"verdict": verdict, "bug_id": args.bug_id, "checks": {n: {"ok": ok, "msg": msg} for n, (ok, msg) in checks}}
     gate_path.write_text(json.dumps(gate, indent=2, ensure_ascii=False))
-    print(f"\nfix_gate.json -> {gate_path}", file=sys.stderr)
+    print(f"\nintake_gate.json -> {gate_path}", file=sys.stderr)
     sys.exit(0 if verdict != "blocked" else 1)
 
 if __name__ == "__main__":
