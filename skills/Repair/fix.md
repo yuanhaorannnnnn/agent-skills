@@ -19,7 +19,7 @@ gate blocked 时不要"顺便补一下就可以继续"——回 Intake 正式补
 gate 通过后继续以下预检：
 
 1. 确认 `<bug_root>/state.json` 中 `phase` 为 `intake`。
-2. 确认 `fix_plan.json` 存在——Fix 以此为主源，`fix_plan.md` 为人工阅读补充。
+2. 确认 `fix_plan.json` 存在——Fix 以此为主源，`root-cause.md` 为人工阅读补充。
 3. 确认当前分支与 `state.json.fix_branch` 一致。
 4. 检查 worktree：`git diff --quiet && git diff --cached --quiet`，不通过则停止。
 
@@ -30,10 +30,42 @@ gate 通过后继续以下预检：
 按顺序读取：
 
 1. `fix_plan.json` — **主源**。含 root_cause/confidence/files/modified_files/uncertainties/related_code/attachments。修复决策基于此 JSON 做出。
-2. `fix_plan.md` — 人工阅读补充。
+2. `root-cause.md` — 根因分析报告（人读，Intake 产物）。
 3. `state.json` + `detail.md` + 附件（按 `fix_plan.json.attachments` 列表读取）
 
-### Step 2: 调用 Neutralize
+### Step 2: 生成目标文件
+
+基于 `root-cause.md` 的深度分析，生成 `goal.md` — 广度行动计划。
+
+写入 `<repo_root>/.proposal/repair/<bug-id>/goal.md`：
+
+```markdown
+# <bug-id> 修复目标
+
+## 目标
+[一句话：修复什么]
+
+## 行动清单
+- [ ] Fix 1: ... — 文件:行
+- [ ] Fix 2: ...
+
+## 验收标准
+- [ ] self-check 通过
+- [ ] Sentinel 编译通过
+- [ ] 图像/日志/输出符合预期
+
+## Codify（如适用）
+- 规则类型: [pattern/incident/rule]
+- 适用范围: [哪些模块/场景]
+- 规则内容: [一句话]
+
+## AfterAction（如适用）
+- 触发原因: [复杂度/弯路/复盘请求]
+```
+
+`goal.md` 是 Fix 的行动蓝图，后续步骤依此执行。Codify/AfterAction 是否触发在此确定。
+
+### Step 3: 调用 Neutralize
 
 缺陷修复默认使用 Neutralize 的工作流：
 
@@ -103,13 +135,14 @@ gate 通过后继续以下预检：
    - `run` 会在 agent 侧阻塞到最终状态，只返回最终摘要、最后日志和错误摘要；失败时 Fix 未完成。
    - 编译失败则视为 fix 未完成，不能进入 Closeout。
 8. 总结修复、相似问题、剩余风险
-9. 对齐 Intake 产物与实际：
-   - 更新 `fix_plan.md`：将定位结论和修复方案修正为真实根因和实际改动。
+9. 对齐 Intake 和 Fix 产物与实际：
+   - 更新 `root-cause.md`：如果修复过程中发现根因假设有偏差，修正为实际根因。
+   - 更新 `goal.md`：标记已完成和跳过的项。
    - 更新 Breach 页面（`.proposal/repair/<bug-id>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
    - 如果 Intake 假设被否决（如 FOV 减半→实际是 FaceScale），必须在更新中标注"已否决的原假设"。
    - 更新后同步 LAN 分享目录：`cp .../index.html /media/yhr/2T/carla_images/doc/<bug-id>.html`
 
-### Step 3: Review Gate
+### Step 4: Review Gate
 
 验证通过后、提交并推送前，读取共享质量门：
 
@@ -122,7 +155,7 @@ gate 通过后继续以下预检：
 - 有 blocker：停在 Fix，修复后重新验证和 review，不 commit、不 push、不进入 Closeout。
 - 无 blocker：把 review 结果写入 Canon task page § Findings / § Evidence / § Timeline，并继续提交推送。
 
-### Step 4: 提交并推送
+### Step 5: 提交并推送
 
 Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进入 Closeout。
 
@@ -144,7 +177,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 - 如果项目使用 `gh` / `glab` / Codeup CLI 且已配置认证，查询当前分支对应的 open MR/PR。
 - 如果无法获得 MR/PR URL，记录 remote branch URL 和 commit SHA，并在 Closeout 评论里说明暂无 MR/PR 链接。
 
-### Step 5: 条件触发 Codify
+### Step 6: 条件触发 Codify
 
 只有符合以下任一条件时触发 Codify：
 
@@ -153,7 +186,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 - 用户要求“记下来”或“写成规则”
 - 规则适合沉淀为 Canon `patterns/` 或 `incidents/`，必要时兼容写入 repo-local `.agent-state/rules/mistakes.md`
 
-### Step 6: 条件触发 AfterAction
+### Step 7: 条件触发 AfterAction
 
 只有符合以下任一条件时触发 AfterAction：
 
@@ -173,6 +206,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 ```json
 {
   "phase": "intake -> fixing -> fixed",
+  "goal_path": "<repo_root>/.proposal/repair/<bug-id>/goal.md",
   "fix_summary": "...",
   "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
   "self_check_script_paths": ["PythonAPI/examples/test_<bug-id>_<sensor>.py", "PythonAPI/examples/<bug-id>_<sensor>.py"],
@@ -209,6 +243,6 @@ gate 脚本检查 7 项硬条件：branch 一致、fix_plan.json 存在（已消
 
 ## Handoff to Closeout
 
-Fix 写入 `fix_result.json`（按 `references/fix_result_schema.md` 的 schema），Closeout Agent 以此为主源。
+Fix 写入 `fix_result.json`（按 `references/fix_result_schema.md` 的 schema）和 `goal.md`（行动记录 + Codify/AfterAction 决策），Closeout Agent 以此为主源。
 
 `fix_gate.json` 是 Closeout 的入口防线。Closeout Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。

@@ -111,6 +111,12 @@ def check_fix_plan_json_consumed(prop, bug_id):
     path_prefix_ok = str(prop) in str(p) if ok else True
     return ok, f"fix_plan.json (from Intake): {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
 
+def check_goal_md(prop, bug_id):
+    """Ensure goal.md exists (Fix 行动计划)."""
+    p = prop / "goal.md"
+    ok = p.exists()
+    return ok, f"goal.md (Fix action plan): {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
@@ -149,10 +155,11 @@ def main():
     checks.append(("3b.self_check", check_self_check(sp, args.bug_id)))
     checks.append(("4.review", check_review_gate(sp, args.bug_id)))
     checks.append(("5.commit_push", check_commit_push(sp, args.bug_id)))
+    checks.append(("5b.goal.md", check_goal_md(prop, args.bug_id)))
     checks.append(("6.fix_result.json", check_fix_result_json(prop)))
     checks.append(("7.canon", check_canon(canon_task, args.bug_id)))
 
-    hard = {"0", "1", "2", "3", "4", "5", "6", "7"}
+    hard = {"0", "1", "2", "3", "4", "5", "5b", "6", "7"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     warn_ids = {c[0].split(".")[0] for c in checks if c[0].split(".")[0] not in hard and not c[1][0]}
     warns = [c for c in checks if c[0].split(".")[0] not in hard and not c[1][0]]

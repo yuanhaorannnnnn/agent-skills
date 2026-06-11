@@ -95,7 +95,7 @@ def main():
     checks.append(("1.context-loaded", check_state_json(sp)))
     checks.append(("2.branch", check_git_branch(branch)))
     checks.append(("3.analyzed", check_fix_plan_json(prop / "fix_plan.json")))
-    checks.append(("4.fix_plan.md", check_file(prop / "fix_plan.md", "fix_plan.md")))
+    checks.append(("4.root-cause.md", check_file(prop / "root-cause.md", "root-cause.md")))
     checks.append(("5.breach", check_file(prop / "index.html", "Breach HTML")))
     checks.append(("6.yunxiao-status", (False, "yunxiao-status: SKIPPED — needs MCP auth")))
     checks.append(("7.owner", (False, "owner-check: SKIPPED — needs MCP auth")))

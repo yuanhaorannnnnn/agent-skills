@@ -54,31 +54,42 @@ Canon 提供 durable context（历史经验、长期决策），代码是 curren
 - 输出根因假设、受影响文件、最小修复点、验证命令
 - 不确定点列出给用户，不要自行假设
 
-### Step 5: 生成修复方案
+### Step 5: 根因分析报告
 
 写入两份文件：
 
-**1. `fix_plan.md`**（人读）— `<repo_root>/.proposal/repair/<bug-id>/fix_plan.md`。
+**1. `root-cause.md`**（人读，深度分析）— `<repo_root>/.proposal/repair/<bug-id>/root-cause.md`。
+
+刨到本质原因，不可再深入。不写修复步骤——修复是 Fix 阶段的目标。
 
 ```markdown
-# <bug-id> 修复方案
+# <bug-id> 根因分析
 
 ## 缺陷摘要
-[一句话说明问题]
+[一句话]
 
 ## 复现路径
-[操作步骤、URL、输入数据、环境]
+[操作步骤、环境、概率]
 
-## 定位结论
-- `path/to/file`: [疑似原因]
+## 调用链 / 数据流
+[从触发到崩溃的完整链条]
 
-## 修复方案
-- 根因假设: ...
-- 最小修复点: ...
-- 验证命令: ...
+## 根因（不可再分）
+[为什么这个代码路径出错？为什么之前没发现？]
+
+## 直接原因 vs 间接原因
+| 层级 | 原因 | 类型 |
+|------|------|------|
+| L1 触发 | [用户操作/场景] | 触发条件 |
+| L2 表现 | [崩溃/异常的表面行为] | 症状 |
+| L3 根因 | [本质缺陷] | 根因 |
+
+## 受影响范围
+- 受影响的模块/传感器/场景
+- 触发频率和概率
 
 ## 待确认
-- ...
+- [不确定点]
 ```
 
 **2. `fix_plan.json`**（Machine 读）— 按 `references/fix_plan_schema.md` 的 schema 生成。Fix Agent 以此为主源。`root_cause.confidence` 为 `speculative` 的项 + `uncertainties` 中 `impact: blocking` 的项会在 gate 检查时导致 blocked。
@@ -141,7 +152,7 @@ cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/d
   "status": "修复中",
   "base_branch": "<branch>",
   "fix_branch": "<branch-or-bugfix>",
-  "fix_plan_path": "<repo_root>/.proposal/repair/<bug-id>/fix_plan.md",
+  "root_cause_path": "<repo_root>/.proposal/repair/<bug-id>/root-cause.md",
   "proposal_page_path": "<repo_root>/.proposal/repair/<bug-id>/index.html",
   "share_url": "http://172.16.19.158:8080/doc/<bug-id>.html",
   "canon_task_path": "/media/yhr/2T/Canon/tasks/<bug-id>.md",
@@ -168,6 +179,6 @@ gate 脚本会检查 10 项中的 7 项 hard（yunxiao 状态和负责人检查�
 
 ## Handoff to Fix
 
-Intake 写入 `fix_plan.json`（按 `references/fix_plan_schema.md` 的 schema），Fix Agent 的独立判定由此 JSON 做出。gate 脚本检查 `fix_plan.json` 的 `root_cause.hypothesis` 和 `fix_plan.modified_files` 非空——不通过则 blocked。
+Intake 写入 `fix_plan.json`（按 `references/fix_plan_schema.md` 的 schema）和 `root-cause.md`（人读根因报告）。Fix Agent 以此为主源。gate 脚本检查 `fix_plan.json` 的 `root_cause.hypothesis` 和 `fix_plan.modified_files` 非空——不通过则 blocked。
 
 `intake_gate.json` 是 Fix 的入口防线。Fix Agent 启动第一步读 gate → blocked 则拒绝 → warn 则继续但告知用户风险。
