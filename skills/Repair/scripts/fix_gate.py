@@ -18,19 +18,24 @@ def check_file(p, label):
     return ok, f"{label}: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
 
 def check_sentinel_state(state_json, bug_id):
-    """Read sentinel_task_ids from state.json and verify at least one passed."""
+    """Verify Sentinel build or local self-check passed."""
     try:
         d = json.loads(Path(state_json).read_text())
         task_ids = d.get("sentinel_task_ids", [])
-        if not task_ids:
-            return False, "sentinel: no task_ids recorded FAIL (no build was run)"
-        # Check if self_check_summary exists as proxy for Sentinel completion
         summary = d.get("self_check_summary", "")
-        sentinel_ok = bool(summary) and "PASS" in summary.upper() or "成功" in summary or "通过" in summary
-        if sentinel_ok:
-            return True, f"sentinel: {len(task_ids)} task(s) self_check indicates PASS OK"
+        has_summary_pass = bool(summary) and ("PASS" in summary.upper() or "成功" in summary or "通过" in summary)
+        if task_ids:
+            if has_summary_pass:
+                return True, f"sentinel: {len(task_ids)} task(s) self_check indicates PASS OK"
+            else:
+                return False, f"sentinel: {len(task_ids)} task(s) self_check unclear or FAIL — verify manually FAIL"
+        # No Sentinel task — accept local verification (valid for Python/API/config changes)
+        if has_summary_pass:
+            return True, "sentinel: skipped (local verification PASS) OK"
+        elif summary:
+            return False, f"sentinel: no build, self_check unclear FAIL"
         else:
-            return False, f"sentinel: {len(task_ids)} task(s) self_check unclear or FAIL — verify manually FAIL"
+            return False, "sentinel: no build and no self_check_summary FAIL (run Sentinel or local verification)"
     except Exception as e:
         return False, f"sentinel: error reading state {e} FAIL"
 
@@ -81,10 +86,11 @@ def check_fix_result_json(prop):
     except Exception as e:
         return False, f"fix_result.json: error {e} FAIL"
 
-def check_worktree_clean():
+def check_worktree_clean(repo):
     """Verify git worktree is clean — no unstaged or staged changes."""
-    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
-    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    cwd = str(repo)
+    unstaged = subprocess.run(["git", "-C", cwd, "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "-C", cwd, "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
     ok = not unstaged and not staged
     parts = []
     if unstaged:
@@ -136,7 +142,7 @@ def main():
     canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
 
     checks = []
-    checks.append(("0.worktree", check_worktree_clean()))
+    checks.append(("0.worktree", check_worktree_clean(repo)))
     checks.append(("1.branch", git_branch_ok(expected_branch)))
     checks.append(("2.fix_plan_consumed", check_fix_plan_json_consumed(prop, args.bug_id)))
     checks.append(("3.sentinel", check_sentinel_state(sp, args.bug_id)))

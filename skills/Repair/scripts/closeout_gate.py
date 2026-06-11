@@ -91,10 +91,11 @@ def check_owner_unchanged(sp, bug_id):
     """Compare current assignee with original. SKIPPED offline."""
     return False, "owner: SKIPPED — MCP auth required, verify manually"
 
-def check_worktree_clean():
+def check_worktree_clean(repo):
     """Verify git worktree is clean — no unstaged or staged changes."""
-    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
-    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    cwd = str(repo)
+    unstaged = subprocess.run(["git", "-C", cwd, "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "-C", cwd, "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
     ok = not unstaged and not staged
     parts = []
     if unstaged:
@@ -120,7 +121,7 @@ def main():
     canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
 
     checks = []
-    checks.append(("0.worktree", check_worktree_clean()))
+    checks.append(("0.worktree", check_worktree_clean(repo)))
     checks.append(("1.phase", check_phase(sp)))
     checks.append(("2.state-outcome", check_state_outcome(sp)))
     checks.append(("3.comment", check_comment_evidence(sp)))

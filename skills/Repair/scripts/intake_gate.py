@@ -52,10 +52,11 @@ def check_fix_plan_json(p):
     except Exception as e:
         return False, f"fix_plan.json: error {e} FAIL"
 
-def check_worktree_clean():
+def check_worktree_clean(repo):
     """Verify git worktree is clean — no unstaged or staged changes."""
-    unstaged = subprocess.run(["git", "diff", "--quiet"], capture_output=True).returncode != 0
-    staged = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
+    cwd = str(repo)
+    unstaged = subprocess.run(["git", "-C", cwd, "diff", "--quiet"], capture_output=True).returncode != 0
+    staged = subprocess.run(["git", "-C", cwd, "diff", "--cached", "--quiet"], capture_output=True).returncode != 0
     ok = not unstaged and not staged
     parts = []
     if unstaged:
@@ -90,7 +91,7 @@ def main():
     branch = state.get("fix_branch") or state.get("base_branch") or run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
 
     checks = []
-    checks.append(("0.worktree", check_worktree_clean()))
+    checks.append(("0.worktree", check_worktree_clean(repo)))
     checks.append(("1.context-loaded", check_state_json(sp)))
     checks.append(("2.branch", check_git_branch(branch)))
     checks.append(("3.analyzed", check_fix_plan_json(prop / "fix_plan.json")))

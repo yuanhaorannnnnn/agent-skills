@@ -58,13 +58,13 @@ gate 通过后继续：
 
 ### Step 1: 上传 self-check 脚本
 
-`fixed` 时，将 self-check 脚本上传为云效附件：
+`fixed` 时，从 `state.json` 读取 `self_check_script_paths`，将每个脚本上传为云效附件：
 
 ```
-mcp__yunxiao__create_workitem_attachment <bug-id> <self_check_script_path>
+mcp__yunxiao__create_workitem_attachment <bug-id> <state.json.self_check_script_paths[i]>
 ```
 
-脚本附件的 `fileIdentifier` 记录到 `state.json` 的 `attachment_ids` 中。
+上传完成后，将返回的 attachment ID 列表写入 `state.json` 的 `attachment_ids` 字段。如果 `self_check_script_paths` 不存在或为空，跳过上传。
 
 ### Step 2: 组织评论
 
@@ -139,6 +139,7 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
   "image_path": "/media/yhr/2T/carla_images/<image_file>",
   "deliverable_urls": ["http://..."],
   "comment_ids": ["<Intake comment ID>", "<Closeout comment ID>"],
+  "attachment_ids": ["<self-check script attachment IDs>"],
   "status": "集成测试中|转需求|关闭|开发挂起",
   "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md"
 }

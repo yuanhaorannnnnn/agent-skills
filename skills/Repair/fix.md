@@ -175,6 +175,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
   "phase": "intake -> fixing -> fixed",
   "fix_summary": "...",
   "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
+  "self_check_script_paths": ["PythonAPI/examples/test_<bug-id>_<sensor>.py", "PythonAPI/examples/<bug-id>_<sensor>.py"],
   "sentinel_task_ids": ["<bug-id>-package"],
   "build_artifacts": ["/media/yhr/2T/carla_images/<artifact>"],
   "commit_sha": "<git commit>",
