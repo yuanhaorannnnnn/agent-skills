@@ -106,7 +106,7 @@ Canon 提供 durable context（历史经验、长期决策），代码是 curren
 - 验证计划
 - 风险和后续
 
-Breach 页面是快速对齐材料，不替代 `fix_plan.md`。
+Breach 页面是快速对齐材料，不替代 `root-cause.md`。
 
 **双重落盘**：生成后复制到 LAN 分享目录：
 
@@ -142,7 +142,7 @@ cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/d
 
 - 创建或更新 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录缺陷摘要、当前状态 `修复中`、修复分支、根因假设、风险和下一步 `Fix`。
 - 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md`。
-- 把 `fix_plan.md`、Breach HTML、LAN 分享 URL、缺陷目录作为 artifact refs；不要把 Phase 0 原始材料复制进 Canon。
+- 把 `root-cause.md`、`fix_plan.json`、Breach HTML、LAN 分享 URL、缺陷目录作为 artifact refs；不要把 Phase 0 原始材料复制进 Canon。
 
 ## 更新 state.json
 

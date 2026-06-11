@@ -3,7 +3,7 @@ name: Repair
 description: |
   云效缺陷单修复流程 skill。用于处理已经由共享 Phase 0 拉取到
   `/media/yhr/2T/yunxiao/bugs/<bug-id>/` 的缺陷单，四阶段：Intake
-  读取缺陷单、切输入分支、结合代码分析、生成 fix_plan.md 和 Breach
+  读取缺陷单、切输入分支、结合代码分析、生成 root-cause.md、fix_plan.json 和 Breach
   对齐页、将状态改为 修复中；Fix 按修复方案和 Neutralize 工作流修复，按条件
   触发 Codify 和 AfterAction；Closeout 改为 集成测试中；Clear 合入主分支打包关闭。
 
@@ -33,7 +33,7 @@ description: |
 ## 全局约定
 
 - **缺陷目录**: `/media/yhr/2T/yunxiao/bugs/<bug-id>/` — Phase 0 原始材料和 `state.json` 的存放位置，Repair 只读
-- **产物目录**: `.proposal/repair/<bug-id>/` — 所有 Intake 生成的产物（`fix_plan.md`、Breach HTML）写入当前 repo 的此路径
+- **产物目录**: `.proposal/repair/<bug-id>/` — 所有 Intake 生成的产物（`root-cause.md`、`fix_plan.json`、Breach HTML）写入当前 repo 的此路径
 - **Phase 0**: 与需求开发共用同一个 yunxiao 定时任务；只抓取、下载、创建本地文件、发通知，不改云效状态
 - **输入状态**: Phase 0 当前样本已生成 `state.json`、`detail.md`，图片/日志附件可平铺在缺陷目录
 - **状态集合**: `待处理`、`重新打开`、`修复中`、`开发挂起`、`集成测试中`、`回归验证`、`转需求`、`关闭`
@@ -51,7 +51,7 @@ Repair modes must satisfy the shared workflow output contract:
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
-Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`fix_plan.md` + `fix_plan.json`, Breach page, `fix_gate.json`, Sentinel state, commit/MR, or Closeout comment).
+Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`root-cause.md` + `fix_plan.json`, Breach page, `fix_gate.json`, Sentinel state, commit/MR, or Closeout comment).
 
 ## Resources
 
@@ -81,7 +81,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 - `<bug_root>/state.json` 是 Phase 0/Repair 阶段门控文件，`<repo_root>/.proposal/repair/<bug-id>/` 是修复方案 artifact 目录。
 - 缺陷长期状态写入 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录根因、修复分支、验证证据、交付物、云效状态和下一步。
-- `fix_plan.md`、Breach HTML、Sentinel task、commit/MR、镜像 HTTP 链接、AfterAction/Codify 产物都作为 Canon artifact refs。
+- `root-cause.md`、Breach HTML、Sentinel task、commit/MR、镜像 HTTP 链接、AfterAction/Codify 产物都作为 Canon artifact refs。
 - 每个 mode 完成后创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-<mode>.md`。
 - Repair 全流程不修改负责人；Canon 也只记录 owner/validator 信息，不把它当作状态修改动作。
 
@@ -89,7 +89,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 | Mode | 可写字段 |
 |------|----------|
-| `Intake` | `phase`, `status`, `base_branch`, `fix_branch`, `repo_path`, `severity`, `priority`, `attachment_paths`, `agent_prompt_path`, `diagnosis_summary`, `fix_plan_path`, `proposal_page_path`, `canon_task_path`, `canon_update_card_path` |
+| `Intake` | `phase`, `status`, `base_branch`, `fix_branch`, `repo_path`, `severity`, `priority`, `attachment_paths`, `agent_prompt_path`, `diagnosis_summary`, `root_cause_path`, `proposal_page_path`, `share_url`, `canon_task_path`, `canon_update_card_path` |
 | `Fix` | `phase`, `fix_summary`, `self_check_summary`, `sentinel_task_ids`, `build_artifacts`, `review_summary`, `review_gate`, `commit_sha`, `pushed_branch`, `remote_url`, `mr_url`, `similar_issues_checked`, `codify_rule_path`, `after_action_path`, `canon_update_card_path`, `canon_artifact_refs` |
 | `Closeout` | `phase`, `outcome`, `deliverable_urls`, `comment_ids`, `status`, `canon_update_card_path`, `canon_artifact_refs` |
 | `Clear` | `phase`, `status`, `merge_commit_sha`, `clear_build_artifact`, `deliverable_urls`, `comment_ids`, `canon_update_card_path`, `canon_artifact_refs` |

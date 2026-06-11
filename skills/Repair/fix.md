@@ -150,7 +150,7 @@ gate 通过后继续以下预检：
 /home/yhr/.agents/repos/agent-skills/references/review-gate.md
 ```
 
-用本缺陷的 Canon task page、`fix_plan.md`、当前 diff、Sentinel 或本地验证摘要做 review。优先使用跨 runtime reviewer；不可用时执行本地 adversarial review 并说明。
+用本缺陷的 Canon task page、`root-cause.md`、当前 diff、Sentinel 或本地验证摘要做 review。优先使用跨 runtime reviewer；不可用时执行本地 adversarial review 并说明。
 
 - 有 blocker：停在 Fix，修复后重新验证和 review，不 commit、不 push、不进入 Closeout。
 - 无 blocker：把 review 结果写入 Canon task page § Findings / § Evidence / § Timeline，并继续提交推送。
@@ -239,7 +239,7 @@ python3 ~/.claude/skills/Repair/scripts/fix_gate.py <bug-id> --json
 - **blocked** — 不可进 Closeout，列出缺失项
 - **warn** — 可以进 Closeout 但 review 豁免/部分验证不完整
 
-gate 脚本检查 7 项硬条件：branch 一致、fix_plan.json 存在（已消费 Intake 产物）、Sentinel 状态、review verdict、commit/push 完成、fix_result.json 存在、Canon 已更新。
+gate 脚本检查 9 项硬条件：worktree 干净、branch 一致、fix_plan.json 存在（已消费 Intake 产物）、Sentinel 或本地验证通过、review verdict、commit/push 完成、goal.md 存在（Fix 行动计划）、fix_result.json 存在、Canon 已更新。
 
 ## Handoff to Closeout
 
