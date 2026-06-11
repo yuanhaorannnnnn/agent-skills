@@ -7,8 +7,8 @@ BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
 def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw).stdout.strip()
 
-def check_git_branch(expected):
-    actual = run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+def check_git_branch(repo, expected):
+    actual = run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"])
     ok = actual == expected
     return ok, f"branch: expected={expected} actual={actual}" + (" OK" if ok else " FAIL")
 
@@ -88,12 +88,12 @@ def main():
     except Exception:
         state = {}
 
-    branch = state.get("fix_branch") or state.get("base_branch") or run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    branch = state.get("fix_branch") or state.get("base_branch") or run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"])
 
     checks = []
     checks.append(("0.worktree", check_worktree_clean(repo)))
     checks.append(("1.context-loaded", check_state_json(sp)))
-    checks.append(("2.branch", check_git_branch(branch)))
+    checks.append(("2.branch", check_git_branch(repo, branch)))
     checks.append(("3.analyzed", check_fix_plan_json(prop / "fix_plan.json")))
     checks.append(("4.root-cause.md", check_file(prop / "root-cause.md", "root-cause.md")))
     checks.append(("5.breach", check_file(prop / "index.html", "Breach HTML")))

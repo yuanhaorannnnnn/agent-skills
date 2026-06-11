@@ -138,10 +138,10 @@ def main():
 
     expected_branch = state.get("fix_branch", "") or state.get("base_branch", "")
     if not expected_branch:
-        expected_branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+        expected_branch = run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"])
 
     def git_branch_ok(expected):
-        actual = run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+        actual = run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"])
         ok = actual == expected
         return ok, f"branch: expected={expected} actual={actual}" + (" OK" if ok else " FAIL")
 

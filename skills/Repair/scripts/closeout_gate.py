@@ -119,6 +119,7 @@ def main():
 
     sp = BUG_ROOT / args.bug_id / "state.json"
     canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
+    repo = Path(args.repo)
 
     checks = []
     checks.append(("0.worktree", check_worktree_clean(repo)))
@@ -146,7 +147,6 @@ def main():
             print(f"  [{n}] {msg}")
 
     # Write to Intake's gate file (same location), or in absence, to proposal dir
-    repo = Path(args.repo)
     prop = repo / ".proposal" / "repair" / args.bug_id
     gate_path = prop / "closeout_gate.json"
     gate_path.parent.mkdir(parents=True, exist_ok=True)

@@ -27,4 +27,4 @@ Use `<repo>/.worktrees/<safe-branch-name>` as the canonical worktree root.
 
 `git worktree list` is source of truth. Claude Code must redirect `WorktreeCreate` / `WorktreeRemove` hooks to this root; Codex and other runtimes create worktrees there directly. Do not keep persistent worktrees under `.claude/worktrees/`.
 
-Worktree branches are local scratch space — never push them to remote.
+Worktree directories under `.worktrees/` are local scratch space — never push their branches to remote. Workflow-designated branches (e.g. `bugfix/*`, `feature/*`) created by Repair/Tasking may be pushed after gates pass.

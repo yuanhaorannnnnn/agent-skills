@@ -88,7 +88,7 @@ Do not proceed to commit, Closeout, Turnover, or Sanitize when Review Gate is bl
 A downstream agent should be able to resume from only:
 
 1. Canon task page
-2. Gate file / state.json / goal.md / fix_plan.md
+2. Gate file / state.json / goal.md / machine-readable plan (fix_plan.json or equivalent)
 3. Linked artifacts by absolute path or URL
 
 If that is not true, the workflow output is incomplete.
