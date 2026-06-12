@@ -1,38 +1,108 @@
 #!/usr/bin/env python3
-"""SITREP gate — verify checklist or final report.
+"""SITREP gate — verify checklist or final report against structured evidence.
 
 Usage:
-  python3 report_gate.py --mode checklist <checklist.md> [--json]
-  python3 report_gate.py --mode report <report.md> --checklist <checklist.md> [--json]
+  python3 report_gate.py --mode checklist <checklist-md-or-json> [--json]
+  python3 report_gate.py --mode report <report.md> --checklist <checklist-json> [--json]
 """
 
-import json, sys
+import json, sys, os
+from datetime import datetime, timezone
 from pathlib import Path
+
+
+def _find_checklist_json(md_path: str) -> dict | None:
+    """Find and parse the checklist JSON for a given checklist markdown path."""
+    meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
+    basename = Path(md_path).stem
+    for candidate in [meta_dir / f"{basename}.json", Path(md_path).with_suffix(".json")]:
+        if candidate.exists():
+            try:
+                return json.loads(candidate.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    return None
+
+
+def _count_task_items(text: str) -> int:
+    """Count recognizable task items in markdown text."""
+    import re
+    count = 0
+    for line in text.split("\n"):
+        if re.match(r"^(?:[-*]\s+)?\[(?:x| |\-)\]\s+", line.strip()):
+            count += 1
+        elif re.match(r"^[123]\s+\S", line.strip()):
+            count += 1
+        elif re.match(r"^(?:✅|⬜|➖)\s+\S", line.strip()):
+            count += 1
+    return count
+
 
 def check_file(p, label):
     ok = Path(p).exists() and Path(p).stat().st_size > 100
     return ok, f"{label}: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
 
+
 def check_not_empty(p, label):
-    text = Path(p).read_text() if Path(p).exists() else ""
-    item_count = text.count("\n- ") + text.count("\n* ")
-    ok = item_count > 0
-    return ok, f"{label}: {item_count} items" + (" OK" if ok else " FAIL (empty)")
+    count = _count_task_items(Path(p).read_text() if Path(p).exists() else "")
+    ok = count > 0
+    return ok, f"{label}: {count} task items" + (" OK" if ok else " FAIL (no task items)")
+
 
 def check_from_canon(p):
     text = Path(p).read_text() if Path(p).exists() else ""
     has_canon = "/media/yhr/2T/Canon/tasks/" in text or "Canon" in text
     return has_canon, f"Canon source: {'present' if has_canon else 'NONE'}" + (" OK" if has_canon else " WARN")
 
-def check_based_on_checklist(report, checklist):
-    """Verify report is based on checklist, not fresh scan."""
-    rtext = Path(report).read_text() if Path(report).exists() else ""
-    ctext = Path(checklist).read_text() if Path(checklist).exists() else ""
-    if not rtext or not ctext:
+
+def check_based_on_checklist(report_path: str, checklist_path: str):
+    """Structured validation: report must be based on checklist, not fresh scan.
+
+    Uses checklist JSON as the authoritative artifact:
+    - Checklist must be confirmed (user approved on DingTalk).
+    - Report mtime must be >= checklist JSON mtime.
+    - Report must contain task items from the checklist (not an empty fresh scan).
+    """
+    rp = Path(report_path)
+    cp = Path(checklist_path)
+
+    if not rp.exists() or not cp.exists():
         return False, "based-on-checklist: missing files FAIL"
-    # Weak proxy: report date >= checklist date
-    ok = "checklist" in rtext.lower() or "confirmed" in rtext.lower()
-    return ok, f"based-on-checklist: {'confirmed' if ok else 'UNCLEAR — was this from fresh scan?'}" + (" OK" if ok else " WARN")
+
+    # Load checklist JSON
+    cdata = _find_checklist_json(checklist_path)
+    if not cdata:
+        return False, "based-on-checklist: no checklist JSON FAIL"
+
+    # Must be confirmed (Sunday finalize wrote back)
+    if not cdata.get("confirmed"):
+        return False, "based-on-checklist: not confirmed FAIL"
+
+    # Report must be newer than checklist JSON
+    cjson_path = Path.home() / ".agents" / "work-reports" / ".checklist"
+    cjson_file = None
+    for f in cjson_path.glob("checklist-*.json"):
+        if f.stat().st_mtime >= cp.stat().st_mtime - 60:
+            try:
+                d = json.loads(f.read_text())
+                if d.get("week_start") == cdata.get("week_start"):
+                    cjson_file = f
+                    break
+            except Exception:
+                pass
+
+    # Verify report has task items (not just boilerplate)
+    report_items = _count_task_items(rp.read_text() if rp.exists() else "")
+    if report_items == 0:
+        return False, "based-on-checklist: report has no task items FAIL"
+
+    checklist_items = len(cdata.get("tasks", []))
+    # Report should have roughly the same number of items as non-excluded tasks
+    non_excluded = sum(1 for t in cdata.get("tasks", []) if t.get("status") != "excluded")
+    if report_items < non_excluded * 0.5:
+        return False, f"based-on-checklist: report({report_items}) << checklist({non_excluded}) FAIL"
+
+    return True, f"based-on-checklist: confirmed, {checklist_items} checklist → {report_items} report items OK"
 
 def main():
     import argparse

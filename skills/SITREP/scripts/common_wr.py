@@ -6,45 +6,50 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
+# Local timezone for consistent date-range comparisons.
+# All parsed timestamps are converted to this timezone rather than
+# being stripped to offset-naive (which would misalign UTC logs vs
+# local since/until boundaries).
+LOCAL_TZ = datetime.now().astimezone().tzinfo
+
 
 def parse_iso_timestamp(ts_str) -> Optional[datetime]:
-    """Parse ISO 8601 timestamp string to datetime (offset-naive, local time).
+    """Parse ISO 8601 timestamp string to local-aware datetime.
 
-    Also handles numeric timestamps (int/float) by delegating to parse_unix_timestamp.
+    Converts any offset to local time. Also handles numeric timestamps.
     """
     if not ts_str or ts_str == "null":
         return None
 
-    # Handle numeric timestamps (Unix epoch)
     if isinstance(ts_str, (int, float)):
         return parse_unix_timestamp(ts_str)
 
     try:
         ts_str = str(ts_str)
-        # Handle Z suffix and timezone offsets
         ts_str = ts_str.replace("Z", "+00:00")
         dt = datetime.fromisoformat(ts_str)
-        # Convert offset-aware to offset-naive (strip timezone)
-        if dt.tzinfo is not None:
-            dt = dt.replace(tzinfo=None)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=LOCAL_TZ)
+        else:
+            dt = dt.astimezone(LOCAL_TZ)
         return dt
     except (ValueError, TypeError):
         return None
 
 
 def parse_unix_timestamp(ts: int | float) -> Optional[datetime]:
-    """Parse Unix timestamp to datetime (offset-naive, local time)."""
+    """Parse Unix timestamp to local-aware datetime."""
     if not ts:
         return None
     try:
         dt = datetime.fromtimestamp(ts, tz=timezone.utc)
-        return dt.replace(tzinfo=None)
+        return dt.astimezone(LOCAL_TZ)
     except (ValueError, TypeError, OSError):
         return None
 
 
 def parse_millis_timestamp(ts: int) -> Optional[datetime]:
-    """Parse millisecond timestamp to datetime (UTC)."""
+    """Parse millisecond timestamp to local-aware datetime."""
     if not ts:
         return None
     return parse_unix_timestamp(ts / 1000)
@@ -139,9 +144,12 @@ def format_duration(seconds: float) -> str:
 
 
 def get_week_range(date: Optional[datetime] = None) -> tuple[datetime, datetime]:
-    """Get the start (Monday) and end (Sunday) of the week containing date."""
+    """Get the start (Monday 00:00) and end (Sunday 23:59) of the week.
+
+    Returns local-aware datetimes for consistent comparison with parsed timestamps.
+    """
     if date is None:
-        date = datetime.now()
+        date = datetime.now(LOCAL_TZ)
     monday = date - timedelta(days=date.weekday())
     monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
     sunday = monday + timedelta(days=6, hours=23, minutes=59, seconds=59)
@@ -149,9 +157,9 @@ def get_week_range(date: Optional[datetime] = None) -> tuple[datetime, datetime]
 
 
 def get_month_range(date: Optional[datetime] = None) -> tuple[datetime, datetime]:
-    """Get the start and end of the month containing date."""
+    """Get the start and end of the month. Returns local-aware datetimes."""
     if date is None:
-        date = datetime.now()
+        date = datetime.now(LOCAL_TZ)
     start = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     if start.month == 12:
         end = start.replace(year=start.year + 1, month=1, day=1)

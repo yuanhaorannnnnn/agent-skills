@@ -17,16 +17,17 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 from common_wr import get_report_dir
-from generate_work_report import collect_all_sessions, _check_llm_availability, load_topics, filter_by_topic
+from generate_work_report import collect_all_sessions, _check_llm_availability, filter_by_topic
 from task_clustering import Task, cluster_sessions, merge_by_star_similarity
 from star_builder import build_stars_for_tasks
 from collectors.canon_collector import collect_canon_tasks
 
 
 def get_friday_week_range() -> tuple[datetime, datetime]:
-    """本周一 00:00 → 今天（周五）当前时间。"""
-    now = datetime.now()
-    monday = now - timedelta(days=now.weekday())  # ISO: Mon=0, Sun=6
+    """本周一 00:00 → 当前时间（local-aware）。"""
+    from common_wr import LOCAL_TZ
+    now = datetime.now(LOCAL_TZ)
+    monday = now - timedelta(days=now.weekday())
     since = monday.replace(hour=0, minute=0, second=0, microsecond=0)
     return since, now
 
@@ -52,21 +53,14 @@ def _canon_task_to_report_task(ct: dict) -> Task:
 def _select_work_canon_tasks(canon_tasks: list[dict]) -> list[dict]:
     """Select Canon tasks for the weekly work checklist.
 
-    Decision order:
-    1. report_scope infra/personal/ignore is always excluded.
-    2. report_scope:work + weekly:true is included.
-    3. report_scope:work + weekly:false/missing is excluded.
-    4. Legacy pages with both fields missing fallback to configured 工作 topic.
+    Decision: only tasks with report_scope: work + weekly: true are included.
+    The legacy topic-matching fallback has been removed — it was too broad
+    (matched any CarlaUE5 task via topics.yaml).
     """
-    topics = load_topics()
-    work_topic = topics.get("工作", {})
-    projects = work_topic.get("projects", [])
-    keywords = work_topic.get("keywords", [])
-
     selected = []
     excluded = []
     for ct in canon_tasks:
-        include, reason = _canon_task_report_decision(ct, projects, keywords)
+        include, reason = _canon_task_report_decision(ct)
         ct["_sitrep_decision"] = reason
         if include:
             selected.append(ct)
@@ -157,15 +151,25 @@ def _build_canon_first_tasks(canon_tasks: list[dict], session_tasks: list[Task])
             print(f"  Canon 主项: {ct['title'][:50]}... → {ct['status']}")
         result.append(task)
 
-    if os.environ.get("SITREP_INCLUDE_SESSION_ONLY") == "1":
+    if os.environ.get("SITREP_INCLUDE_SESSION_ONLY") != "0":
         session_only = [t for t in session_tasks if t.task_id not in matched_session_ids]
-        result.extend(session_only)
-        if session_only:
-            print(f"Session-only candidates included: {len(session_only)} 项")
+        # Filter noise: tasks with very short or clearly incomplete titles
+        # (e.g. fragments like "现在有一个痛点" that aren't full task descriptions)
+        noise_keywords = ["现在有一个", "帮我看", "帮我看一下", "有个问题", "看一下", "帮我"]
+        filtered = []
+        for t in session_only:
+            title = (t.task_description or t.title or "").strip()
+            if len(title) < 15 and any(kw in title for kw in noise_keywords):
+                print(f"  [noise filtered] {title[:50]}...")
+                continue
+            filtered.append(t)
+        result.extend(filtered)
+        if filtered:
+            print(f"Session-only 工作补充: {len(filtered)} 项")
     return result
 
 
-def _canon_task_report_decision(ct: dict, projects: list[str], keywords: list[str]) -> tuple[bool, str]:
+def _canon_task_report_decision(ct: dict) -> tuple[bool, str]:
     scope = (ct.get("report_scope") or "").strip().lower()
     weekly = ct.get("weekly")
 
@@ -178,26 +182,10 @@ def _canon_task_report_decision(ct: dict, projects: list[str], keywords: list[st
             return False, "report_scope:work+weekly:false"
         return False, "report_scope:work+weekly:missing"
 
-    # Legacy pages without Canon report fields use the old 工作 topic fallback.
-    if not scope and weekly is None and _matches_work_topic(ct, projects, keywords):
-        return True, "legacy-topic:工作"
-    if weekly is True:
-        return False, "weekly:true-without-work-scope"
-    if weekly is False:
-        return False, "weekly:false"
-    return False, "no-work-signal"
-
-
-def _matches_work_topic(ct: dict, projects: list[str], keywords: list[str]) -> bool:
-    """判断 Canon task 是否属于「工作」主题。"""
-    combined = (ct["title"] + " " + ct["objective"] + " " + ct["project"]).lower()
-    for proj in projects:
-        if proj.lower() in combined:
-            return True
-    for kw in keywords:
-        if kw.lower() in combined:
-            return True
-    return False
+    # No report_scope field: strictly excluded.
+    # The legacy topic-matching fallback has been removed — authors must
+    # explicitly set report_scope: work + weekly: true to appear.
+    return False, "no-report-scope"
 
 
 def _title_similarity(a: str, b: str) -> float:
@@ -208,19 +196,147 @@ def _title_similarity(a: str, b: str) -> float:
     return len(sa & sb) / len(sa | sb)
 
 
+def _load_previous_checklist_tasks() -> dict:
+    """Load tasks from the most recent previous checklist JSON.
+
+    Returns {"unchecked": [...], "completed": [...], "confirmed": bool}.
+    Unchecked tasks → carry-over candidates.
+    Completed tasks → suppress from this week's Canon list (already done).
+    Prefers Sunday-confirmed checklists over Friday originals.
+    """
+    import glob
+    meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
+    if not meta_dir.exists():
+        return {"unchecked": [], "completed": [], "confirmed": False}
+
+    files = sorted(glob.glob(str(meta_dir / "checklist-*.json")), reverse=True)
+    for fpath in files:
+        try:
+            data = json.loads(Path(fpath).read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        tasks = data.get("tasks", [])
+        if not tasks:
+            continue
+        is_confirmed = data.get("confirmed", False)
+        unchecked = [t for t in tasks if t.get("status") != "completed"]
+        completed = [t for t in tasks if t.get("status") == "completed"]
+        source = "已确认" if is_confirmed else "未确认"
+        print(f"读取上周 checklist ({source}): {len(unchecked)} 未完成 + {len(completed)} 已完成")
+        return {"unchecked": unchecked, "completed": completed, "confirmed": is_confirmed}
+    return {"unchecked": [], "completed": [], "confirmed": False}
+
+
+def _suppress_completed_from_canon(
+    canon_tasks: list[dict],
+    completed_last_week: list[dict],
+) -> list[dict]:
+    """Remove Canon tasks that were completed on last week's checklist.
+
+    Matches by canon_file (precise) — only tasks with a matching Canon file
+    are suppressed. Session-only tasks from last week never suppress Canon tasks.
+    """
+    if not completed_last_week:
+        return canon_tasks
+
+    completed_files = set()
+    for cl in completed_last_week:
+        cf = cl.get("canon_file", "")
+        if cf:
+            completed_files.add(cf)
+
+    if not completed_files:
+        return canon_tasks
+
+    suppressed = []
+    kept = []
+    for ct in canon_tasks:
+        ct_file = ct.get("source_file", "")
+        if ct_file and ct_file in completed_files:
+            suppressed.append(ct)
+        else:
+            kept.append(ct)
+
+    if suppressed:
+        print(f"上周已完成，本周压制: {len(suppressed)} 项")
+        for s in suppressed[:5]:
+            print(f"  - {s['title'][:50]}...")
+    return kept
+
+
+def _merge_carry_over_tasks(
+    tasks: list[Task],
+    canon_tasks: list[dict],
+    carry_over: list[dict],
+) -> list[Task]:
+    """Add carry-over items, deduplicating against existing Canon and session tasks.
+
+    Layer 1 (Canon) and Layer 2 (session) take priority. Carry-over items
+    only added if they don't match any existing task by title similarity.
+    """
+    if not carry_over:
+        return tasks
+
+    # Build existing title set for dedup (use title first, then description)
+    existing_titles = []
+    for t in tasks:
+        title = _normalize_for_checklist(t.title or t.task_description or "")
+        existing_titles.append(title)
+
+    added = 0
+    for co in carry_over:
+        co_title = _normalize_for_checklist(co.get("title", ""))
+        if not co_title:
+            continue
+
+        # Check if this carry-over item already has a current task
+        is_duplicate = False
+        for et in existing_titles:
+            if _title_similarity(co_title, et) >= 0.30:
+                is_duplicate = True
+                break
+        if is_duplicate:
+            continue
+
+        # Create a carry-over task
+        task = Task(
+            task_id=f"carryover-{added}",
+            title=co.get("title", ""),
+            task_description=co.get("title", ""),
+            status=co.get("status", "in_progress"),
+            project="(carry-over)",
+        )
+        setattr(task, "source", "carry-over")
+        task.result = "从上周 checklist 带入，状态未确认。"
+        tasks.append(task)
+        existing_titles.append(co_title)
+        added += 1
+
+    if added:
+        print(f"上周 carry-over 补充: {added} 项")
+    return tasks
+
+
+def _normalize_for_checklist(title: str) -> str:
+    """Normalize title for comparison (remove punctuation, lowercase)."""
+    import re
+    return re.sub(r'[\s.,;:!?·，。；：！？、""''\(\)\[\]【】]', '', title.lower())
+
+
 def build_checklist_md(tasks, since, until) -> str:
-    """生成极简 checklist markdown。"""
+    """生成清单 markdown。数字前缀：1=本周完成 2=进行中 3=跳过。"""
     lines = [f"# 周报确认 · {since.strftime('%-m/%-d')} - {until.strftime('%-m/%-d')}", ""]
+    lines.append("> 1=本周完成 / 2=进行中 / 3=跳过")
+    lines.append("")
     for i, t in enumerate(tasks, 1):
         status = t.status
-        checked = "x" if status == "completed" else " "
-        if str(getattr(t, "source", "")).startswith("canon"):
-            title = t.title
+        title = t.task_description or t.title if not str(getattr(t, "source", "")).startswith("canon") else t.title
+        if status == "completed":
+            lines.append(f"1 {title}")
         else:
-            title = t.task_description or t.title
-        lines.append(f"- [{checked}] {title}")
+            lines.append(f"2 {title}")
     lines.append("")
-    lines.append("- [x] 发送本周周报")
+    lines.append("1 发送本周周报")
     return "\n".join(lines)
 
 
@@ -322,7 +438,7 @@ def main():
             if llm_ok:
                 print("LLM STAR 提取中...")
                 session_tasks = build_stars_for_tasks(session_tasks, use_cache=True, quiet=False)
-                session_tasks = merge_by_star_similarity(session_tasks, rule_threshold=0.05, quiet=False)
+                session_tasks = merge_by_star_similarity(session_tasks, rule_threshold=0.02, quiet=False)
                 print(f"STAR+去重后 {len(session_tasks)} 个候选任务")
             else:
                 print(f"LLM 不可用 ({reason})，使用基础状态")
@@ -330,8 +446,24 @@ def main():
         session_tasks = filter_by_topic(session_tasks, "工作")
         print(f"session 工作候选过滤后 {len(session_tasks)} 个任务")
 
+    # Layer 0: Load last week's confirmed checklist for carry-over + suppression
+    prev = _load_previous_checklist_tasks()
+    completed_last_week = prev.get("completed", [])
+    unchecked_last_week = prev.get("unchecked", [])
+
+    # Suppress Canon tasks that were completed on last week's checklist
+    if completed_last_week:
+        canon_tasks = _suppress_completed_from_canon(canon_tasks, completed_last_week)
+        print(f"压制后 Canon tasks: {len(canon_tasks)} 项")
+
     tasks = _build_canon_first_tasks(canon_tasks, session_tasks)
     print(f"Canon-first 输出 {len(tasks)} 个任务")
+
+    # Layer 3: Carry-over unchecked items from last week's checklist
+    if unchecked_last_week:
+        print(f"上周未完成任务: {len(unchecked_last_week)} 项")
+        tasks = _merge_carry_over_tasks(tasks, canon_tasks, unchecked_last_week)
+        print(f"carry-over 合并后 {len(tasks)} 个任务")
     if not tasks:
         print("本周无 Canon task 或 session 工作候选，跳过。")
         return
@@ -359,10 +491,24 @@ def main():
     node_id, url = create_dingtalk_doc(checklist, title)
     print(f"文档已创建: {url}")
 
-    # 保存 checklist 元数据供 sunday_finalize 读回
+    # 保存 checklist 元数据 + 任务列表供下周五 carry-over
     meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
     meta_dir.mkdir(parents=True, exist_ok=True)
-    meta = {"nodeId": node_id, "url": url, "week_start": since.isoformat(), "week_end": until.isoformat()}
+    meta = {
+        "nodeId": node_id,
+        "url": url,
+        "week_start": since.isoformat(),
+        "week_end": until.isoformat(),
+        "tasks": [
+            {
+                "title": t.title,
+                "canon_file": str(getattr(t, "canon_file", "")),
+                "status": t.status,
+                "source": str(getattr(t, "source", "unknown")),
+            }
+            for t in tasks
+        ],
+    }
     meta_path = meta_dir / f"checklist-{until.strftime('%Y-%m-%d')}.json"
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2))
     print(f"元数据已保存: {meta_path}")

@@ -62,10 +62,10 @@ def fetch_checklist_md(node_id: str) -> str:
 def parse_checklist(md: str) -> dict:
     """解析 checklist markdown，返回任务状态和发送标记。
 
-    格式:
-      [x] Task A     → status = "completed"
-      [ ] Task B     → status = "in_progress"
-      最后一行 x      → send = True
+    数字前缀格式（当前），兼容旧 emoji/checkbox 格式：
+      1 / ✅ / [x]     → completed（本周已完成）
+      2 / ⬜ / [ ]     → in_progress（本周未完成）
+      3 / ➖ / [-]     → excluded（之前已完成，不纳入本周）
     """
     tasks = []
     send = False
@@ -74,24 +74,47 @@ def parse_checklist(md: str) -> dict:
 
     for line in lines:
         stripped = line.strip()
-        # 匹配 [x] 或 - [x] 格式（钉钉编辑器自动加 - 前缀）
-        m = re.match(r"^(?:-\s+)?\[(x| )\]\s+(.*)", stripped)
-        if m:
-            checked = m.group(1) == "x"
-            title = m.group(2).strip()
-            if "发送" in title and "周报" in title:
-                continue
-            tasks.append({
-                "title": title,
-                "user_status": "completed" if checked else "in_progress",
-            })
+        if not stripped or stripped.startswith("#") or stripped.startswith(">"):
+            continue
 
-    # 从后往前找发送标记
-    for line in reversed(lines):
-        stripped = line.strip()
-        if "发送" in stripped and "周报" in stripped:
-            send = "[x]" in stripped
-            break
+        title = None
+        status = None
+
+        # Number prefix: 1/2/3
+        m = re.match(r"^([123])\s+(.+)", stripped)
+        if m:
+            marker = m.group(1)
+            title = m.group(2).strip()
+            status = {"1": "completed", "2": "in_progress", "3": "excluded"}[marker]
+        else:
+            # Emoji format
+            for emoji, st in [("✅", "completed"), ("⬜", "in_progress"), ("➖", "excluded")]:
+                if stripped.startswith(emoji):
+                    title = stripped[1:].strip()
+                    status = st
+                    break
+        if title is None:
+            # Legacy checkbox format
+            m = re.match(r"^(?:-\s+)?\[(x| |-)\]\s+(.*)", stripped)
+            if m:
+                marker = m.group(1)
+                title = m.group(2).strip()
+                status = "completed" if marker == "x" else ("excluded" if marker == "-" else "in_progress")
+
+        if not title or "发送" in title and "周报" in title:
+            if status == "completed" and "发送" in title:
+                send = True
+            continue
+
+        if status:
+            tasks.append({"title": title, "user_status": status})
+
+    if not send:
+        for line in reversed(lines):
+            s = line.strip()
+            if "发送" in s and "周报" in s:
+                send = s.startswith("1") or "✅" in s or "[x]" in s
+                break
 
     return {"tasks": tasks, "send": send}
 
@@ -115,8 +138,10 @@ def match_task_by_title(checklist_task: dict, report_tasks: list) -> object:
 def apply_overrides(tasks: list, checklist_data: dict):
     """Use the confirmed checklist as the final task set.
 
-    Session tasks are evidence only. Anything not present in the confirmed
-    checklist must not leak into the final weekly report.
+    Three-state handling:
+      [x] completed   → include in report
+      [ ] in_progress → include in report
+      [-] excluded    → exclude from report (previously done, not this week)
     """
     from task_clustering import Task
 
@@ -124,7 +149,12 @@ def apply_overrides(tasks: list, checklist_data: dict):
     final_tasks = []
     applied = 0
     added = 0
+    excluded = 0
     for ct in ctasks:
+        if ct["user_status"] == "excluded":
+            excluded += 1
+            continue
+
         matched = match_task_by_title(ct, tasks)
         if matched:
             matched.status = ct["user_status"]
@@ -142,7 +172,7 @@ def apply_overrides(tasks: list, checklist_data: dict):
             ))
             added += 1
     dropped = max(len(tasks) - applied, 0)
-    print(f"状态覆盖: {applied}/{len(ctasks)} 项匹配, {added} 项按 checklist 新增, {dropped} 项 session-only 已丢弃")
+    print(f"状态覆盖: {applied}/{len(ctasks)} 项匹配, {added} 项新增, {excluded} 项排除, {dropped} 项 session-only 丢弃")
     return final_tasks
 
 
@@ -258,7 +288,56 @@ def main():
     # 6. 覆盖用户确认状态
     tasks = apply_overrides(tasks, checklist_data)
 
-    # 7. 生成 + 提交
+    # 7. 回写确认状态到 checklist JSON，供下周五 carry-over
+    meta_path = Path.home() / ".agents" / "work-reports" / ".checklist"
+    for candidate in meta_path.glob("checklist-*.json"):
+        try:
+            existing = json.loads(candidate.read_text(encoding="utf-8"))
+            if existing.get("week_start") == meta.get("week_start"):
+                confirmed_tasks = []
+                # Tasks from the confirmed checklist (applied to session tasks)
+                for t in tasks:
+                    confirmed_tasks.append({
+                        "title": t.task_description or t.title,
+                        "canon_file": str(getattr(t, "canon_file", "")),
+                        "status": t.status,
+                        "source": "confirmed",
+                    })
+                # Excluded items ([ - ]) → saved as completed for carry-over suppression
+                for ct in checklist_data["tasks"]:
+                    if ct.get("user_status") == "excluded":
+                        confirmed_tasks.append({
+                            "title": ct["title"],
+                            "canon_file": "",
+                            "status": "completed",
+                            "source": "excluded",
+                        })
+                # Deleted from DingTalk doc → implicitly completed
+                user_kept_titles = set()
+                for ct in checklist_data["tasks"]:
+                    user_kept_titles.add(ct.get("title", "").strip())
+                deleted_count = 0
+                for orig in existing.get("tasks", []):
+                    orig_title = orig.get("title", "").strip()
+                    if orig_title and orig_title not in user_kept_titles:
+                        confirmed_tasks.append({
+                            "title": orig_title,
+                            "canon_file": orig.get("canon_file", ""),
+                            "status": "completed",
+                            "source": "deleted",
+                        })
+                        deleted_count += 1
+                if deleted_count:
+                    print(f"已删除项标记完成: {deleted_count} 项")
+                existing["tasks"] = confirmed_tasks
+                existing["confirmed"] = True
+                candidate.write_text(json.dumps(existing, ensure_ascii=False, indent=2))
+                print(f"确认状态已回写: {candidate.name}")
+                break
+        except Exception:
+            continue
+
+    # 8. 生成 + 提交
     generate_and_submit(tasks, since_dt, until_dt, checklist_data["send"], dry_run)
 
 

@@ -642,6 +642,24 @@ def _normalize_for_similarity(text: str) -> str:
     return text
 
 
+def _normalize_project_name(project: str | None) -> str | None:
+    """Normalize CWD-based project names to comparable short names.
+
+    Claude Code uses CWD slugs like '-media-yhr-2T-ultralytics'.
+    Pi uses paths like '/home/yhr-.pi'. Extract the last meaningful component.
+    """
+    if not project:
+        return None
+    # Strip leading / and split by -, take plausible repo names
+    cleaned = project.lstrip("/").lstrip("-")
+    parts = cleaned.split("-")
+    # Return last component if it's a recognizable project name (≥3 chars)
+    for part in reversed(parts):
+        if len(part) >= 3:
+            return part.lower()
+    return cleaned.lower()
+
+
 def _star_similarity(a: Task, b: Task) -> float:
     """Compute similarity between two tasks' STAR content, prioritizing Situation.
 
@@ -650,6 +668,34 @@ def _star_similarity(a: Task, b: Task) -> float:
     and background — two tasks about the same work will share similar situations.
     """
     score = 0.0
+
+    # Same-project baseline: tasks in the same project get a moderate boost.
+    # Normalize CWD-based project names first (e.g. '-media-yhr-2T-ultralytics' → 'ultralytics').
+    proj_a = _normalize_project_name(a.project)
+    proj_b = _normalize_project_name(b.project)
+    if proj_a and proj_b and proj_a == proj_b:
+        score += 0.08
+
+    # Fast-path: shared key noun phrases in title (2+ char bigrams).
+    # Catches "BDD100K 语义分割 training" vs "BDD100K 语义分割 recovery".
+    if a.title and b.title:
+        ta = _normalize_for_similarity(a.title)
+        tb = _normalize_for_similarity(b.title)
+        if ta and tb:
+            # Title substring match (normalized, ≥8 chars)
+            if min(len(ta), len(tb)) >= 8 and (ta in tb or tb in ta):
+                score += 0.35
+            else:
+                # Shared bigram bonus — rewards tasks sharing key terms
+                # like "BDD100K", "语义分割", "训练"
+                bigrams_a = set(ta[i:i+2] for i in range(len(ta)-1))
+                bigrams_b = set(tb[i:i+2] for i in range(len(tb)-1))
+                if bigrams_a and bigrams_b:
+                    shared = len(bigrams_a & bigrams_b)
+                    total = len(bigrams_a | bigrams_b)
+                    bigram_jaccard = shared / total if total > 0 else 0
+                    if bigram_jaccard > 0.15:
+                        score += bigram_jaccard * 0.20
 
     # Primary: Situation similarity (highest weight)
     if a.situation and b.situation:
@@ -716,8 +762,11 @@ Answer ONLY "yes" or "no".
 Rules:
 - "yes" if they describe the same work, even if one is earlier/later stage
 - "yes" if they have the same goal and context (e.g. both about designing the same system)
+- "yes" if they share the same project/topic and appear to be continuations of each other
 - "no" if they are completely unrelated work (e.g. one about bug fix, one about feature design)
-- "no" if they are about different projects or different topics"""
+- "no" if they are about different projects or different topics
+
+When in doubt, answer "yes" — merging is safer than splitting for weekly reports. Two sessions about the same project and similar work are better merged than kept separate."""
 
 
 def _llm_should_merge(task_a: Task, task_b: Task) -> bool:
@@ -793,20 +842,21 @@ def merge_by_star_similarity(
     if not quiet:
         print(f"  Rule-based candidates: {len(candidates)} pairs")
 
-    HIGH_SIM_THRESHOLD = 0.9  # auto-merge without LLM
+    HIGH_SIM_THRESHOLD = 0.9  # auto-merge without LLM (near-identical tasks only)
 
     # Stage 2: LLM confirmation for candidates
     # LLM judgment overrides all other rules. If LLM says same task, merge regardless
     # of project, agent, status, or /clear boundaries.
+    # Only HIGH_SIM_THRESHOLD bypasses LLM — same-project alone is NOT enough to
+    # auto-merge (would swallow distinct work sharing a repo, per adversarial review).
     llm_merge_pairs: set[tuple[int, int]] = set()
     auto_merged = 0
     for idx, (i, j, sim) in enumerate(candidates):
         if sim >= HIGH_SIM_THRESHOLD:
-            # Auto-merge: very similar tasks skip LLM
             llm_merge_pairs.add((i, j))
             auto_merged += 1
             if not quiet:
-                print(f"    Auto [{idx+1}/{len(candidates)}]: {tasks[i].title[:40]}... (sim={sim:.2f}) → MERGE")
+                print(f"    Auto [{idx+1}/{len(candidates)}]: {tasks[i].title[:40]}... (sim={sim:.2f}, high-sim) → MERGE")
             continue
         if not quiet:
             print(f"    LLM check [{idx+1}/{len(candidates)}]: {tasks[i].title[:40]}... vs {tasks[j].title[:40]}... (sim={sim:.2f})")

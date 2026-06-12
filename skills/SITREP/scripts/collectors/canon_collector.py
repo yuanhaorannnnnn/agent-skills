@@ -21,7 +21,15 @@ def collect_canon_tasks(since: datetime, until: datetime) -> list[dict]:
         return []
 
     tasks = []
+    seen_real_paths: set[str] = set()
     for md_file in CANON_TASKS_DIR.rglob("*.md"):
+        # Skip symlinks that resolve to an already-processed file
+        # (e.g. JHBN-7699.md → jhbn-7699-repair.md).
+        real_path = str(md_file.resolve())
+        if real_path in seen_real_paths:
+            continue
+        seen_real_paths.add(real_path)
+
         # Nested goal.md files are execution artifacts linked from task pages,
         # not separate weekly work items.
         if md_file.name == "goal.md" and md_file.parent != CANON_TASKS_DIR:
@@ -34,7 +42,14 @@ def collect_canon_tasks(since: datetime, until: datetime) -> list[dict]:
             continue
 
         activity_at = parsed.get("activity_at") or mtime
-        if not (since <= activity_at <= until):
+
+        # Bypass date filter for tasks explicitly marked as weekly work items.
+        # report_scope:work + weekly:true is the author's declaration that this
+        # task belongs in the weekly report regardless of last-activity date.
+        report_scope = (parsed.get("report_scope") or "").strip().lower()
+        is_weekly_work = (report_scope == "work" and parsed.get("weekly") is True)
+
+        if not is_weekly_work and not (since <= activity_at <= until):
             continue
         tasks.append(parsed)
 
