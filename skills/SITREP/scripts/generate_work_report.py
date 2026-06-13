@@ -131,10 +131,10 @@ def filter_by_project(tasks: list, project_filter: str) -> list:
 
 def cmd_weekly(args):
     """Generate weekly report."""
+    from common_wr import LOCAL_TZ
     if args.since and args.until:
-        since = datetime.strptime(args.since, "%Y-%m-%d")
-        until = datetime.strptime(args.until, "%Y-%m-%d")
-        until = until.replace(hour=23, minute=59, second=59)
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=LOCAL_TZ)
+        until = datetime.strptime(args.until, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=LOCAL_TZ)
     else:
         since, until = get_week_range()
 
@@ -160,14 +160,32 @@ def cmd_weekly(args):
             print("[!] Report will be generated without STAR extraction (basic mode)")
             print()
 
-        # Collect
+        # Collect Canon tasks (primary source)
+        from collectors.canon_collector import collect_canon_tasks
+        from friday_review import _select_work_canon_tasks, _canon_task_to_report_task
+
+        canon_tasks = collect_canon_tasks(since, until)
+        work_canon = _select_work_canon_tasks(canon_tasks)
+
+        # Collect sessions (enrichment)
         sessions = collect_all_sessions(since, until, args.agent)
         total_sessions = len(sessions)
 
-        if not sessions:
-            print("No sessions found in the specified date range.")
+        if not sessions and not work_canon:
+            print("No sessions or Canon tasks found in the specified date range.")
             if args.auto:
                 print("[auto mode] Exiting silently (no data to report)")
+            return
+
+        # If only Canon tasks, build report from them directly
+        if not sessions:
+            print(f"No sessions found. Generating Canon-only report from {len(work_canon)} tasks.")
+            tasks = [_canon_task_to_report_task(ct) for ct in work_canon]
+            # Skip clustering + STAR
+            report_md = render_weekly_report(tasks, since, until)
+            print(f"\n{report_md}")
+            report_path = save_report(report_md, since, until)
+            print(f"\nReport saved to: {report_path}")
             return
 
         # Cluster into tasks
@@ -228,10 +246,10 @@ def cmd_weekly(args):
 
 def cmd_monthly(args):
     """Generate monthly report."""
+    from common_wr import LOCAL_TZ
     if args.since and args.until:
-        since = datetime.strptime(args.since, "%Y-%m-%d")
-        until = datetime.strptime(args.until, "%Y-%m-%d")
-        until = until.replace(hour=23, minute=59, second=59)
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=LOCAL_TZ)
+        until = datetime.strptime(args.until, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=LOCAL_TZ)
     else:
         since, until = get_month_range()
 

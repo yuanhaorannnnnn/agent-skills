@@ -517,8 +517,9 @@ def _should_merge_tasks(a: Task, b: Task) -> bool:
     2. Within 24 hours
     3. Either title similarity >= 0.6 OR content similarity >= 0.4
     """
-    # Same project
-    if a.project != b.project:
+    # Same project (require non-empty — empty project signals unknown CWD,
+    # and two unknown-CWD tasks should never be merged on project match alone)
+    if not a.project or not b.project or a.project != b.project:
         return False
 
     # Within 24 hours

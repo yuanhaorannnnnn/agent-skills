@@ -78,18 +78,28 @@ def check_based_on_checklist(report_path: str, checklist_path: str):
     if not cdata.get("confirmed"):
         return False, "based-on-checklist: not confirmed FAIL"
 
-    # Report must be newer than checklist JSON
+    # Load the checklist JSON artifact and verify temporal integrity:
+    # report must be generated after checklist was confirmed (JSON mtime).
     cjson_path = Path.home() / ".agents" / "work-reports" / ".checklist"
     cjson_file = None
     for f in cjson_path.glob("checklist-*.json"):
-        if f.stat().st_mtime >= cp.stat().st_mtime - 60:
-            try:
-                d = json.loads(f.read_text())
-                if d.get("week_start") == cdata.get("week_start"):
-                    cjson_file = f
-                    break
-            except Exception:
-                pass
+        try:
+            d = json.loads(f.read_text())
+            if d.get("week_start") == cdata.get("week_start"):
+                cjson_file = f
+                break
+        except Exception:
+            pass
+
+    if not cjson_file:
+        return False, "based-on-checklist: checklist JSON not found FAIL"
+
+    json_mtime = datetime.fromtimestamp(cjson_file.stat().st_mtime)
+    report_mtime = datetime.fromtimestamp(rp.stat().st_mtime)
+
+    # Report must have been generated after checklist was confirmed
+    if report_mtime < json_mtime:
+        return False, f"based-on-checklist: report older than confirmed checklist FAIL"
 
     # Verify report has task items (not just boilerplate)
     report_items = _count_task_items(rp.read_text() if rp.exists() else "")
@@ -97,7 +107,7 @@ def check_based_on_checklist(report_path: str, checklist_path: str):
         return False, "based-on-checklist: report has no task items FAIL"
 
     checklist_items = len(cdata.get("tasks", []))
-    # Report should have roughly the same number of items as non-excluded tasks
+    # Verify report items roughly match checklist non-excluded tasks
     non_excluded = sum(1 for t in cdata.get("tasks", []) if t.get("status") != "excluded")
     if report_items < non_excluded * 0.5:
         return False, f"based-on-checklist: report({report_items}) << checklist({non_excluded}) FAIL"
