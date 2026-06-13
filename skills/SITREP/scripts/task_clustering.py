@@ -780,7 +780,7 @@ def _llm_should_merge(task_a: Task, task_b: Task) -> bool:
     except ImportError:
         return False
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")
     if not api_key:
         return False
 

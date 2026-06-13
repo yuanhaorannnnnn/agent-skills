@@ -254,7 +254,7 @@ def _call_llm(conversation: str, task: Task) -> Optional[dict]:
     if anthropic is None:
         return None
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")
     if not api_key:
         return None
 

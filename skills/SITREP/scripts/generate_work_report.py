@@ -41,7 +41,7 @@ def _check_llm_availability() -> tuple[bool, str]:
     except ImportError:
         return False, "anthropic SDK not installed (pip install anthropic)"
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")
     if not api_key:
         return False, "ANTHROPIC_API_KEY not set"
 
