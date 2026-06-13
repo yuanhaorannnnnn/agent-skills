@@ -5,8 +5,11 @@ from agent sessions when there's a match.
 """
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+# Local timezone for consistent comparison with aware since/until from common_wr
+_LOCAL_TZ = datetime.now().astimezone().tzinfo
 
 CANON_TASKS_DIR = Path("/media/yhr/2T/Canon/tasks")
 
@@ -35,7 +38,7 @@ def collect_canon_tasks(since: datetime, until: datetime) -> list[dict]:
         if md_file.name == "goal.md" and md_file.parent != CANON_TASKS_DIR:
             continue
 
-        mtime = datetime.fromtimestamp(md_file.stat().st_mtime)
+        mtime = datetime.fromtimestamp(md_file.stat().st_mtime, tz=_LOCAL_TZ)
         content = md_file.read_text(encoding="utf-8")
         parsed = _parse_canon_page(content, md_file, mtime)
         if not parsed:
@@ -91,12 +94,15 @@ def _parse_frontmatter_datetime(value: str | None) -> datetime | None:
         try:
             dt = datetime.strptime(raw, fmt)
             if fmt == "%Y-%m-%d":
-                return dt.replace(hour=12)
-            return dt
+                dt = dt.replace(hour=12)
+            return dt.replace(tzinfo=_LOCAL_TZ)
         except ValueError:
             pass
     try:
-        return datetime.fromisoformat(raw)
+        dt = datetime.fromisoformat(raw)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=_LOCAL_TZ)
+        return dt
     except ValueError:
         return None
 
@@ -176,7 +182,7 @@ def _parse_canon_page(content: str, filepath: Path, mtime: datetime) -> dict | N
         or _parse_frontmatter_datetime(frontmatter.get("created"))
         or mtime
     )
-    is_active_this_week = (datetime.now() - activity_at).days <= 7
+    is_active_this_week = (datetime.now(_LOCAL_TZ) - activity_at).days <= 7
     project = frontmatter.get("project") or _infer_project(title, objective, constraints)
 
     return {

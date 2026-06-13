@@ -231,7 +231,8 @@ def main():
         since = datetime.strptime(since_arg, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0)
         until = datetime.strptime(until_arg, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=999999)
     else:
-        now = datetime.now()
+        from common_wr import LOCAL_TZ
+        now = datetime.now(LOCAL_TZ)
         since = now - timedelta(days=now.weekday())
         since = since.replace(hour=0, minute=0, second=0, microsecond=0)
         until = since + timedelta(days=6, hours=23, minutes=59, seconds=59)

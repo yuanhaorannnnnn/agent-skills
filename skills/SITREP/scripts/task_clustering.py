@@ -1002,9 +1002,10 @@ def _detect_status(task: Task, events: list[Event]) -> str:
                 return "blocked"
 
     # Check if session is still active (last event within 1 hour)
-    now = datetime.now()
+    from common_wr import LOCAL_TZ
+    now = datetime.now(LOCAL_TZ)
     last_time = events[-1].timestamp
-    if last_time and (now - last_time) < timedelta(hours=1):
+    if last_time and last_time.tzinfo is not None and (now - last_time) < timedelta(hours=1):
         return "in_progress"
 
     # Default: assume completed for older sessions
