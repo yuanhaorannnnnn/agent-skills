@@ -14,8 +14,14 @@ from pathlib import Path
 def _find_checklist_json(md_path: str) -> dict | None:
     """Find and parse the checklist JSON for a given checklist markdown path."""
     meta_dir = Path.home() / ".agents" / "work-reports" / ".checklist"
-    basename = Path(md_path).stem
-    for candidate in [meta_dir / f"{basename}.json", Path(md_path).with_suffix(".json")]:
+    path = Path(md_path)
+    if path.suffix == ".json" and path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    basename = path.stem
+    for candidate in [meta_dir / f"{basename}.json", path.with_suffix(".json")]:
         if candidate.exists():
             try:
                 return json.loads(candidate.read_text(encoding="utf-8"))
@@ -34,6 +40,8 @@ def _count_task_items(text: str) -> int:
         elif re.match(r"^[123]\s+\S", line.strip()):
             count += 1
         elif re.match(r"^(?:✅|⬜|➖)\s+\S", line.strip()):
+            count += 1
+        elif re.match(r"^#{3,}\s+\d+(?:\.\d+)+\.\s+\S", line.strip()):
             count += 1
     return count
 
@@ -80,16 +88,18 @@ def check_based_on_checklist(report_path: str, checklist_path: str):
 
     # Load the checklist JSON artifact and verify temporal integrity:
     # report must be generated after checklist was confirmed (JSON mtime).
-    cjson_path = Path.home() / ".agents" / "work-reports" / ".checklist"
-    cjson_file = None
-    for f in cjson_path.glob("checklist-*.json"):
-        try:
-            d = json.loads(f.read_text())
-            if d.get("week_start") == cdata.get("week_start"):
-                cjson_file = f
-                break
-        except Exception:
-            pass
+    cjson_file = cp if cp.suffix == ".json" else None
+    if not cjson_file or not cjson_file.exists():
+        cjson_path = Path.home() / ".agents" / "work-reports" / ".checklist"
+        cjson_file = None
+        for f in cjson_path.glob("checklist-*.json"):
+            try:
+                d = json.loads(f.read_text())
+                if d.get("nodeId") == cdata.get("nodeId"):
+                    cjson_file = f
+                    break
+            except Exception:
+                pass
 
     if not cjson_file:
         return False, "based-on-checklist: checklist JSON not found FAIL"

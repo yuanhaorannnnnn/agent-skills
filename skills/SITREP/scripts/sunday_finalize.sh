@@ -11,6 +11,12 @@ if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
     fi
 fi
 
+# Cron may run after the short-lived DingTalk access token expires. Refresh it
+# from the stored refresh token before reading checklist docs or submitting.
+if command -v dws >/dev/null 2>&1; then
+    dws auth status --format json >/dev/null 2>&1 || true
+fi
+
 PYTHON="${PYTHON:-/home/yhr/anaconda3/bin/python3}"
 if [ -z "${ANTHROPIC_BASE_URL:-}" ]; then
     export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"

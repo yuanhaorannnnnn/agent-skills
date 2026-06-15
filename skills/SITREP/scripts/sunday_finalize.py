@@ -44,6 +44,7 @@ def find_checklist_meta(since, until) -> dict:
         return None
     candidates.sort(key=lambda x: (x[0], x[1]), reverse=True)
     _, _, meta_path, meta = candidates[0]
+    meta["_meta_path"] = str(meta_path)
     print(f"使用本工作周最新 checklist: {meta_path.name}")
     return meta
 
@@ -227,11 +228,11 @@ def main():
         if arg == "--until" and i + 1 < len(args):
             until_arg = args[i + 1]
 
+    from common_wr import LOCAL_TZ
     if since_arg and until_arg:
-        since = datetime.strptime(since_arg, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0)
-        until = datetime.strptime(until_arg, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=999999)
+        since = datetime.strptime(since_arg, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=LOCAL_TZ)
+        until = datetime.strptime(until_arg, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=LOCAL_TZ)
     else:
-        from common_wr import LOCAL_TZ
         now = datetime.now(LOCAL_TZ)
         since = now - timedelta(days=now.weekday())
         since = since.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -268,8 +269,14 @@ def main():
         return
 
     # 5. 重新采集 + 聚类 + STAR 得到完整 Task 对象（带 session 信息）
-    since_dt = datetime.fromisoformat(meta.get("week_start", meta.get("since", since.isoformat())))
-    until_dt = datetime.fromisoformat(meta.get("week_end", meta.get("until", until.isoformat())))
+    def _meta_dt(value: str, fallback: datetime) -> datetime:
+        dt = datetime.fromisoformat(value) if value else fallback
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=LOCAL_TZ)
+        return dt.astimezone(LOCAL_TZ)
+
+    since_dt = _meta_dt(meta.get("week_start", meta.get("since")), since)
+    until_dt = _meta_dt(meta.get("week_end", meta.get("until")), until)
     from generate_work_report import collect_all_sessions, _check_llm_availability
     from task_clustering import cluster_sessions
     from star_builder import build_stars_for_tasks
@@ -290,53 +297,50 @@ def main():
     tasks = apply_overrides(tasks, checklist_data)
 
     # 7. 回写确认状态到 checklist JSON，供下周五 carry-over
-    meta_path = Path.home() / ".agents" / "work-reports" / ".checklist"
-    for candidate in meta_path.glob("checklist-*.json"):
-        try:
-            existing = json.loads(candidate.read_text(encoding="utf-8"))
-            if existing.get("week_start") == meta.get("week_start"):
-                confirmed_tasks = []
-                # Tasks from the confirmed checklist (applied to session tasks)
-                for t in tasks:
-                    confirmed_tasks.append({
-                        "title": t.task_description or t.title,
-                        "canon_file": str(getattr(t, "canon_file", "")),
-                        "status": t.status,
-                        "source": "confirmed",
-                    })
-                # Excluded items ([ - ]) → saved as completed for carry-over suppression
-                for ct in checklist_data["tasks"]:
-                    if ct.get("user_status") == "excluded":
-                        confirmed_tasks.append({
-                            "title": ct["title"],
-                            "canon_file": "",
-                            "status": "completed",
-                            "source": "excluded",
-                        })
-                # Deleted from DingTalk doc → implicitly completed
-                user_kept_titles = set()
-                for ct in checklist_data["tasks"]:
-                    user_kept_titles.add(ct.get("title", "").strip())
-                deleted_count = 0
-                for orig in existing.get("tasks", []):
-                    orig_title = orig.get("title", "").strip()
-                    if orig_title and orig_title not in user_kept_titles:
-                        confirmed_tasks.append({
-                            "title": orig_title,
-                            "canon_file": orig.get("canon_file", ""),
-                            "status": "completed",
-                            "source": "deleted",
-                        })
-                        deleted_count += 1
-                if deleted_count:
-                    print(f"已删除项标记完成: {deleted_count} 项")
-                existing["tasks"] = confirmed_tasks
-                existing["confirmed"] = True
-                candidate.write_text(json.dumps(existing, ensure_ascii=False, indent=2))
-                print(f"确认状态已回写: {candidate.name}")
-                break
-        except Exception:
-            continue
+    candidate = Path(meta.get("_meta_path", "")) if meta.get("_meta_path") else None
+    if candidate and candidate.exists():
+        existing = json.loads(candidate.read_text(encoding="utf-8"))
+        confirmed_tasks = []
+        # Tasks from the confirmed checklist (applied to session tasks)
+        for t in tasks:
+            confirmed_tasks.append({
+                "title": t.task_description or t.title,
+                "canon_file": str(getattr(t, "canon_file", "")),
+                "status": t.status,
+                "source": "confirmed",
+            })
+        # Excluded items ([ - ]) → saved as completed for carry-over suppression
+        for ct in checklist_data["tasks"]:
+            if ct.get("user_status") == "excluded":
+                confirmed_tasks.append({
+                    "title": ct["title"],
+                    "canon_file": "",
+                    "status": "completed",
+                    "source": "excluded",
+                })
+        # Deleted from DingTalk doc → implicitly completed
+        user_kept_titles = set()
+        for ct in checklist_data["tasks"]:
+            user_kept_titles.add(ct.get("title", "").strip())
+        deleted_count = 0
+        for orig in existing.get("tasks", []):
+            orig_title = orig.get("title", "").strip()
+            if orig_title and orig_title not in user_kept_titles:
+                confirmed_tasks.append({
+                    "title": orig_title,
+                    "canon_file": orig.get("canon_file", ""),
+                    "status": "completed",
+                    "source": "deleted",
+                })
+                deleted_count += 1
+        if deleted_count:
+            print(f"已删除项标记完成: {deleted_count} 项")
+        existing["tasks"] = confirmed_tasks
+        existing["confirmed"] = True
+        candidate.write_text(json.dumps(existing, ensure_ascii=False, indent=2))
+        print(f"确认状态已回写: {candidate.name}")
+    else:
+        print("未找到 checklist 元数据文件，无法回写确认状态")
 
     # 8. 生成 + 提交
     generate_and_submit(tasks, since_dt, until_dt, checklist_data["send"], dry_run)
