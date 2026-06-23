@@ -47,11 +47,40 @@ python3 <skill-dir>/scripts/extract_handoff.py --dir /absolute/source/workspace 
 
 Auto-detect runtime in given directory.
 
-### Specific runtime
+### Specific runtime(s)
 
 ```bash
 python3 <skill-dir>/scripts/extract_handoff.py --former claude --dir /absolute/workspace --focus "<topic>" --json
 ```
+
+### Multi-runtime / multi-directory
+
+```bash
+# Scan both Claude Code and Codex sessions across two workspaces
+python3 <skill-dir>/scripts/extract_handoff.py --former claude,codex --dir /project/a --dir /project/b --json
+
+# Scan all runtimes across multiple directories
+python3 <skill-dir>/scripts/extract_handoff.py --dir /project/a,/project/b,/project/c --json
+```
+
+
+### zvec-backed focused retrieval
+
+zvec is integrated as a candidate retriever only. It changes how matching session files are found; it does not change parsing, compression, handoff format, or the original JSONL source of truth.
+
+```bash
+# Build/rebuild the local zvec index for the current workspace
+python3 <skill-dir>/scripts/zvec_index.py --dir "$PWD" --rebuild
+
+# Query through Passdown. auto uses zvec for focused queries when available,
+# then falls back to the legacy keyword/mtime retriever.
+python3 <skill-dir>/scripts/extract_handoff.py --dir "$PWD" --focus "<topic>" --retriever auto --json
+
+# Force zvec. Fails if the index is missing or has no candidate.
+python3 <skill-dir>/scripts/extract_handoff.py --dir "$PWD" --focus "<topic>" --retriever zvec --json
+```
+
+Index location defaults to `~/.agents/passdown-zvec-index`. Override with `PASSDOWN_ZVEC_PATH=/path/to/index`.
 
 ### Direct session file
 
@@ -61,10 +90,11 @@ python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --
 
 ## Parameters
 
-- `--former <codex|pi|claude>` — optional. Auto-detect from all three runtimes if omitted. Multi-runtime matches sorted by mtime desc.
-- `--dir <path>` — optional. Defaults to current working directory.
+- `--former <codex|pi|claude,...>` — optional, comma-separated. Auto-detect from all three runtimes if omitted. Multi-runtime matches sorted by mtime desc.
+- `--dir <path>` — optional, repeatable. Accepts multiple paths via `--dir /a --dir /b` or `--dir /a,/b`. Defaults to current working directory.
 - `--file <path>` — direct session JSONL path; bypass discovery.
 - `--focus "<topic>"` — find ALL matching sessions across runtimes. Extracts and deduplicates turns from every session with a non-zero focus score.
+- `--retriever <auto|keyword|zvec>` — candidate retrieval mode. `auto` uses zvec for focused queries when an index exists, then falls back to keyword/mtime; `zvec` is strict; `keyword` preserves legacy behavior.
 
 ## Non-Negotiable Constraints
 
@@ -112,6 +142,7 @@ The extractor handles:
 - Pi message JSONL
 - Claude Code project JSONL
 - focus-ranked candidate selection
+- optional zvec-backed candidate retrieval for focused queries
 
 When compressing manually, keep:
 

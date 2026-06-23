@@ -14,9 +14,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import sys
+import warnings
 from pathlib import Path
 
 
@@ -66,9 +68,182 @@ def focus_score(path: Path, focus: str | None) -> int:
     return score
 
 
+# -- zvec retriever ---------------------------------------------------------
+
+EMBEDDING_DIM = 384
+DEFAULT_ZVEC_INDEX = Path.home() / ".agents" / "passdown-zvec-index"
+
+
+def passdown_zvec_path() -> Path:
+    return Path(os.environ.get("PASSDOWN_ZVEC_PATH", str(DEFAULT_ZVEC_INDEX))).expanduser()
+
+
+def token_features(text: str) -> list[str]:
+    lowered = text.lower()
+    tokens = re.findall(r"[a-z0-9_./:-]+|[\u4e00-\u9fff]", lowered)
+    feats = list(tokens)
+    feats.extend("".join(tokens[i:i + 2]) for i in range(max(0, len(tokens) - 1)))
+    for word in re.findall(r"[a-z0-9_./:-]{4,}", lowered):
+        feats.extend(word[i:i + 4] for i in range(len(word) - 3))
+    return feats
+
+
+def embed_text(text: str) -> list[float]:
+    vec = [0.0] * EMBEDDING_DIM
+    for feat in token_features(text):
+        digest = hashlib.blake2b(feat.encode("utf-8"), digest_size=8).digest()
+        n = int.from_bytes(digest, "little")
+        idx = n % EMBEDDING_DIM
+        sign = 1.0 if (n >> 63) == 0 else -1.0
+        vec[idx] += sign
+    norm = math.sqrt(sum(x * x for x in vec)) or 1.0
+    return [x / norm for x in vec]
+
+
+def _load_zvec_metadata(index_path: Path) -> dict[str, dict]:
+    sidecar = index_path / "metadata.jsonl"
+    if not sidecar.exists():
+        return {}
+    metadata: dict[str, dict] = {}
+    with sidecar.open(encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            try:
+                meta = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            doc_id = meta.get("id")
+            if doc_id:
+                metadata[doc_id] = meta
+    return metadata
+
+
+def _codex_session_cwd(path: Path) -> str:
+    try:
+        with path.open(encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                if '"session_meta"' not in line and '"cwd"' not in line:
+                    continue
+                try:
+                    data = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if data.get("type") == "session_meta":
+                    return data.get("payload", {}).get("cwd", "")
+    except OSError:
+        return ""
+    return ""
+
+
+def _metadata_matches_sources(meta: dict, source_dirs: list[str]) -> bool:
+    source_cwd = meta.get("source_cwd")
+    if source_cwd:
+        return any(_cwd_matches(str(source_cwd), src) or _cwd_matches(src, str(source_cwd)) for src in source_dirs)
+
+    session_file = meta.get("session_file", "")
+    runtime = meta.get("runtime", "")
+    path = Path(session_file)
+    if runtime == "claude":
+        return any(path.parent.name == slugify_claude(src) for src in source_dirs)
+    if runtime == "pi":
+        return any(path.parent.name == slugify_pi(src) for src in source_dirs)
+    if runtime == "codex":
+        cwd = _codex_session_cwd(path)
+        return bool(cwd) and any(_cwd_matches(cwd, src) for src in source_dirs)
+    return False
+
+
+def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str | None, top_k: int = 80, min_sessions: int = 20) -> list[dict]:
+    """Return Passdown session candidates from zvec.
+
+    zvec is only a retriever. Candidates still point at original JSONL files;
+    parsing and handoff generation remain owned by this extractor.
+    """
+    if not focus:
+        return []
+    index_path = passdown_zvec_path()
+    if not index_path.exists():
+        return []
+    try:
+        import zvec  # type: ignore
+    except Exception:
+        return []
+
+    metadata = _load_zvec_metadata(index_path)
+    if not metadata:
+        return []
+
+    try:
+        collection = zvec.open(path=str(index_path))
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            results = collection.query(
+                zvec.VectorQuery("text_embedding", vector=embed_text(focus)),
+                topk=top_k,
+            )
+    except Exception:
+        return []
+
+    runtime_set = set(runtimes)
+    session_scores: dict[str, float] = {}
+    session_chunks: dict[str, list[dict]] = {}
+    session_sample: dict[str, dict] = {}
+    for result in results:
+        meta = metadata.get(result.id)
+        if not meta:
+            continue
+        runtime = meta.get("runtime", "")
+        if runtime_set and runtime not in runtime_set:
+            continue
+        if not _metadata_matches_sources(meta, source_dirs):
+            continue
+        session_file = meta.get("session_file")
+        if not session_file:
+            continue
+        path = Path(session_file)
+        if not path.is_file():
+            continue
+        score = float(getattr(result, "score", 0.0))
+        session_scores[session_file] = session_scores.get(session_file, 0.0) + score
+        session_chunks.setdefault(session_file, []).append({
+            "chunk_id": result.id,
+            "score": score,
+            "role": meta.get("role", ""),
+            "turn_index": meta.get("turn_index", 0),
+            "text_preview": meta.get("text_preview", ""),
+        })
+        session_sample.setdefault(session_file, meta)
+
+    candidates = []
+    for session_file, agg_score in sorted(session_scores.items(), key=lambda x: x[1], reverse=True)[:min_sessions]:
+        sample = session_sample.get(session_file, {})
+        path = Path(session_file)
+        runtime = sample.get("runtime", "")
+        source_cwd = sample.get("source_cwd", "")
+        focus_rank = max(1, int(abs(agg_score) * 1_000_000))
+        candidates.append({
+            "path": path,
+            "runtime": runtime,
+            "source_cwd": source_cwd,
+            "focus_score": focus_rank,
+            "zvec_score": round(agg_score, 6),
+            "zvec_chunks": len(session_chunks.get(session_file, [])),
+            "mtime": float(sample.get("session_mtime") or _mtime(path)),
+        })
+    candidates.sort(key=lambda c: (c.get("zvec_score", 0), c.get("mtime", 0)), reverse=True)
+    return candidates
+
+
 def _mtime(path: Path) -> float:
     try:
         return path.stat().st_mtime
+    except OSError:
+        return 0
+
+
+def _line_count(path: Path) -> int:
+    try:
+        with open(path, encoding="utf-8", errors="ignore") as f:
+            return sum(1 for _ in f)
     except OSError:
         return 0
 
@@ -196,7 +371,7 @@ def extract_all_text_from_jsonl(path: Path) -> tuple[bool, str]:
 def parse_codex(path: Path) -> dict:
     """Parse a Codex session JSONL. Auto-detect TRANSCRIPT vs direct mode."""
     has_transcript, combined = extract_all_text_from_jsonl(path)
-    total_lines = sum(1 for _ in open(path, encoding="utf-8", errors="ignore"))
+    total_lines = _line_count(path)
 
     if has_transcript:
         turns = extract_codex_transcript(combined)
@@ -295,7 +470,7 @@ def parse_pi(path: Path) -> dict:
 
     return {
         "mode": "message",
-        "total_lines": sum(1 for _ in open(path, encoding="utf-8", errors="ignore")),
+        "total_lines": _line_count(path),
         "turns": turns,
     }
 
@@ -377,6 +552,53 @@ def find_claude_session(cwd: str, focus: str | None = None) -> Path | None:
     return candidates[0]["path"] if candidates else None
 
 
+def _looks_like_claude_noise(text: str) -> bool:
+    stripped = text.strip()
+    if not stripped:
+        return True
+    noise_markers = [
+        "<local-command-caveat>",
+        "<local-command-stdout>",
+        "<local-command-stderr>",
+        "<command-name>",
+        "<command-message>",
+        "<command-args>",
+    ]
+    if any(marker in stripped for marker in noise_markers):
+        return True
+    if stripped.startswith("[{'tool_use_id'") or stripped.startswith('[{"tool_use_id"'):
+        return True
+    if stripped.startswith("[{'type': 'tool_result'") or stripped.startswith('[{"type": "tool_result"'):
+        return True
+    return looks_like_raw_context_dump(stripped)
+
+
+def _extract_claude_user_text(content) -> str:
+    """Extract only human-authored text from Claude user messages.
+
+    Claude JSONL stores tool_result and local command events as user messages.
+    Those are execution noise, not handoff conversation, so keep only plain
+    text blocks and strings that are not local-command wrappers.
+    """
+    texts: list[str] = []
+    if isinstance(content, str):
+        texts = [content]
+    elif isinstance(content, list):
+        for block in content:
+            if isinstance(block, str):
+                texts.append(block)
+            elif isinstance(block, dict) and block.get("type") == "text":
+                value = block.get("text") or ""
+                if value:
+                    texts.append(value)
+    clean = []
+    for value in texts:
+        value = str(value)
+        if not _looks_like_claude_noise(value):
+            clean.append(value.strip())
+    return "\n".join(clean).strip()
+
+
 def parse_claude(path: Path) -> dict:
     """Parse a Claude Code session JSONL."""
     turns = []
@@ -389,9 +611,9 @@ def parse_claude(path: Path) -> dict:
             t = d.get("type", "")
             if t == "user":
                 msg = d.get("message") or {}
-                text = msg.get("content", "")
+                text = _extract_claude_user_text(msg.get("content", ""))
                 if text:
-                    turns.append({"role": "user", "text": str(text)})
+                    turns.append({"role": "user", "text": text})
             elif t == "assistant":
                 msg = d.get("message") or {}
                 content = msg.get("content") or []
@@ -406,7 +628,7 @@ def parse_claude(path: Path) -> dict:
 
     return {
         "mode": "message",
-        "total_lines": sum(1 for _ in open(path, encoding="utf-8", errors="ignore")),
+        "total_lines": _line_count(path),
         "turns": turns,
     }
 
@@ -415,32 +637,51 @@ def parse_claude(path: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Extract handoff context from coding agent sessions")
-    parser.add_argument("--former", help="Source agent: codex|pi|claude. Auto-detect if omitted.")
+    parser.add_argument("--former", help="Source agent(s): codex,pi,claude (comma-separated). Auto-detect if omitted.")
     parser.add_argument("--source", help="Alias for --former")
-    parser.add_argument("--cwd", help="Source working directory to match sessions (default: current cwd)")
-    parser.add_argument("--dir", dest="source_dir", help="Alias for --cwd")
+    parser.add_argument("--cwd", action="append", help="Source working directory (repeatable, comma-separated). Default: current cwd")
+    parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")
     parser.add_argument("--file", help="Direct session JSONL path; bypass session discovery")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
+    parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="Candidate retriever. auto uses zvec for focused queries when an index is available, then falls back to keyword.")
     parser.add_argument("--json", action="store_true", help="Output raw JSON (default: human-readable)")
     args = parser.parse_args()
 
-    source = args.former or args.source  # None = auto-detect
-    source_cwd = args.source_dir or args.cwd or os.getcwd()
-    if not source_cwd and not args.file:
-        print("Error: --cwd/--dir is required unless --file is provided", file=sys.stderr)
+    # Collect source directories: --dir and --cwd are both append-action lists
+    raw_dirs = (args.source_dir or []) + (args.cwd or [])
+    source_dirs = []
+    for val in raw_dirs:
+        for part in val.split(","):
+            part = part.strip()
+            if part:
+                source_dirs.append(part)
+    if not source_dirs:
+        source_dirs = [os.getcwd()]
+    source_dirs = [str(Path(d).expanduser().resolve()) for d in source_dirs]
+
+    # Collect runtimes: comma-separated --former
+    source = args.former or args.source
+    if source:
+        runtimes_to_scan = []
+        for s in source.split(","):
+            s = s.strip()
+            if s and s not in runtimes_to_scan:
+                runtimes_to_scan.append(s)
+    else:
+        runtimes_to_scan = ALL_RUNTIMES = ["codex", "pi", "claude"]
+
+    if args.retriever == "zvec" and not args.focus:
+        print("Error: --retriever zvec requires --focus", file=sys.stderr)
         return 1
 
-    ALL_RUNTIMES = ["codex", "pi", "claude"]
     candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
     parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
-
-    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
-    candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
-    parser_fn = parsers[source]
 
     candidates = []
+    retriever_used = "file" if args.file else "keyword"
+    retriever_fallback = None
     multi_session = False
-    resolved_source = source
+    resolved_source = source or "auto"
     if args.file:
         session_path = Path(args.file).expanduser().resolve()
         if not session_path.is_file():
@@ -450,44 +691,72 @@ def main() -> int:
         total_candidates = 1
         matched = [{"path": session_path, "direct_file": True, "mtime": _mtime(session_path)}]
     else:
-        # Determine which runtimes to scan
-        runtimes_to_scan = [source] if source else ALL_RUNTIMES
         all_candidates = []
-        for rt in runtimes_to_scan:
+        if args.focus and args.retriever in ("auto", "zvec"):
             try:
-                rt_candidates = candidate_finders[rt](str(Path(source_cwd).expanduser().resolve()), args.focus)
-                for c in rt_candidates:
-                    c["runtime"] = rt
-                all_candidates.extend(rt_candidates)
-            except Exception:
-                continue
+                all_candidates = find_zvec_candidates(source_dirs, runtimes_to_scan, args.focus)
+            except Exception as exc:
+                if args.retriever == "zvec":
+                    print(f"Error: zvec retriever failed: {exc}", file=sys.stderr)
+                    return 1
+                retriever_fallback = f"zvec_error:{exc.__class__.__name__}"
+                all_candidates = []
+            if all_candidates:
+                retriever_used = "zvec"
+            elif args.retriever == "zvec":
+                rt_list = ",".join(runtimes_to_scan)
+                dir_list = ",".join(source_dirs)
+                print(f"No zvec session candidates for source={rt_list} dirs={dir_list} focus={args.focus}", file=sys.stderr)
+                return 1
+            else:
+                retriever_fallback = retriever_fallback or "zvec_no_hits"
+
+        if not all_candidates:
+            # Scan every dir × runtime combination using the legacy keyword/mtime retriever.
+            retriever_used = "keyword"
+            for src_dir in source_dirs:
+                for rt in runtimes_to_scan:
+                    try:
+                        rt_candidates = candidate_finders[rt](src_dir, args.focus)
+                        for c in rt_candidates:
+                            c["runtime"] = rt
+                            c["source_cwd"] = src_dir
+                        all_candidates.extend(rt_candidates)
+                    except Exception:
+                        continue
 
         if not all_candidates:
             rt_list = ",".join(runtimes_to_scan)
-            print(f"No session found for source={rt_list} cwd={source_cwd} focus={args.focus or ''}", file=sys.stderr)
+            dir_list = ",".join(source_dirs)
+            print(f"No session found for source={rt_list} dirs={dir_list} focus={args.focus or ''}", file=sys.stderr)
             return 1
 
-        # Sort by mtime desc — most recent first across all runtimes
-        all_candidates.sort(key=lambda c: c.get("mtime", 0), reverse=True)
+        # With focus active, rank by focus score first; otherwise recency wins.
+        if args.focus:
+            all_candidates.sort(key=lambda c: (c.get("focus_score", 0), c.get("mtime", 0)), reverse=True)
+        else:
+            all_candidates.sort(key=lambda c: c.get("mtime", 0), reverse=True)
         candidates = all_candidates
 
-        # When focus is active, extract from ALL matching sessions (not just top 1)
+        # When focus is active, extract from ALL sessions with non-zero focus score.
+        # Do not silently fall back to recent sessions: that creates noisy handoffs
+        # and violates the Passdown contract.
         total_candidates = len(candidates)
         if args.focus:
             matched = [c for c in candidates if c.get("focus_score", 0) > 0]
             if not matched:
-                matched = candidates[:3]
+                rt_list = ",".join(runtimes_to_scan)
+                dir_list = ",".join(source_dirs)
+                print(
+                    f"No session found matching focus for source={rt_list} dirs={dir_list} focus={args.focus}",
+                    file=sys.stderr,
+                )
+                return 1
             session_paths = [c["path"] for c in matched]
             multi_session = len(session_paths) > 1
         else:
             session_paths = [candidates[0]["path"]]
             matched = [candidates[0]]
-
-        # Resolve parser for each session
-        if source:
-            parser_fn = parsers[source]
-        else:
-            resolved_source = matched[0].get("runtime", "claude") if matched else "claude"
 
         session_path = session_paths[0]
 
@@ -496,14 +765,15 @@ def main() -> int:
     modes = set()
     total_lines = 0
     for sp in session_paths:
-        # Look up parser per session (auto-detect may mix runtimes)
+        # Look up parser per session. Multi-runtime --former values still need
+        # per-candidate runtime dispatch.
         rt = resolved_source
-        if not source:
-            # Find which runtime this session came from
-            for m in matched:
-                if m.get("path") == sp:
-                    rt = m.get("runtime", "claude")
-                    break
+        for m in matched:
+            if m.get("path") == sp:
+                rt = m.get("runtime", rt)
+                break
+        if isinstance(rt, str) and "," in rt:
+            rt = rt.split(",", 1)[0].strip()
         result = parsers.get(rt, parsers["claude"])(sp)
         smtime = _mtime(sp)
         for idx, t in enumerate(result["turns"]):
@@ -536,11 +806,13 @@ def main() -> int:
     ))
 
     output = {
-        "source": source or "auto",
+        "source": resolved_source,
         "contributing_runtimes": contributing_runtimes,
         "current_cwd": str(Path.cwd().resolve()),
-        "source_cwd": str(Path(source_cwd).expanduser().resolve()) if source_cwd else None,
+        "source_cwds": source_dirs if not args.file else [],
+        "source_cwd": ", ".join(source_dirs) if not args.file else str(session_path),
         "focus": args.focus,
+        "retriever": retriever_used,
         "multi_session": multi_session,
         "matched_sessions": len(session_paths),
         "session_file": str(session_path),
@@ -558,12 +830,20 @@ def main() -> int:
         "turns": turns,
     }
 
+    if retriever_fallback:
+        output["retriever_fallback"] = retriever_fallback
+
     if args.json:
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
         print(f"source:       {output['source']}")
         print(f"current cwd:  {output['current_cwd']}")
-        print(f"source cwd:   {output['source_cwd'] or '-'}")
+        if len(output.get('source_cwds', [])) > 1:
+            print(f"source dirs:  {len(output['source_cwds'])} directories")
+            for d in output['source_cwds']:
+                print(f"  - {d}")
+        else:
+            print(f"source cwd:   {output['source_cwd'] or '-'}")
         print(f"focus:        {output['focus'] or '-'}")
         if output['multi_session']:
             print(f"matched:      {output['matched_sessions']} sessions (focus hit)")
