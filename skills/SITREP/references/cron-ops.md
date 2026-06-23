@@ -1,67 +1,74 @@
 # Cron Ops — Scheduling, Fallback, Troubleshooting
 
-## Friday Checklist
+## Current Policy
 
-Friday is the checklist generation day — NOT the final submission. The Friday checklist is the confirmed task source for Sunday's final report.
+Agent does not write or submit the final weekly report. The user writes it manually.
+Cron only sends a DingTalk document containing raw weekly reference materials.
+
+```bash
+30 17 * * 5 /home/yhr/.agents/skills/SITREP/scripts/weekly_materials.sh >> /home/yhr/.agents/work-reports/logs/weekly-materials.log 2>&1
+```
+
+Output:
+
+- DingTalk doc title: `周报参考素材 · M/D - M/D`
+- Local Markdown: `~/.agents/work-reports/weekly-materials-YYYY-MM-DD.md`
+- Metadata: `~/.agents/work-reports/.materials/materials-YYYY-MM-DD.json`
+
+This doc is not a checklist and not the final weekly report.
+
+## Deprecated Friday Checklist
 
 ```bash
 python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --auto --checklist
 ```
 
-Output: confirmed checklist to `~/.agents/work-reports/checklist-YYYY-MM-DD.md`.
+Deprecated. Do not send the weekly checklist unless the user explicitly asks for it.
 
-## Sunday Finalize
-
-Sunday finalization uses the confirmed checklist (most recent Friday or Saturday checklist), not a fresh data scan. The checklist is the final task list source — do NOT leak session-only tasks into the submitted report.
+## Deprecated Sunday Finalize
 
 ```bash
 python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --auto --finalize --from-checklist <checklist-path>
 ```
 
-Generates two reports:
-1. Full weekly (`weekly-YYYY-MM-DD.md`)
-2. Work weekly (`weekly-YYYY-MM-DD-work.md`) — `--topic 工作` filtered
-
-## Fallback Rules
-
-If no Friday/Saturday checklist exists:
-- Fall back to the most recent checklist from the current week
-- If no checklist at all: generate one from Canon + session data, mark as `[auto-generated, please review]`
-- Never submit a report without at least one reviewed checklist as source
+Deprecated. Do not auto-submit DingTalk weekly reports. The user writes the final report manually.
 
 ## Crontab
 
 ```bash
-# Friday 18:00 — generate checklist
-0 18 * * 5 ANTHROPIC_API_KEY=sk-ant-xxxxx ~/.agents/skills/SITREP/scripts/cron_wrapper.sh --checklist
+# Friday 17:30 — generate raw weekly materials DingTalk doc
+30 17 * * 5 /home/yhr/.agents/skills/SITREP/scripts/weekly_materials.sh >> /home/yhr/.agents/work-reports/logs/weekly-materials.log 2>&1
 
-# Sunday 23:00 — finalize and submit
-0 23 * * 0 ANTHROPIC_API_KEY=sk-ant-xxxxx ~/.agents/skills/SITREP/scripts/cron_wrapper.sh --finalize
+# Deprecated: Friday checklist + Sunday finalize are disabled.
 ```
 
 ## Environment
 
-- `ANTHROPIC_API_KEY`: required for LLM STAR extraction. Set in crontab or `~/.anthropic_api_key`.
 - Python 3.10+
+- `dws` CLI authenticated for DingTalk doc creation and self-message sending
 - Working directory: any (scripts use absolute paths)
 
 ## Manual Rerun
 
 If cron fails or data is stale:
-```bash
-# Re-run checklist
-python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --since ... --until ... --auto --checklist
 
-# Re-run final report
-python3 ~/.agents/skills/SITREP/scripts/generate_work_report.py weekly --finalize --from-checklist <checklist>
+```bash
+/home/yhr/.agents/skills/SITREP/scripts/weekly_materials.sh --since YYYY-MM-DD --until YYYY-MM-DD
+```
+
+Dry-run without DingTalk operations:
+
+```bash
+/home/yhr/.agents/skills/SITREP/scripts/weekly_materials.sh --dry-run
 ```
 
 ## Log Troubleshooting
 
-Auto mode logs: `~/.agents/work-reports/.logs/auto-YYYYMMDD-HHMMSS.log`
+Cron log: `~/.agents/work-reports/logs/weekly-materials.log`
 
 Common failures:
-- Missing API key → auto-degrade to no-LLM mode (basic task list, no STAR)
-- Empty data week → silent exit, no error
+
+- DingTalk auth expired → run `dws auth status --format json`, then rerun
+- Empty data week → document contains empty source sections
 - Collector parsing failure → skip that agent, continue with others, log warning
-- DingTalk submission failure → retry once, log error with details
+- DingTalk document/message failure → local Markdown remains saved

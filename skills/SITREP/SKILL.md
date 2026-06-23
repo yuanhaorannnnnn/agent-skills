@@ -10,7 +10,7 @@ description: |
 
 # Work Report
 
-从 coding agent conversation 中自动生成工作周报/月报。数据采集→任务聚类→STAR 提取→渲染→提交。
+从 coding agent conversation 中整理周报/月报素材。当前用户偏好：agent 只提供原始素材，不代写最终周报；每周五 17:30 发送“周报参考素材”钉钉文档；不再发送 Friday checklist，也不再自动提交 Sunday final report。
 
 ## 用法
 
@@ -39,6 +39,14 @@ Canon task inclusion 规则见 `references/canon-weekly-source.md`。
 Collect → Cluster → STAR Extract → Render → Submit
 ```
 
+定时链路现在使用：
+
+```bash
+/home/yhr/.agents/skills/SITREP/scripts/weekly_materials.sh
+```
+
+输出是“周报参考素材”钉钉文档，不是 checklist，也不是最终周报。
+
 ### 1. Collect
 
 读取各 agent JSONL，按时间范围和 agent 过滤。自动排除 meta 命令和系统噪音。
@@ -65,12 +73,12 @@ Markdown 报告。扁平任务列表，项目名/agent/耗时/状态作为元信
 
 ### 5. Submit & Gate
 
-周五 checklist 生成后跑：
+旧链路（已废弃）：周五 checklist 生成后跑：
 ```bash
 python3 ~/.claude/skills/SITREP/scripts/report_gate.py --mode checklist <checklist.md>
 ```
 
-周日 final report 生成后跑：
+旧链路（已废弃）：周日 final report 生成后跑：
 ```bash
 python3 ~/.claude/skills/SITREP/scripts/report_gate.py --mode report <report.md> --checklist <checklist.md>
 ```
@@ -83,8 +91,9 @@ blocked → 缺文件或空。Checklist 模式检查文件存在 + 非空 + Cano
 
 | Type | Trigger | Description |
 |------|---------|-------------|
-| **Checklist** | Friday auto | Confirmed task list for review |
-| **Weekly** | Sunday finalize | Full weekly report + work-filtered version |
+| **Materials** | Friday 17:30 auto | Raw reference materials DingTalk doc for manual weekly writing |
+| **Checklist** | Deprecated | Old confirmed task list for review |
+| **Weekly** | Manual only | Full weekly report + work-filtered version when explicitly requested |
 | **Monthly** | End of month | Aggregated monthly summary |
 
 ## 关键文件
@@ -98,7 +107,9 @@ skills/SITREP/
 │   └── cron-ops.md               # Friday/Sunday schedule, fallback, troubleshooting
 └── scripts/
     ├── generate_work_report.py    # Main CLI entry
-    ├── cron_wrapper.sh            # Cron trigger wrapper
+    ├── weekly_materials.py        # Friday raw materials DingTalk doc
+    ├── weekly_materials.sh        # Cron trigger wrapper
+    ├── cron_wrapper.sh            # Legacy weekly report wrapper
     ├── normalizer.py              # Unified data model
     ├── task_clustering.py         # Clustering + dedup
     ├── star_builder.py            # LLM STAR + cache
@@ -109,6 +120,7 @@ skills/SITREP/
 ## Gotchas
 
 - Canon task inclusion: `report_scope: work AND weekly: true`. `weekly: true` without `report_scope: work` → excluded.
+- Standing preference: do not auto-send checklist or final weekly report; send Friday 17:30 raw materials doc only.
 - Sunday finalize uses confirmed checklist, not fresh data scan.
 - `dws report create` does not inherit template receivers — `submit_dingtalk_report.py` must carry defaults.
 - Template `周报` for title `袁浩然的周报`; NOT `每周工作总结`.
