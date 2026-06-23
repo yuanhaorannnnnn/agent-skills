@@ -124,6 +124,107 @@ def detect_blocked(source: str) -> None:
             raise ExtractionError(f"WeChat article is unavailable: {marker}")
 
 
+def normalize_image_url(value: str) -> str:
+    value = html.unescape(value or "").strip()
+    if value.startswith("//"):
+        return "https:" + value
+    return value
+
+
+def infer_image_extension(url: str, content_type: str = "") -> str:
+    match = re.search(r"(?:wx_fmt|tp)=([A-Za-z0-9]+)", url)
+    if match:
+        ext = match.group(1).lower()
+    elif content_type.startswith("image/"):
+        ext = content_type.split("/", 1)[1].split(";", 1)[0].lower()
+    else:
+        path_ext = Path(urllib.parse.urlparse(url).path).suffix.lower().lstrip(".")
+        ext = path_ext or "png"
+    aliases = {"jpeg": "jpg", "pjpeg": "jpg", "svg+xml": "svg"}
+    ext = aliases.get(ext, ext)
+    return ext if re.fullmatch(r"[a-z0-9]{2,5}", ext) else "png"
+
+
+def collect_markdown_image_urls(markdown: str) -> list[str]:
+    urls: list[str] = []
+    seen: set[str] = set()
+    for match in re.finditer(r"!\[[^\]]*\]\(([^)]+)\)", markdown):
+        url = normalize_image_url(match.group(1).strip())
+        if url and url not in seen and urllib.parse.urlparse(url).scheme in {"http", "https"}:
+            seen.add(url)
+            urls.append(url)
+    return urls
+
+
+def download_images(markdown: str, images_dir: Path, timeout: int) -> tuple[str, dict[str, str]]:
+    image_urls = collect_markdown_image_urls(markdown)
+    if not image_urls:
+        return markdown, {}
+
+    images_dir.mkdir(parents=True, exist_ok=True)
+    mapping: dict[str, str] = {}
+    for index, url in enumerate(image_urls, 1):
+        request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": MOBILE_WECHAT_UA,
+                "Referer": "https://mp.weixin.qq.com/",
+                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+            },
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                content = response.read()
+                ext = infer_image_extension(url, response.headers.get("Content-Type", ""))
+        except Exception as exc:
+            print(f"warning: failed to download image {url}: {exc}", file=sys.stderr)
+            continue
+        filename = f"img_{index:03d}.{ext}"
+        target = images_dir / filename
+        target.write_bytes(content)
+        mapping[url] = f"{images_dir.name}/{filename}"
+
+    for remote_url, local_path in mapping.items():
+        escaped = re.escape(remote_url)
+        markdown = re.sub(
+            r"!\[([^\]]*)\]\(" + escaped + r"\)",
+            lambda m: f"![{m.group(1)}]({local_path})",
+            markdown,
+        )
+    return markdown, mapping
+
+
+def preprocess_wechat_body(soup, body) -> None:
+    # WeChat lazy-loads images via data-src; markdownify only sees src.
+    for img in body.find_all("img"):
+        data_src = img.get("data-src") or img.get("data-original") or img.get("data-backsrc")
+        if data_src:
+            img["src"] = normalize_image_url(data_src)
+
+    snippets = body.select(".code-snippet__fix, .code-snippet")
+    for snippet in snippets:
+        if snippet.find_parent("pre"):
+            continue
+        for noise in snippet.select(".code-snippet__line-index, .code-snippet__copy, .code-snippet__button"):
+            noise.decompose()
+        pre = snippet.select_one("pre[data-lang]") or snippet.find("pre")
+        lang = clean_text(pre.get("data-lang", "")) if pre else ""
+        code_lines = []
+        for code_tag in snippet.find_all("code"):
+            value = code_tag.get_text("", strip=False)
+            if value and not re.match(r"^[ce]?ounter\(line", value.strip()):
+                code_lines.append(value.rstrip())
+        if not code_lines:
+            value = snippet.get_text("\n", strip=False).strip()
+            if value:
+                code_lines.append(value)
+        if not code_lines:
+            continue
+        code = "\n".join(code_lines).strip("\n")
+        fence = f"\n\n```{lang}\n{code}\n```\n\n"
+        snippet.replace_with(soup.new_string(fence))
+
+
 def extract_with_bs4(source: str) -> tuple[str, str, str, str, str] | None:
     try:
         from bs4 import BeautifulSoup
@@ -145,6 +246,7 @@ def extract_with_bs4(source: str) -> tuple[str, str, str, str, str] | None:
     body = soup.select_one("#js_content") or soup.select_one("article") or soup.select_one(".rich_media_content")
     if not body:
         return None
+    preprocess_wechat_body(soup, body)
     title = node_text("#activity-name") or meta("og:title", "twitter:title") or clean_text(soup.title.get_text(" ") if soup.title else "")
     account = node_text("#js_name") or node_text(".profile_nickname") or meta("og:article:author", "author")
     return title, account, meta("author"), "", str(body)
@@ -246,6 +348,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", "-o", help="Write Markdown to this file")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of Markdown")
     parser.add_argument("--timeout", type=int, default=20, help="Fetch timeout in seconds")
+    parser.add_argument("--download-images", action="store_true", help="Download article images and rewrite Markdown links to local files")
+    parser.add_argument("--images-dir", help="Directory for downloaded images; defaults to <output-dir>/images or ./images")
+    parser.add_argument("--image-timeout", type=int, default=20, help="Image download timeout in seconds")
     return parser.parse_args()
 
 
@@ -254,7 +359,23 @@ def main() -> int:
     try:
         url = extract_first_wechat_url(args.input)
         article = parse_article(url, fetch_html(url, args.timeout))
-        output = json.dumps(article.__dict__, ensure_ascii=False, indent=2) if args.json else render_markdown(article)
+        image_map = {}
+        if args.download_images:
+            if args.images_dir:
+                images_dir = Path(args.images_dir)
+            elif args.output:
+                images_dir = Path(args.output).resolve().parent / "images"
+            else:
+                images_dir = Path.cwd() / "images"
+            article.markdown, image_map = download_images(article.markdown, images_dir, args.image_timeout)
+
+        if args.json:
+            payload = article.__dict__.copy()
+            if args.download_images:
+                payload["images"] = image_map
+            output = json.dumps(payload, ensure_ascii=False, indent=2)
+        else:
+            output = render_markdown(article)
         if args.output:
             Path(args.output).write_text(output, encoding="utf-8")
         else:

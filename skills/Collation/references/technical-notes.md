@@ -15,8 +15,10 @@
    - Account/author: `#js_name`, `author`, `og:article:author`.
    - Publish time: `publish_time`, `ct`, or meta dates where present.
    - Body: `#js_content`, then `article`, then readability-like fallback.
-4. Convert the selected content to Markdown.
-5. Emit YAML frontmatter plus body Markdown by default.
+4. Convert WeChat `code-snippet` DOM blocks to fenced Markdown code blocks before generic HTML conversion.
+5. Convert the selected content to Markdown.
+6. Optionally download reachable images to a local `images/` directory and rewrite Markdown image links.
+7. Emit YAML frontmatter plus body Markdown by default.
 
 ## Failure Policy
 
@@ -33,3 +35,12 @@ wechat-cli history "<chat-name>" --type link --limit 100
 ```
 
 Then extract `mp.weixin.qq.com` URLs from the output and run the normal conversion script.
+
+
+## Optional Image Localization
+
+`wechat_article_to_markdown.py --download-images` scans Markdown image links, downloads reachable HTTP(S) images with a WeChat mobile User-Agent and `Referer: https://mp.weixin.qq.com/`, writes sequential `img_NNN.<ext>` files, and rewrites links to the local images directory. Failed image downloads are warnings, not extraction failures.
+
+## Code Snippet Preservation
+
+When BeautifulSoup is available, WeChat `.code-snippet` / `.code-snippet__fix` blocks are converted to fenced Markdown code blocks before `markdownify` runs. The converter removes line-number/copy UI elements and preserves `pre[data-lang]` as the fence language.

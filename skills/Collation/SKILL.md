@@ -13,7 +13,7 @@ description: |
 
 ## Overview
 
-Convert public WeChat Official Account articles to clean Markdown with metadata. Prefer direct `mp.weixin.qq.com` article URLs; use account names or local WeChat sources only to discover candidate URLs before extraction. Album (合集) URLs are supported for batch download of all articles.
+Convert public WeChat Official Account articles to clean Markdown with metadata. Prefer direct `mp.weixin.qq.com` article URLs; use account names or local WeChat sources only to discover candidate URLs before extraction. Album (合集) URLs are supported for batch download of all articles. The converter preserves WeChat `code-snippet` blocks as fenced Markdown code blocks and can optionally download images to a local `images/` directory.
 
 ## Workflow
 
@@ -26,7 +26,7 @@ Convert public WeChat Official Account articles to clean Markdown with metadata.
 
 2. Resolve URLs.
    - **Album URL**: run `scripts/download_album.py "<URL>"` to get the article list, then run `scripts/wechat_article_to_markdown.py` for each article. Use `--json` for machine-readable article list.
-   - **Single article**: run `scripts/wechat_article_to_markdown.py "<URL>"`.
+   - **Single article**: run `scripts/wechat_article_to_markdown.py "<URL>"`. Add `--download-images` when local image files are needed.
    - **Several article URLs**: run the script once per URL, keep each as a separate `.md`.
    - **Account names**: first try `wechat-cli search` only if available. Extract URLs, then process.
 
@@ -102,6 +102,8 @@ Convert public WeChat Official Account articles to clean Markdown with metadata.
 # Single article
 python3 "$SKILL_DIR/scripts/wechat_article_to_markdown.py" "https://mp.weixin.qq.com/s/..."
 python3 "$SKILL_DIR/scripts/wechat_article_to_markdown.py" "https://mp.weixin.qq.com/s/..." --output article.md
+python3 "$SKILL_DIR/scripts/wechat_article_to_markdown.py" "https://mp.weixin.qq.com/s/..." --output article.md --download-images
+python3 "$SKILL_DIR/scripts/wechat_article_to_markdown.py" "https://mp.weixin.qq.com/s/..." --output article.md --download-images --images-dir article-images
 
 # Album batch
 python3 "$SKILL_DIR/scripts/download_album.py" "https://mp.weixin.qq.com/mp/appmsgalbum?..."
@@ -112,7 +114,7 @@ When `$SKILL_DIR` is unavailable, use `~/.agents/skills/wechat-markdown` or the 
 
 ## Tool Selection
 
-- Use `scripts/wechat_article_to_markdown.py` as the default extractor for public article URLs.
+- Use `scripts/wechat_article_to_markdown.py` as the default extractor for public article URLs. It normalizes WeChat lazy images (`data-src`) and preserves `code-snippet` blocks as fenced code by default.
 - Use `wechat-cli` only as an optional local URL discovery layer for account names, chat history, or favorites. Do not require it for direct URLs.
 - Use `defuddle` or another general readability extractor only after saving fetched HTML for a non-WeChat or malformed page; it is not the default path for WeChat because WeChat-specific metadata selectors are more reliable.
 
@@ -122,7 +124,7 @@ Read `references/technical-notes.md` before changing the extraction approach, ad
 
 - Do not bypass WeChat access controls, paywalls, login walls, follower-only content, or captcha.
 - Do not loop through proxy/User-Agent combinations. One normal fetch attempt is enough unless the user provides a new URL.
-- Images may be kept as remote URLs in Markdown, but WeChat CDN hotlinking can prevent later rendering. Do not promise that image downloads will work.
+- Images are remote URLs by default. Use `--download-images` to save reachable images locally and rewrite Markdown links. Do not promise that all image downloads will work, because WeChat CDN may reject some requests.
 
 ## Canon 输出边界
 
