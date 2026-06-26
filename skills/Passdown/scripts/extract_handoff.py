@@ -5,6 +5,7 @@ Usage:
   python extract_handoff.py --former codex --cwd /path/to/project
   python extract_handoff.py --former pi    --dir /path/to/project --focus "bug repair"
   python extract_handoff.py --former claude --file /path/to/session.jsonl
+  python extract_handoff.py --session <uuid> --dir /path/to/project
 
 Output: JSON with session metadata, token estimate, filtered turns, and candidate info.
 """
@@ -80,7 +81,7 @@ def passdown_zvec_path() -> Path:
 
 def token_features(text: str) -> list[str]:
     lowered = text.lower()
-    tokens = re.findall(r"[a-z0-9_./:-]+|[\u4e00-\u9fff]", lowered)
+    tokens = re.findall(r"[a-z0-9_./:-]+|[一-鿿]", lowered)
     feats = list(tokens)
     feats.extend("".join(tokens[i:i + 2]) for i in range(max(0, len(tokens) - 1)))
     for word in re.findall(r"[a-z0-9_./:-]{4,}", lowered):
@@ -633,6 +634,51 @@ def parse_claude(path: Path) -> dict:
     }
 
 
+# ── Session ID resolution ──────────────────────────────────────────────────
+
+def resolve_session_by_id(session_id: str, source_dirs: list[str], runtimes: list[str]) -> tuple[Path, str] | None:
+    """Find a session file by ID across runtime directories.
+
+    Returns (path, runtime) or None. Searches runtimes in order; first match wins.
+    """
+    for src_dir in source_dirs:
+        for rt in runtimes:
+            path = _resolve_session_for_runtime(session_id, src_dir, rt)
+            if path and path.is_file():
+                return path, rt
+    return None
+
+
+def _resolve_session_for_runtime(session_id: str, src_dir: str, runtime: str) -> Path | None:
+    if runtime == "claude":
+        slug = slugify_claude(src_dir)
+        candidate = Path.home() / ".claude" / "projects" / slug / f"{session_id}.jsonl"
+        if candidate.is_file():
+            return candidate
+        project_dir = Path.home() / ".claude" / "projects" / slug
+        if project_dir.is_dir():
+            for f in sorted(project_dir.glob("*.jsonl"), key=_mtime, reverse=True):
+                if session_id in f.stem:
+                    return f
+    elif runtime == "codex":
+        sessions_root = Path.home() / ".codex" / "sessions"
+        if sessions_root.is_dir():
+            for f in sorted(sessions_root.rglob("*.jsonl"), key=_mtime, reverse=True):
+                if session_id in f.stem:
+                    return f
+    elif runtime == "pi":
+        slug = slugify_pi(src_dir)
+        candidate = Path.home() / ".pi" / "agent" / "sessions" / slug / f"{session_id}.jsonl"
+        if candidate.is_file():
+            return candidate
+        sessions_dir = Path.home() / ".pi" / "agent" / "sessions" / slug
+        if sessions_dir.is_dir():
+            for f in sorted(sessions_dir.glob("*.jsonl"), key=_mtime, reverse=True):
+                if session_id in f.stem:
+                    return f
+    return None
+
+
 # ── CLI ────────────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -642,6 +688,7 @@ def main() -> int:
     parser.add_argument("--cwd", action="append", help="Source working directory (repeatable, comma-separated). Default: current cwd")
     parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")
     parser.add_argument("--file", help="Direct session JSONL path; bypass session discovery")
+    parser.add_argument("--session", help="Session ID (UUID/filename stem); lookup in runtime dirs, bypass discovery")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
     parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="Candidate retriever. auto uses zvec for focused queries when an index is available, then falls back to keyword.")
     parser.add_argument("--json", action="store_true", help="Output raw JSON (default: human-readable)")
@@ -674,7 +721,6 @@ def main() -> int:
         print("Error: --retriever zvec requires --focus", file=sys.stderr)
         return 1
 
-    candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
     parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
 
     candidates = []
@@ -682,7 +728,29 @@ def main() -> int:
     retriever_fallback = None
     multi_session = False
     resolved_source = source or "auto"
-    if args.file:
+
+    if args.session:
+        # --session: resolve ID to file path, bypass all candidate discovery
+        resolved = resolve_session_by_id(args.session, source_dirs, runtimes_to_scan)
+        if resolved is None:
+            rt_list = ",".join(runtimes_to_scan)
+            dir_list = ",".join(source_dirs)
+            print(f"Session '{args.session}' not found for source={rt_list} dirs={dir_list}", file=sys.stderr)
+            return 1
+        session_path, detected_runtime = resolved
+        retriever_used = "session"
+        resolved_source = detected_runtime
+        total_candidates = 1
+        matched = [{
+            "path": session_path,
+            "runtime": detected_runtime,
+            "source_cwd": source_dirs[0],
+            "direct_session": True,
+            "mtime": _mtime(session_path),
+        }]
+        session_paths = [session_path]
+
+    elif args.file:
         session_path = Path(args.file).expanduser().resolve()
         if not session_path.is_file():
             print(f"Error: session file not found: {session_path}", file=sys.stderr)
@@ -691,6 +759,8 @@ def main() -> int:
         total_candidates = 1
         matched = [{"path": session_path, "direct_file": True, "mtime": _mtime(session_path)}]
     else:
+        candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
+
         all_candidates = []
         if args.focus and args.retriever in ("auto", "zvec"):
             try:
@@ -809,8 +879,8 @@ def main() -> int:
         "source": resolved_source,
         "contributing_runtimes": contributing_runtimes,
         "current_cwd": str(Path.cwd().resolve()),
-        "source_cwds": source_dirs if not args.file else [],
-        "source_cwd": ", ".join(source_dirs) if not args.file else str(session_path),
+        "source_cwds": source_dirs if not (args.file or args.session) else [],
+        "source_cwd": ", ".join(source_dirs) if not (args.file or args.session) else str(session_path),
         "focus": args.focus,
         "retriever": retriever_used,
         "multi_session": multi_session,
