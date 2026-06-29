@@ -1,0 +1,3 @@
+display_name: TadSim Dynamics Bench
+short_description: Run CarSim-TadSim M1-M7 diagnostic benchmarks through herdr.
+default_prompt: Use TadSimDynamicsBench to validate a CarSim run directory against TadSim and diagnose the mismatch layer.
