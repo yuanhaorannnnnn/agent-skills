@@ -1,4 +1,0 @@
-interface:
-  display_name: "Repo Agent Bootstrap"
-  short_description: "初始化仓库级 AGENTS 索引与 agent-system 结构"
-  default_prompt: "Use $repo-agent-bootstrap to initialize or normalize this repository into the standard repo-local agent system layout."

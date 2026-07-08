@@ -243,7 +243,7 @@ function cmdDoctor() {
   const knownSharedScripts = [
     'common.py', 'note_rule.py', 'planning_paths.py', 'planning_status.py',
     'restore_conversation.py', 'review_diff.py',
-    'save_conversation.py', 'init_planning_files.py'
+    'save_conversation.py'
   ];
   for (const script of knownSharedScripts) {
     const scriptPath = path.join(SCRIPTS_DIR, script);

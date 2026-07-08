@@ -8,20 +8,12 @@ skills:
 - name: Neutralize
   enabled: true
   category: debugging
-- name: StandUp
-  enabled: false
-  category: repo
-  status: deprecated
 - name: Reactivate
   enabled: true
   category: conversation
 - name: Secure
   enabled: true
   category: conversation
-- name: Staging
-  enabled: false
-  category: planning
-  status: deprecated
 - name: Kneeboard
   enabled: true
   category: utility
@@ -37,6 +29,18 @@ skills:
 - name: Acquisition
   enabled: true
   category: media
+- name: Propaganda
+  enabled: true
+  category: media
+- name: SweepHer
+  enabled: true
+  category: automation
+- name: herdr
+  enabled: true
+  category: automation
+- name: tadsim-dynamics-bench
+  enabled: true
+  category: automation
 - name: CommsDigest
   enabled: true
   category: media
