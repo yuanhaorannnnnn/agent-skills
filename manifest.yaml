@@ -17,9 +17,6 @@ skills:
 - name: SITREP
   enabled: true
   category: reporting
-- name: OrderOfBattle
-  enabled: true
-  category: utility
 - name: Acquisition
   enabled: true
   category: media
@@ -47,15 +44,9 @@ skills:
 - name: Sanitize
   enabled: true
   category: workflow
-- name: RollCall
-  enabled: true
-  category: utility
 - name: CONOPS
   enabled: true
   category: workflow
-- name: Overwatch
-  enabled: true
-  category: research
 - name: Passdown
   enabled: true
   category: workflow
