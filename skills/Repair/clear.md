@@ -44,7 +44,7 @@ git push origin <base_branch>
 
 ### Step 3: 打包
 
-调用 Sentinel 或手动 `package_fast.sh`，记录构建产物 tag 到 state.json。
+使用 monitored execution 运行 `package_fast.sh`，记录构建产物 tag 到 state.json。
 
 ### Step 4: 验证
 

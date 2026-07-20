@@ -8,12 +8,6 @@ skills:
 - name: Neutralize
   enabled: true
   category: debugging
-- name: Reactivate
-  enabled: true
-  category: conversation
-- name: Secure
-  enabled: true
-  category: conversation
 - name: Kneeboard
   enabled: true
   category: utility
@@ -53,39 +47,15 @@ skills:
 - name: Sanitize
   enabled: true
   category: workflow
-- name: Sweep
-  enabled: true
-  category: automation
-- name: Fusion
-  enabled: true
-  category: research
-- name: Formation
-  enabled: true
-  category: utility
 - name: RollCall
   enabled: true
   category: utility
-- name: Exploitation
-  enabled: true
-  category: research
 - name: CONOPS
   enabled: true
   category: workflow
-- name: Collation
-  enabled: true
-  category: media
-- name: SourceRecon
-  enabled: true
-  category: media
 - name: Overwatch
   enabled: true
   category: research
-- name: Stripped
-  enabled: true
-  category: productivity
-- name: Calibrate
-  enabled: true
-  category: automation
 - name: Passdown
   enabled: true
   category: workflow
@@ -98,9 +68,6 @@ skills:
 - name: Breach
   enabled: true
   category: design
-- name: Tabletop
-  enabled: true
-  category: review
 - name: Traceback
   enabled: true
   category: review
@@ -110,9 +77,6 @@ skills:
 - name: Repair
   enabled: true
   category: workflow
-- name: Sentinel
-  enabled: true
-  category: automation
 - name: Execute
   enabled: true
   category: workflow

@@ -51,7 +51,7 @@ gate 通过后继续以下预检：
 
 ## 验收标准
 - [ ] self-check 通过
-- [ ] Sentinel 编译通过
+- [ ] monitored build通过
 - [ ] 图像/日志/输出符合预期
 
 ## Codify（如适用）
@@ -109,30 +109,12 @@ gate 通过后继续以下预检：
    - 优先搜索 `PythonAPI/examples/` 下已有三层文件：`test_*.py`、`dev_test_*.py` 及对应的共享模块。
    - 若已有真实三层样例 → 按其结构改写；若只有旧式单文件（如 `self_check_<bug-id>.py`）→ 按上表 contract 新建三文件，旧文件的结构可作为处理逻辑参考。
 
-   **编译 (Sentinel) — 需要长时间构建/打包时调用：**
+   **编译与长任务监控：**
 
-   - 不需要 Sentinel 的场景：纯 Python API 修改、配置变更、文档修复——本地 `cmake --build` 或 `python3 -c "import ..."` 即可。
-   - Server 端修改示例：
-     ```bash
-     ~/.agents/repos/agent-skills/skills/Sentinel/scripts/sentinel.sh run \
-       --id <bug-id>-package \
-       --title "<bug-id> Package Build" \
-       --cwd <repo-path> \
-       --conda-env py38 \
-       --env PYTHON_EXECUTABLE=$(which python) \
-       --lines 80 \
-       -- ./package.sh
-     ```
-   - Python API 修改示例：
-     ```bash
-     ~/.agents/repos/agent-skills/skills/Sentinel/scripts/sentinel.sh run \
-       --id <bug-id>-python-api \
-       --title "<bug-id> Python API Build" \
-       --cwd <repo-path> \
-       --lines 80 \
-       -- cmake --build Build --target carla-python-api -j 24
-     ```
-   - `run` 会在 agent 侧阻塞到最终状态，只返回最终摘要、最后日志和错误摘要；失败时 Fix 未完成。
+   - 长时间构建或打包使用 runtime 自带的 monitored execution（如 herdr pane、独立 terminal session 或等价后台任务）。
+   - 记录完整 command、cwd、日志路径、最终状态和可选的 `validation_task_ids`。
+   - 纯 Python API、配置、文档等短任务可直接运行本地验证命令。
+   - 失败时 Fix 未完成，不得进入 Closeout。
    - 编译失败则视为 fix 未完成，不能进入 Closeout。
 8. 总结修复、相似问题、剩余风险
 9. 对齐 Intake 和 Fix 产物与实际：
@@ -150,7 +132,7 @@ gate 通过后继续以下预检：
 /home/yhr/.agents/repos/agent-skills/references/review-gate.md
 ```
 
-用本缺陷的 Canon task page、`root-cause.md`、当前 diff、Sentinel 或本地验证摘要做 review。优先使用跨 runtime reviewer；不可用时执行本地 adversarial review 并说明。
+用本缺陷的 Canon task page、`root-cause.md`、当前 diff、monitored 或本地验证摘要做 review。优先使用跨 runtime reviewer；不可用时执行本地 adversarial review 并说明。
 
 - 有 blocker：停在 Fix，修复后重新验证和 review，不 commit、不 push、不进入 Closeout。
 - 无 blocker：把 review 结果写入 Canon task page § Findings / § Evidence / § Timeline，并继续提交推送。
@@ -161,7 +143,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 
 前置条件：
 - 当前分支等于 `state.json.fix_branch` 或用户明确指定的修复分支
-- Sentinel/本地验证已通过，`self_check_summary` 已准备好
+- monitored/本地验证已通过，`self_check_summary` 已准备好
 - Review Gate 已通过，或用户明确豁免 blocker
 - `git status --short` 中只包含本缺陷相关改动；如有无关改动，停止并让用户处理
 
@@ -197,7 +179,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 
 ## Canon promotion
 
-- 更新 Canon task page：记录修复摘要、验证摘要、review 结果、Sentinel task id、commit/MR、构建产物和剩余风险。
+- 更新 Canon task page：记录修复摘要、验证摘要、review 结果、validation task id、commit/MR、构建产物和剩余风险。
 - 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-fix.md`。
 - Codify/AfterAction 的长期结论优先沉淀到 Canon `patterns/` 或 `incidents/`；repo-local 规则文件只作为项目内运行时兼容入口。
 
@@ -210,7 +192,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
   "fix_summary": "...",
   "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
   "self_check_script_paths": ["PythonAPI/examples/test_<bug-id>_<sensor>.py", "PythonAPI/examples/<bug-id>_<sensor>.py"],
-  "sentinel_task_ids": ["<bug-id>-package"],
+  "validation_task_ids": ["<bug-id>-package"],
   "build_artifacts": ["/media/yhr/2T/carla_images/<artifact>"],
   "commit_sha": "<git commit>",
   "pushed_branch": "<fix_branch>",
@@ -224,7 +206,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 }
 ```
 
-`self_check_summary` 是研发自测摘要，不是测试回归结果；如果使用 Sentinel，摘要必须包含 Sentinel task id、最终状态和关键日志结论。
+`self_check_summary` 是研发自测摘要，不是测试回归结果；如果使用 monitored execution，摘要必须包含 validation task id、最终状态和关键日志结论。
 
 ## 完成检查
 
@@ -239,7 +221,7 @@ python3 ~/.claude/skills/Repair/scripts/fix_gate.py <bug-id> --json
 - **blocked** — 不可进 Closeout，列出缺失项
 - **warn** — 可以进 Closeout 但 review 豁免/部分验证不完整
 
-gate 脚本检查 9 项硬条件：worktree 干净、branch 一致、fix_plan.json 存在（已消费 Intake 产物）、Sentinel 或本地验证通过、review verdict、commit/push 完成、goal.md 存在（Fix 行动计划）、fix_result.json 存在、Canon 已更新。
+gate 脚本检查 9 项硬条件：worktree 干净、branch 一致、fix_plan.json 存在（已消费 Intake 产物）、monitored 或本地验证通过、review verdict、commit/push 完成、goal.md 存在（Fix 行动计划）、fix_result.json 存在、Canon 已更新。
 
 ## Handoff to Closeout
 

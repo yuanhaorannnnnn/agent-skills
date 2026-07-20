@@ -51,7 +51,7 @@ Repair modes must satisfy the shared workflow output contract:
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
-Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`root-cause.md` + `fix_plan.json`, Breach page, `fix_gate.json`, Sentinel state, commit/MR, or Closeout comment).
+Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`root-cause.md` + `fix_plan.json`, Breach page, `fix_gate.json`, monitor state, commit/MR, or Closeout comment).
 
 ## Resources
 
@@ -70,7 +70,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 - Yunxiao status updates require status IDs from `get_work_item_workflow`; do not pass Chinese display names such as `修复中` or `回归验证` to update APIs.
 - Repair never changes the defect assignee/owner. Only comments and defect status are mutable unless the user explicitly changes this rule.
-- `Fix` may run Sentinel builds/tests; `Closeout` must not start a new build. Closeout consumes `self_check_summary`, deliverable links, and Review Gate evidence from Fix.
+- `Fix` may run monitored builds/tests; `Closeout` must not start a new build. Closeout consumes `self_check_summary`, deliverable links, and Review Gate evidence from Fix.
 - Every outcome needs a Yunxiao comment. Fixed, false positive, transferred-to-demand, and closed all need explicit evidence or clarification text.
 - Do not enter Closeout until Review Gate blockers are fixed or explicitly waived.
 - `Clear` is the only phase that merges to the base branch and starts a new package build. It must only run after the tester confirms regression verification.
@@ -81,7 +81,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 - `<bug_root>/state.json` 是 Phase 0/Repair 阶段门控文件，`<repo_root>/.proposal/repair/<bug-id>/` 是修复方案 artifact 目录。
 - 缺陷长期状态写入 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录根因、修复分支、验证证据、交付物、云效状态和下一步。
-- `root-cause.md`、Breach HTML、Sentinel task、commit/MR、镜像 HTTP 链接、AfterAction/Codify 产物都作为 Canon artifact refs。
+- `root-cause.md`、Breach HTML、validation task、commit/MR、镜像 HTTP 链接、AfterAction/Codify 产物都作为 Canon artifact refs。
 - 每个 mode 完成后创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-<mode>.md`。
 - Repair 全流程不修改负责人；Canon 也只记录 owner/validator 信息，不把它当作状态修改动作。
 
@@ -90,7 +90,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 | Mode | 可写字段 |
 |------|----------|
 | `Intake` | `phase`, `status`, `base_branch`, `fix_branch`, `repo_path`, `severity`, `priority`, `attachment_paths`, `agent_prompt_path`, `diagnosis_summary`, `root_cause_path`, `proposal_page_path`, `share_url`, `canon_task_path`, `canon_update_card_path` |
-| `Fix` | `phase`, `fix_summary`, `self_check_summary`, `sentinel_task_ids`, `build_artifacts`, `review_summary`, `review_gate`, `commit_sha`, `pushed_branch`, `remote_url`, `mr_url`, `similar_issues_checked`, `codify_rule_path`, `after_action_path`, `canon_update_card_path`, `canon_artifact_refs` |
+| `Fix` | `phase`, `fix_summary`, `self_check_summary`, `validation_task_ids`, `build_artifacts`, `review_summary`, `review_gate`, `commit_sha`, `pushed_branch`, `remote_url`, `mr_url`, `similar_issues_checked`, `codify_rule_path`, `after_action_path`, `canon_update_card_path`, `canon_artifact_refs` |
 | `Closeout` | `phase`, `outcome`, `deliverable_urls`, `comment_ids`, `status`, `canon_update_card_path`, `canon_artifact_refs` |
 | `Clear` | `phase`, `status`, `merge_commit_sha`, `clear_build_artifact`, `deliverable_urls`, `comment_ids`, `canon_update_card_path`, `canon_artifact_refs` |
 

@@ -25,7 +25,7 @@ For each mode or phase, define these surfaces:
 | State change | Which local state fields or external workflow statuses may be changed? |
 | Gate file | Which file proves the phase is ready for the next phase? |
 | Canon update | Which task/update-card/artifact refs must be written for durable state? |
-| Review/verification | Which validation, Sentinel task, Traceback, or Review Gate result proves the work is safe to hand off? |
+| Review/verification | Which validation, monitored validation task, Traceback, or Review Gate result proves the work is safe to hand off? |
 
 If a mode does not change state, say so. If a mode cannot update Canon, record the reason in the final response and keep repo-local artifacts as temporary evidence.
 
@@ -36,7 +36,7 @@ Code-producing workflows should converge on this spine unless the skill explicit
 ```text
 Plan/Fix brief
   -> implementation
-  -> local validation or Sentinel
+  -> local or monitored validation
   -> Review Gate
   -> Traceback when a design/fix plan exists
   -> Sanitize or workflow-specific closeout
@@ -77,7 +77,7 @@ When Review Gate applies, record the result in the Canon task page:
 
 ```text
 Findings: blocker/non-blocker summary
-Evidence: review command, reviewer/runtime, validation artifacts, Sentinel ids
+Evidence: review command, reviewer/runtime, validation artifacts, validation task ids
 Timeline: review_passed | review_blocked | review_skipped
 ```
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Sentinel"
-  short_description: "在新终端守护长构建并保留 agent 可读日志状态和退出码"
-  default_prompt: "Use $Sentinel to run and monitor a build or long-running command with logs and status."

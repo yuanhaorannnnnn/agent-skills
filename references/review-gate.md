@@ -12,7 +12,7 @@ Read with the workflow output contract:
 
 Run Review Gate when a workflow has produced code or a technical artifact that will be delivered:
 
-- `Repair Fix`: after fix + Sentinel/local validation, before Closeout.
+- `Repair Fix`: after fix + monitored/local validation, before Closeout.
 - `Tasking Engage`: after implementation, before Traceback/Sanitize.
 - `Execute`: after the goal is implemented, before Traceback/Sanitize.
 - `Sanitize`: before commit/push, unless an equivalent review gate already passed for the same diff.
@@ -24,7 +24,7 @@ For proposal/report-only work, use a lighter review focused on assumptions, evid
 Review Gate sits after implementation and local validation, before irreversible handoff:
 
 ```text
-Plan/Fix brief -> implementation -> validation/Sentinel -> Review Gate -> Traceback when applicable -> Sanitize/Closeout/Turnover
+Plan/Fix brief -> implementation -> validation/monitoring -> Review Gate -> Traceback when applicable -> Sanitize/Closeout/Turnover
 ```
 
 - `Execute` and `Tasking Engage`: Review Gate runs before Traceback/Sanitize.
@@ -42,7 +42,7 @@ Collect only the evidence needed for review:
 - Current branch and base branch.
 - `git diff --stat` and focused diff for changed files.
 - Relevant design/fix plan/test evidence paths.
-- Sentinel or local validation summary, when present.
+- monitored or local validation summary, when present.
 
 Do not paste large logs or full files. Link artifacts by absolute path.
 
@@ -76,7 +76,7 @@ Severity definitions:
 Examples that block regardless of size:
 
 - Yunxiao/DingTalk status or owner mutation.
-- Build, packaging, deploy, or Sentinel command changes.
+- Build, packaging, deploy, or monitor command changes.
 - Public API, schema, protocol, state machine, or permission changes.
 - File deletion, overwrite, migration, or irreversible side effects.
 

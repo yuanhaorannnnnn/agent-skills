@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sweep pre-flight gate — verify loop is safe to start.
+"""SweepHer pre-flight gate — verify loop is safe to start.
 
 Usage:
   python3 preflight_gate.py [--json]

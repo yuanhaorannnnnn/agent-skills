@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sweep per-round gate — verify safe to start next hypothesis.
+"""SweepHer per-round gate — verify safe to start next hypothesis.
 
 Usage:
   python3 round_gate.py [--json]

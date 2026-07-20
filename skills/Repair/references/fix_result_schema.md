@@ -22,8 +22,8 @@ Fix Phase 输出契约——Closeout Agent 只读这份 JSON 了解修复结果�
   "verification": {
     "self_check_passed": true,
     "self_check_summary": "自测结果",
-    "sentinel_task_ids": ["<bug-id>-package"],
-    "sentinel_final_status": "PASS | FAIL | TIMEOUT"
+    "validation_task_ids": ["<bug-id>-package"],
+    "validation_final_status": "PASS | FAIL | TIMEOUT"
   },
   "review": {
     "verdict": "passed | blocked | skipped",
@@ -51,7 +51,7 @@ Fix Phase 输出契约——Closeout Agent 只读这份 JSON 了解修复结果�
 | 字段 | 值 | gate |
 |------|-----|------|
 | `verification.self_check_passed` | `false` | blocked |
-| `verification.sentinel_final_status` | `FAIL` or `TIMEOUT` | blocked |
+| `verification.validation_final_status` | `FAIL` or `TIMEOUT` | blocked |
 | `review.verdict` | `blocked` | blocked |
 | `delivery.commit_sha` | null/空 | blocked |
 | `delivery.pushed_branch` | null/空 | blocked |

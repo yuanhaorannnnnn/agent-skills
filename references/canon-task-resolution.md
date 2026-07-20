@@ -104,17 +104,13 @@ Update on every save:
 
 ## Common Implementations
 
-### Secure — writes task pages
+### Workflow skills — write task pages
 
-Secure is the primary writer. It resolves the task page via this priority, then applies the merge contract above.
+`Sanitize`, `Execute --plan`, `Tasking`, and `Repair` resolve the task page and apply the action-layer merge rules for their sections. Ad-hoc work updates the resolved Canon task page directly using the same contract.
 
-### Reactivate — reads task pages
+### Passdown — attaches hot context
 
-Reactivate is the primary reader. It resolves the task page via this priority, surfaces the stable summary and first incomplete task, then attaches hot context via Passdown.
-
-### Sanitize / Execute --plan / Tasking / Repair — update as side-effect
-
-These skills resolve the task page and apply the action-layer merge rules for their specific sections (Progress, Plan, Artifacts, Tasks).
+Resume from the resolved Canon task page, surface the stable summary and first incomplete task, then invoke Passdown when hot runtime context is needed.
 
 ## Runtime-Neutral Passdown
 

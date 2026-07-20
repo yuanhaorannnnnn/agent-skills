@@ -3,7 +3,7 @@ name: SweepHer
 description: |
   CARLA 传感器性能调优的 herdr-native 自动化优化循环。仅当运行在 herdr 环境
   （HERDR_ENV=1）且 CarlaUE5 workspace 内时使用，用 herdr 并行 pane 原语
-  （pane run/wait/read）替代传统 Sweep 的阻塞 loop.py 执行层。
+  （pane run/wait/read）执行完整调优闭环。
 
   THIS IS THE CARLA HERRD-NATIVE OPTIMIZATION SKILL. Use this whenever the user
   wants to optimize CARLA sensor performance from inside herdr — mentions
@@ -11,32 +11,30 @@ description: |
   "调优 LiDAR", "调优传感器", "run carla optimization loop", "sweep carla",
   or any CARLA sensor/lidar tuning task.
 
-  If the user is NOT inside herdr, use the Sweep skill instead.
-  If the user is NOT working on CARLA, use Calibrate.
-  If the user wants generic "auto optimize" / "性能优化" without specifying
-  CARLA, this is NOT the right skill — use Calibrate.
+  If the user is not inside herdr or is not working on CARLA, do not use this
+  skill; continue with the runtime's normal coding and benchmark workflow.
 ---
 
 # SweepHer — CARLA herdr-native autotune loop
 
-compile→package→server→benchmark→decide 闭环。AI 驱动假设生成 + herdr pane 原语执行 + Sweep loop-policy 判定。
+compile→package→server→benchmark→decide 闭环。AI 驱动假设生成 + herdr pane 原语执行 + 本 skill 的 loop-policy 判定。
 
 ## 和其他 skill 的选择
 
 | 条件 | 选哪个 |
 |---|---|
 | herdr 内 + CARLA 传感器调优 | **SweepHer**（这个） |
-| 不在 herdr / CARLA 传感器调优 | Sweep |
-| 通用项目性能优化 | Calibrate |
+| 不在 herdr / CARLA 传感器调优 | 使用 runtime 的普通开发与 benchmark 流程 |
+| 通用项目性能优化 | 使用普通性能分析与验证流程 |
 
 ## 硬规则
 
 1. **HERDR_ENV=1 检查** — 不在 herdr 内拒绝执行
 2. **workspace 检查** — 必须是 w4 (CarlaUE5)，否则拒绝
 3. **读 reference 再行动**：
-   - 改代码前 → `~/.agents/repos/agent-skills/skills/Sweep/references/safety-guardrails.md`
-   - 跑 benchmark 前 → `~/.agents/repos/agent-skills/skills/Sweep/references/benchmark-contract.md`
-   - 判定 keep/discard 前 → `~/.agents/repos/agent-skills/skills/Sweep/references/loop-policy.md`
+   - 改代码前 → `references/safety-guardrails.md`
+   - 跑 benchmark 前 → `references/benchmark-contract.md`
+   - 判定 keep/discard 前 → `references/loop-policy.md`
 
 ## 架构
 
@@ -45,7 +43,7 @@ compile→package→server→benchmark→decide 闭环。AI 驱动假设生成 +
 ```
 AI 决策层（w4:p1）  — 分析代码、生成假设、写 bench、判定结果
 herdr 执行层（p2/pC/pD）— 编译、启动 server、跑 benchmark
-Sweep 状态层（YAML）— autoresearch-loop-state.yaml，复用 Sweep 格式
+状态层（YAML）— autoresearch-loop-state.yaml
 ```
 
 ## Pane 布局（w4 CarlaUE5 workspace）
@@ -79,7 +77,7 @@ dev tab (w4:t1)              bench tab (w4:t4)
                                                                  [TERMINATED]
 ```
 
-状态文件：`.agent-state/autoresearch-loop-state.yaml`（复用 Sweep 格式）
+状态文件：`.agent-state/autoresearch-loop-state.yaml`
 
 ---
 
@@ -90,7 +88,7 @@ dev tab (w4:t1)              bench tab (w4:t4)
 ### 1.1 Pre-flight
 
 ```bash
-python3 ~/.claude/skills/Sweep/scripts/preflight_gate.py
+python3 ~/.claude/skills/SweepHer/scripts/preflight_gate.py
 ```
 
 blocked → 停止修复。pass → 继续。
@@ -228,5 +226,5 @@ build 是最慢步骤（~5min）。p1 在这段时间内并行完成 bench 准�
 ## 依赖
 
 - **herdr** — 执行层引擎，必须 `HERDR_ENV=1`、workspace w4
-- **Sweep skill** — 引用其 references（safety-guardrails.md、benchmark-contract.md、loop-policy.md）和 state YAML 格式
+- **本地规则与 gates** — `references/` 和 `scripts/` 提供 safety、benchmark、loop-policy 与状态检查
 - **CARLA toolchain** — `package_fast.sh`、`CarlaUnreal.sh`、Python API

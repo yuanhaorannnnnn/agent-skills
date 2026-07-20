@@ -117,7 +117,7 @@ It consumes prior implementation, validation, Review Gate, and Traceback evidenc
 
 如果本次执行了 Review Gate，§ Evidence 记录 reviewer/命令/证据路径，§ Timeline 记录 `review_passed` 或 `review_blocked`。
 
-如果当前工作没有对应的 Canon task page，按 Secure 的 task page resolution 逻辑创建。
+如果当前工作没有对应的 Canon task page，按 `references/canon-task-resolution.md` 的 resolution 逻辑创建。
 
 ## Step 6: 更新 task page § Tasks
 
@@ -177,6 +177,6 @@ Update card 至少记录：
 - **无改动文件**：提示用户确认是否只做 Canon 收尾。
 - **commit message 生成失败**：让用户手动输入。
 - **push 失败**：处理冲突后重试，或提示用户手动 push。
-- **task page 不存在**：按 Secure 的 resolution logic 创建新 task page。
+- **task page 不存在**：按 `references/canon-task-resolution.md` 创建新 task page。
 - **Canon 不可用**：继续 git 收尾，并明确 Canon promotion 未完成。
 - **未配置 git user**：提示用户配置 `git config user.name/email`。

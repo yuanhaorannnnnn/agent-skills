@@ -17,27 +17,27 @@ def check_file(p, label):
     ok = p.exists() and p.stat().st_size > 0
     return ok, f"{label}: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
 
-def check_sentinel_state(state_json, bug_id):
-    """Verify Sentinel build or local self-check passed."""
+def check_validation_state(state_json, bug_id):
+    """Verify monitored or local validation passed."""
     try:
         d = json.loads(Path(state_json).read_text())
-        task_ids = d.get("sentinel_task_ids", [])
+        task_ids = d.get("validation_task_ids", d.get("sentinel_task_ids", []))
         summary = d.get("self_check_summary", "")
         has_summary_pass = bool(summary) and ("PASS" in summary.upper() or "成功" in summary or "通过" in summary)
         if task_ids:
             if has_summary_pass:
-                return True, f"sentinel: {len(task_ids)} task(s) self_check indicates PASS OK"
+                return True, f"validation: {len(task_ids)} task(s) self_check indicates PASS OK"
             else:
-                return False, f"sentinel: {len(task_ids)} task(s) self_check unclear or FAIL — verify manually FAIL"
-        # No Sentinel task — accept local verification (valid for Python/API/config changes)
+                return False, f"validation: {len(task_ids)} task(s) self_check unclear or FAIL — verify manually FAIL"
+        # No monitored task — accept local verification (valid for Python/API/config changes)
         if has_summary_pass:
-            return True, "sentinel: skipped (local verification PASS) OK"
+            return True, "validation: skipped (local verification PASS) OK"
         elif summary:
-            return False, f"sentinel: no build, self_check unclear FAIL"
+            return False, f"validation: no build, self_check unclear FAIL"
         else:
-            return False, "sentinel: no build and no self_check_summary FAIL (run Sentinel or local verification)"
+            return False, "validation: no build and no self_check_summary FAIL (run monitored or local verification)"
     except Exception as e:
-        return False, f"sentinel: error reading state {e} FAIL"
+        return False, f"validation: error reading state {e} FAIL"
 
 def check_self_check(state_json, bug_id):
     """Check self_check_summary exists — warn only, some defects don't need runtime self-check."""
@@ -151,7 +151,7 @@ def main():
     checks.append(("0.worktree", check_worktree_clean(repo)))
     checks.append(("1.branch", git_branch_ok(expected_branch)))
     checks.append(("2.fix_plan_consumed", check_fix_plan_json_consumed(prop, args.bug_id)))
-    checks.append(("3.sentinel", check_sentinel_state(sp, args.bug_id)))
+    checks.append(("3.validation", check_validation_state(sp, args.bug_id)))
     checks.append(("3b.self_check", check_self_check(sp, args.bug_id)))
     checks.append(("4.review", check_review_gate(sp, args.bug_id)))
     checks.append(("5.commit_push", check_commit_push(sp, args.bug_id)))

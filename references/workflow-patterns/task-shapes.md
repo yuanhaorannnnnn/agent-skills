@@ -13,7 +13,7 @@ Map local skills and workflows to workflow patterns.
 ### Fix
 
 - Shape: fan-out-and-synthesize + adversarial-verification for uncertain root cause.
-- Add loop-until-done around Sentinel build/test when failures are iterative.
+- Add loop-until-done around monitored build/test when failures are iterative.
 - Avoid fan-out for narrow obvious fixes.
 
 ## Tasking
@@ -52,18 +52,7 @@ Map local skills and workflows to workflow patterns.
 - When case share is requested, call Breach after the 5-section record.
 - Trigger Codify only for reusable durable rules.
 
-## Fusion
-
-- Shape: fan-out-and-synthesize for deep research.
-- Add adversarial-verification for claims that will influence decisions.
-
-## Sweep / Calibrate
-
-- Shape: loop-until-done.
-- Add model-routing when optimization hypotheses vary in complexity.
-- Stop on benchmark, test, or budget condition.
-
-## Passdown / Reactivate
+## Passdown / Canon Resume
 
 - Shape: classify-and-act.
 - Route by source runtime, directory, focus, and artifact availability.

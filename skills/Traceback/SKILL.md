@@ -30,7 +30,7 @@ a match to make things look consistent.
 Resolve the design document via Canon task page:
 
 1. **Canon task page** — read `/media/yhr/2T/Canon/tasks/<task>.md` § Artifacts for `design_doc_path`
-2. **Project + branch → task page** — use task page resolution logic (matching Secure) to find the relevant task page
+2. **Project + branch → task page** — use `references/canon-task-resolution.md` to find the relevant task page
 3. **Explicit path** — user provides design document path directly
 
 From the design document and task context, identify:

@@ -2,7 +2,7 @@
 
 ## Must Read Before Any Patch/Build/Benchmark
 
-Sweep is automation. These are hard rules — not "suggestions." Violate any one → terminate the round.
+SweepHer is automation. These are hard rules — not "suggestions." Violate any one → terminate the round.
 
 ## Gate Scripts
 
@@ -10,10 +10,10 @@ Two gate scripts enforce pre-conditions programmatically:
 
 ```bash
 # Before loop start — repos, branches, baseline, controller
-python3 ~/.claude/skills/Sweep/scripts/preflight_gate.py
+python3 ~/.claude/skills/SweepHer/scripts/preflight_gate.py
 
 # Before each round — worktree clean, state file valid, hypotheses remain
-python3 ~/.claude/skills/Sweep/scripts/round_gate.py
+python3 ~/.claude/skills/SweepHer/scripts/round_gate.py
 ```
 
 Both return `pass` or `blocked`. **blocked → do not proceed.** Fix the listed failures before continuing.

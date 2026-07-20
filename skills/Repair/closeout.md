@@ -26,9 +26,9 @@ gate 通过后继续：
    - 构建产物：镜像文件名（Server 端修改）或 whl 文件名（Python API 修改）
    - 已有的 Breach 页（Intake 已发布，不重复贴）
 4. 如果 `--outcome fixed`，确认 Fix 阶段已经完成研发自测/构建验证：
-   - 长时间构建或打包必须由 `Sentinel` 在 Fix 阶段执行并记录 `sentinel_task_ids`
-   - `state.json.self_check_summary` 必须包含 Sentinel 最终状态、关键日志结论，或明确说明未使用 Sentinel 的本地验证命令
-   - Closeout 不启动编译、不调用 Sentinel、不执行 git commit/push，只消费 Fix 阶段已经完成的验证和推送结果
+   - 长时间构建或打包必须由 runtime monitor 在 Fix 阶段执行并记录 `validation_task_ids`
+   - `state.json.self_check_summary` 必须包含 monitor 最终状态、关键日志结论，或明确说明未使用 monitor 的本地验证命令
+   - Closeout 不启动编译、不启动新的 monitored build、不执行 git commit/push，只消费 Fix 阶段已经完成的验证和推送结果
 5. 不修改负责人；只更新评论区和状态。
 
 ## 参数
@@ -82,7 +82,7 @@ mcp__yunxiao__create_workitem_attachment <bug-id> <state.json.self_check_script_
 提交：<commit_sha 或 MR URL>
 镜像：<http://172.16.19.158:8080/... 格式的构建产物链接>
 
-自测：<--self-check，包含 Sentinel task id/状态/关键日志结论>。运行时验证需在稳定性环境回测。
+自测：<--self-check，包含 validation task id/状态/关键日志结论>。运行时验证需在稳定性环境回测。
 
 自测脚本：已上传至附件。用法：python3 <script_name> --host <host> --port <port> --duration <duration>
 ```

@@ -36,8 +36,8 @@ class InstallScriptTests(unittest.TestCase):
             for runtime_parts in RUNTIME_DIRS:
                 runtime = home.joinpath(*runtime_parts)
                 # Enabled skills from manifest should be linked
-                self.assertTrue((runtime / "Secure").is_symlink())
-                self.assertTrue((runtime / "Reactivate").is_symlink())
+                self.assertTrue((runtime / "Codify").is_symlink())
+                self.assertTrue((runtime / "Neutralize").is_symlink())
                 self.assertTrue((runtime / "Execute").is_symlink())
                 self.assertTrue((runtime / ".scripts").is_symlink())
 
@@ -64,12 +64,12 @@ repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
-  - name: Secure
+  - name: Codify
     enabled: false
-    category: conversation
-  - name: Reactivate
+    category: workflow
+  - name: Neutralize
     enabled: true
-    category: conversation
+    category: workflow
 """
             MANIFEST_PATH.write_text(manifest_content)
 
@@ -79,8 +79,8 @@ skills:
                 self.assertEqual(result.returncode, 0, result.stderr)
                 for runtime_parts in RUNTIME_DIRS:
                     runtime = home.joinpath(*runtime_parts)
-                    self.assertFalse((runtime / "Secure").exists())
-                    self.assertTrue((runtime / "Reactivate").is_symlink())
+                    self.assertFalse((runtime / "Codify").exists())
+                    self.assertTrue((runtime / "Neutralize").is_symlink())
         finally:
             MANIFEST_PATH.write_text(original_manifest)
 

@@ -227,7 +227,7 @@ blocked → 缺节。3 项：文件存在且≥100字、Data Scope/Shortlist/Dec
 
 - `/tmp` sessions are noise (AGENTS.md injections) — always exclude them
 - `pi-mono` sessions are mostly runtime config tests — weight them lower
-- Session management commands (`$Reactivate`, `$Secure`) appearing as user messages do not indicate a gap — they are usage of existing skills. Historical `$restore-conversation` / `$save-conversation` mentions are legacy aliases, not new-skill opportunities
+- Session management commands (`$Passdown`, `$Sanitize`) appearing as user messages do not indicate a gap — they are usage of existing skills. Historical `$restore-conversation` / `$save-conversation`, `$Reactivate`, and `$Secure` mentions are legacy aliases, not new-skill opportunities
 - The goal is finding **uncovered** gaps, not validating what's already automated
 - Prefer skipping over creating — a false positive skill is worse than a missed opportunity
 - If an existing skill covers 80% of a need, recommend extending it rather than creating a new one
