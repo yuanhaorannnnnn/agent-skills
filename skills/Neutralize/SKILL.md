@@ -20,13 +20,14 @@ scan nearby code for the same mistake pattern.
 
 1. Extract evidence: exception type, file paths, line numbers, error text.
    For screenshots, read visible error text and identifiers first.
-2. Reproduce the failure if practical.
+2. Define the observable target: current failure evidence, expected result, and fastest rerun command. Reproduce if practical; otherwise record why reproduction is unavailable.
 3. Identify root cause.
-4. Apply the minimum safe correction.
-5. Verify by rerunning the relevant test or command.
+4. Apply the minimum safe correction as one verifiable slice.
+5. Verify the exact symptom first, then the smallest relevant regression scope.
 6. Search adjacent files and similar call sites for the same error shape.
-7. Write gate evidence file — `rerun_command`, `rerun_exit_code`, `adjacent_searches`, `adjacent_findings`, `remaining_risk` → `.agent-state/neutralize-gate.json`.
-8. Run gate:
+7. If a public interface changed, record whether it expanded, stayed stable, or shrank and what complexity remains hidden behind it.
+8. Write gate evidence file — `failure_observation`, `reproduction_command` or `reproduction_skipped_reason`, `rerun_command`, `rerun_exit_code`, `adjacent_searches`, `adjacent_findings`, `public_interface_changed`, `boundary_assessment`, `remaining_risk` → `.agent-state/neutralize-gate.json`.
+9. Run gate:
    ```bash
    python3 ~/.claude/skills/Neutralize/scripts/verify_fix_gate.py
    ```
@@ -42,11 +43,16 @@ Human-readable summary:
 Machine-readable evidence (`.agent-state/neutralize-gate.json`):
 ```json
 {
+  "failure_observation": "pytest fails with AssertionError at tests/test_foo.py:42",
+  "reproduction_command": "pytest tests/test_foo.py -v",
+  "reproduction_skipped_reason": "",
   "rerun_command": "pytest tests/test_foo.py -v",
   "rerun_exit_code": 0,
   "rerun_output_sample": "...",
   "adjacent_searches": ["rg 'same_pattern' src/", "rg 'similar_call' lib/"],
   "adjacent_findings": ["src/bar.py:42 same pattern"],
+  "public_interface_changed": false,
+  "boundary_assessment": "public interface unchanged; correction remains inside parser module",
   "remaining_risk": "only checked Python side; C++ callers not scanned"
 }
 ```

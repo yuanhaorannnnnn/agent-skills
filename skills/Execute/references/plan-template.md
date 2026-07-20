@@ -17,6 +17,22 @@
 |----------|-----------|
 |          |           |
 
+### Observable Target
+| Item | Evidence |
+|------|----------|
+| Pre-change observation or desired state | |
+| Success criterion | |
+| Fastest feedback command | |
+| Broader regression command | |
+
+### Module Boundary
+| Item | Decision |
+|------|----------|
+| Affected module | |
+| Public interface | |
+| Interface direction | expand / keep / shrink |
+| Complexity hidden behind interface | |
+
 ### Current Phase
 Phase 1: Discovery
 
@@ -25,29 +41,36 @@ Phase 1: Discovery
 #### Phase 1: Discovery
 - [ ] Understand user intent and constraints
 - [ ] Read relevant files and prior context
+- [ ] Capture pre-change evidence or explain why reproduction is impractical
+- [ ] Define an observable success criterion
 - [ ] Record discoveries in § Findings
 - **Status:** in_progress
 
 #### Phase 2: Planning & Structure
 - [ ] Confirm or refine the architecture
-- [ ] Define verification strategy
+- [ ] Name the affected module boundary and public interface
+- [ ] Split implementation into independently verifiable vertical slices
+- [ ] Define fast feedback and broader regression commands
 - [ ] Document decisions with rationale
 - **Status:** pending
 
 #### Phase 3: Implementation
-- [ ] Execute the plan step by step
+- [ ] Implement one vertical slice at a time
+- [ ] Close the fast feedback loop after each slice
 - [ ] Update § Findings for new discoveries
 - [ ] Update § Progress after material changes
 - **Status:** pending
 
 #### Phase 4: Testing & Verification
-- [ ] Run relevant checks
+- [ ] Re-run the exact observable target
+- [ ] Run the broader regression check
 - [ ] Record test results in § Progress
 - [ ] Resolve failures or document residual risk
 - **Status:** pending
 
 #### Phase 5: Delivery
-- [ ] Review all output files
+- [ ] Review Standards and Spec as separate axes
+- [ ] Check public-interface expansion and module depth
 - [ ] Ensure deliverables are complete
 - [ ] Update handoff notes in § Progress if needed
 - **Status:** pending

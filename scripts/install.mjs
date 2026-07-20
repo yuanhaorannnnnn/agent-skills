@@ -186,6 +186,37 @@ function cmdDoctor() {
   let issues = 0;
 
   // Check manifest consistency
+  const skillEntries = manifest?.skills || [];
+  const skillByName = new Map(skillEntries.map((skill) => [skill.name, skill]));
+  const allowedInvocation = new Set(['user', 'model']);
+  const allowedRole = new Set(['orchestrator', 'discipline', 'renderer', 'adapter']);
+
+  for (const skill of skillEntries) {
+    if (!allowedInvocation.has(skill.invocation)) {
+      console.log(`[INVALID INVOCATION] ${skill.name}: ${skill.invocation}`);
+      issues++;
+    }
+    if (!allowedRole.has(skill.role)) {
+      console.log(`[INVALID ROLE] ${skill.name}: ${skill.role}`);
+      issues++;
+    }
+    if (!Array.isArray(skill.calls)) {
+      console.log(`[INVALID CALLS] ${skill.name}: calls must be an array`);
+      issues++;
+      continue;
+    }
+    for (const callee of skill.calls) {
+      const target = skillByName.get(callee);
+      if (!target) {
+        console.log(`[UNKNOWN CALLEE] ${skill.name} -> ${callee}`);
+        issues++;
+      } else if (skill.invocation === 'user' && target.invocation !== 'model') {
+        console.log(`[ORCHESTRATOR NESTING] ${skill.name} -> ${callee} is not model-invoked`);
+        issues++;
+      }
+    }
+  }
+
   for (const name of manifestNames) {
     const skillDir = path.join(SKILLS_DIR, name);
     if (!fs.existsSync(skillDir)) {

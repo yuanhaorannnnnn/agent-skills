@@ -75,6 +75,7 @@ Scan the implementation files and produce `dev-test-coverage-checklist.md`:
   - `none` — no matching implementation found
 - For matched requirements, list the exact file paths and symbols.
 - For unmatched requirements, note what's missing.
+- Compare the implemented module/public interface with the design. Record undocumented interface expansion or logic that escaped the intended module as boundary drift.
 
 Output structure:
 ```markdown
@@ -120,6 +121,10 @@ Requirements with no implementation AND no test.
 Code that exists but has zero test coverage.
 [list]
 
+## Boundary Drift
+Public interfaces or module ownership that differ from the design.
+[list or None]
+
 ## Recommendations
 [what to fix first]
 ```
@@ -154,6 +159,7 @@ It should run after implementation and Review Gate when a design doc, fix plan, 
 - Do not invent requirements from code. Requirements come from the design/fix plan/user-approved checklist.
 - Do not claim test coverage from file proximity or naming alone. Coverage requires a test that calls the symbol, asserts the behavior, or exercises the scenario.
 - `Design -> Dev` passing does not imply `Dev -> Test` passing. Report both stages separately.
+- Passing tests do not excuse undocumented public-interface expansion. Keep boundary drift separate from functional coverage.
 - Keep checklist IDs stable across reruns; updating existing artifacts is better than regenerating incompatible IDs.
 - Critical gaps must be written to Canon, not left only in `.planning/` files.
 

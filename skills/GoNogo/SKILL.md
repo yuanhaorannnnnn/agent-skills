@@ -35,6 +35,19 @@ description: |
 
 **快速否决**：覆盖度 =5 或 (触发 ≤2 且 复杂度 ≤2) → 不创建，无需完整评估。
 
+## Capability Test
+
+创建前必须回答：新 skill 是否固化了模型无法稳定自行维持的东西？至少满足一项：
+
+- 可重复的多步状态机或外部系统协议
+- 明确、可机器验证的 feedback gate
+- 稳定的领域契约、schema 或安全边界
+- 用户可见的 orchestrator，或被 orchestrator 复用的 discipline/adapter
+
+只有语气、篇幅、普通写作方式、单条提示词或基础模型已稳定具备的能力 → 不创建。优先写入 Global Guidance、Canon domain language、现有 skill 或确定性脚本。
+
+若创建，先声明 `invocation`、`role`、`calls`。`user` skill 负责可见流程；`model` skill 提供可复用能力。避免 user-invoked orchestrator 相互嵌套；必须嵌套时，重新检查 owner 是否重复。
+
 ## 输出
 
 ```markdown

@@ -41,6 +41,12 @@ description: |
 - **不确定点**: 列出向用户确认，不要假设
 - **只读保护**: 不修改 state.json 中自己未负责的字段
 
+## 责任边界
+
+- **Tasking 是需求生命周期 owner**：负责 Yunxiao 状态、phase、task page identity、方案来源和阶段 gate。
+- **Execute 是 model-invoked runtime adapter**：只把已确认任务压成 `goal.md`、更新既有 Canon plan，并触发或交付 `/goal`。
+- Tasking 调用 Execute 时必须传入既有 Canon task page。Execute 不得新建近似 task、改变 Yunxiao 状态、选择需求分支或宣称 Engage/Turnover 已完成。
+- runtime 无法注入 `/goal` 时，Execute 返回明确 handoff；Tasking 保持 `dev` 阶段 owner，不以内联实现伪装已启动。
 
 ## Workflow Gate Contract
 
@@ -55,7 +61,7 @@ Each mode must leave a clear phase gate in `state.json`, a Canon task/update-car
 ## Gotchas
 
 - Yunxiao status and user updates require IDs. Resolve status IDs with `get_work_item_workflow`; resolve `樊亮亮` to userId before Turnover assignment.
-- `Engage` must go through `Execute --plan` and a real `/goal <goal.md>` or `/loop custom <goal.md>` handoff. Do not inline implementation while claiming Execute launched.
+- `Engage` must go through the model-invoked `Execute --plan` adapter and a real `/goal <goal.md>` or `/loop custom <goal.md>` handoff. Tasking owns phase/state; Execute owns only goal packaging and runtime handoff.
 - `Turnover` changes demand status to `系统测试` and assignee to `樊亮亮`; this owner-change rule applies to demand flow only, not Repair.
 - Do not create `.planning/conversations/<demand-id>/` as the durable plan. Canon task page is durable state; `goal.md` is runtime execution brief.
 - Do not enter Turnover unless build/validation evidence and Review Gate/Traceback results are recorded or explicitly waived.

@@ -5,57 +5,137 @@ skills:
 - name: Codify
   enabled: true
   category: workflow
+  invocation: model
+  role: discipline
+  calls: []
 - name: Neutralize
   enabled: true
   category: debugging
+  invocation: model
+  role: discipline
+  calls:
+  - Codify
 - name: FieldReport
   enabled: true
   category: reporting
+  invocation: model
+  role: renderer
+  calls: []
 - name: SITREP
   enabled: true
   category: reporting
+  invocation: user
+  role: renderer
+  calls: []
 - name: Acquisition
   enabled: true
   category: media
+  invocation: user
+  role: adapter
+  calls: []
 - name: SweepHer
   enabled: true
   category: automation
+  invocation: user
+  role: orchestrator
+  calls:
+  - herdr
 - name: herdr
   enabled: true
   category: automation
+  invocation: model
+  role: adapter
+  calls: []
 - name: tadsim-dynamics-bench
   enabled: true
   category: automation
+  invocation: user
+  role: orchestrator
+  calls:
+  - herdr
 - name: GoNogo
   enabled: true
   category: meta
+  invocation: model
+  role: discipline
+  calls: []
 - name: Sanitize
   enabled: true
   category: workflow
+  invocation: user
+  role: orchestrator
+  calls: []
 - name: CONOPS
   enabled: true
   category: workflow
+  invocation: model
+  role: renderer
+  calls: []
 - name: Passdown
   enabled: true
   category: workflow
+  invocation: user
+  role: adapter
+  calls: []
 - name: Cover
   enabled: true
   category: design
+  invocation: user
+  role: renderer
+  calls: []
 - name: AfterAction
   enabled: true
   category: workflow
+  invocation: model
+  role: renderer
+  calls:
+  - Breach
+  - Codify
 - name: Breach
   enabled: true
   category: design
+  invocation: model
+  role: renderer
+  calls: []
 - name: Traceback
   enabled: true
   category: review
+  invocation: model
+  role: discipline
+  calls: []
 - name: Tasking
   enabled: true
   category: workflow
+  invocation: user
+  role: orchestrator
+  calls:
+  - CONOPS
+  - Execute
+  - Traceback
 - name: Repair
   enabled: true
   category: workflow
+  invocation: user
+  role: orchestrator
+  calls:
+  - Breach
+  - Neutralize
+  - Codify
+  - AfterAction
 - name: Execute
   enabled: true
   category: workflow
+  invocation: model
+  role: adapter
+  calls: []
+metadata_schema:
+  invocation:
+  - user
+  - model
+  role:
+  - orchestrator
+  - discipline
+  - renderer
+  - adapter
+  calls: existing skill names only; user-invoked skills may call only model-invoked
+    skills

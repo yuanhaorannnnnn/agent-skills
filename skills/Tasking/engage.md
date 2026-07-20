@@ -40,12 +40,15 @@ gate 通过后继续：
 - 更新 Canon task page § Plan / § Findings / § Progress
 - 生成 repo-local `goal.md`: `<repo-root>/.proposal/<demand-id>/goal.md`
 - `goal.md` 是 `/goal` 的 runtime 输入；Canon task page 是 durable state
+- 把 Step 2 的任务列表、方案约束、observable target 和受影响 module boundary 作为输入
 
-不再创建 `.planning/conversations/<demand-id>/` 工作区；Canon task page 承载计划，`goal.md` 承载 runtime 执行目标。
+不再创建 `.planning/conversations/<demand-id>/` 工作区；Canon task page 承载计划，`goal.md` 承载 runtime 执行目标。Tasking 仍是需求 phase/state owner；Execute 不修改 Yunxiao、`state.json.phase`、需求分支或 task identity。
 
-### Step 4: 生成开发目标
+### Step 4: 校验 Execute 输出
 
-将 Step 2 的任务列表 + 方案关键约束 + 接口定义写入 `<repo-root>/.proposal/<demand-id>/goal.md`，并把摘要同步到 Canon task page 的 § Goal / § Plan。将 `goal.md` 路径写入 `state.json.goal_path`，将 Canon task page 路径写入 `state.json.canon_task_path`。
+读取 Execute 生成的 `<repo-root>/.proposal/<demand-id>/goal.md`，确认它包含 Step 2 的任务列表、方案关键约束、接口定义、observable target 和 module boundary。缺项时退回 Execute 补齐，不由 Tasking 重写第二份目标。
+
+校验通过后，将 `goal.md` 路径写入 `state.json.goal_path`，将 Canon task page 路径写入 `state.json.canon_task_path`。
 
 ```markdown
 # <需求标题>
@@ -59,6 +62,10 @@ gate 通过后继续：
 - 约束 2
 ## 接口定义摘要
 [从 CONOPS 方案提取的接口签名/参数]
+## Observable Target
+[修改前证据、成功判据、验证命令]
+## Module Boundary
+[受影响模块、public interface、预期扩大/保持/收敛]
 ```
 
 ### Step 5: 启动开发
@@ -77,7 +84,7 @@ gate 通过后继续：
 
 开发流程自动衔接：
 ```
-/goal <goal_path> 或 /loop custom <goal_path> → TDD（隐式触发）→ 编码 → Review Gate → Traceback
+/goal <goal_path> 或 /loop custom <goal_path> → observable-target feedback loop → 编码 → Review Gate → Traceback
 ```
 
 实现完成后先读取共享质量门：

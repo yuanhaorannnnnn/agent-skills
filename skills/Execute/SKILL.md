@@ -20,6 +20,14 @@ description: |
 
 用户一句话 → goal.md + Canon task page → /goal。
 
+## Architecture Role
+
+Execute is a **model-invoked runtime adapter**, not a product/demand lifecycle owner. It packages confirmed work into a runtime brief and hands it to `/goal` or `/loop custom`.
+
+- Direct user invocation: resolve or create one Canon task page, then package the brief.
+- Called by Tasking: update only the explicit task page; never create a sibling task, mutate Yunxiao/state phase, choose the demand branch, or claim Tasking gates passed.
+- Called by another orchestrator: preserve caller ownership and return `goal_path`, `task_path`, gate result, and runtime handoff state.
+
 ## Hard Rule
 
 When the user invokes `$Execute`, do not implement inline before `/goal` is actually triggered. First generate or update `goal.md`, create or update the Canon task page, then trigger or hand off:
@@ -71,6 +79,12 @@ If the current agent cannot directly inject the runtime slash command, stop afte
 
 ## 接口影响
 [涉及的函数签名/参数变更，如无则写"无"]
+
+## Observable Target
+[修改前证据或目标状态、成功判据、验证命令；无法预先复现时写明原因]
+
+## Module Boundary
+[受影响模块、public interface、预期扩大/保持/收敛]
 ```
 
 ### Step 2b: --plan 模式（可选）
@@ -165,11 +179,13 @@ Execute must satisfy the shared workflow output contract:
 - If the runtime cannot inject `/goal`, stop after writing files and report the exact command. Do not continue inline as a substitute.
 - `--plan <task-page-path>` updates the existing Canon task page; it must not create a duplicate task page under a similar slug.
 - Review Gate runs after implementation and before Traceback/Sanitize; blockers stop delivery.
+- Do not treat code volume as progress. Each implementation slice must close a feedback loop against the observable target.
+- When a public interface changes, record why the module becomes deeper or why expansion is unavoidable.
 
 ## 与其他 skill 的关系
 
 ```
-Tasking Engage → Execute --plan（生成 goal.md，接管原 Staging 的 workspace 创建职责）
+Tasking Engage → Execute --plan（model-invoked adapter；生成 goal.md，不接管需求 phase/state）
 Repair Fix    → 默认不走 Execute；使用 fix_plan.md + Neutralize
 用户直接调用  → Execute [--plan]（workflow 外的开发启动入口）
 ```

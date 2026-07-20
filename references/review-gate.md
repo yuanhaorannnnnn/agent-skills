@@ -46,6 +46,15 @@ Collect only the evidence needed for review:
 
 Do not paste large logs or full files. Link artifacts by absolute path.
 
+## Independent Review Axes
+
+Review two axes separately. A pass on one axis cannot offset a failure on the other.
+
+1. **Standards** — repository rules, safety, maintainability, error handling, tests, and architecture. If a public interface changed, check whether the module hides more complexity behind a stable/smaller surface; flag unjustified interface expansion.
+2. **Spec** — implementation matches the design, fix plan, acceptance checklist, or user-approved observable target. Verify behavior and omissions, not naming resemblance.
+
+Record findings under `Standards` and `Spec`, then apply blocker policy to the combined set.
+
 ## Reviewer Selection
 
 Use Codex review as the default gate.
