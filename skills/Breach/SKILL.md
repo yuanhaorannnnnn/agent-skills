@@ -1,17 +1,15 @@
 ---
 name: Breach
 description: |
-  Fast, single-page HTML artifact for daily dev communication — status reports,
-  slide decks, flowcharts, diagrams, PR writeups, incident reports, and more.
-  Not for full product visual design (use `product-look` for that).
-
-  Every time this skill triggers, first read the html-effectiveness catalog to
-  match the page type to the closest layout reference, then generate.
-
-  Trigger on: "quick page", "快速页面", "做一个页面", "生成一个",
-  "make a page", "create an artifact", "做个 status report",
-  "画一个 flowchart", "做个 slide deck", "生成报告页面",
-  "visualize this as a page", "把这个做成 HTML".
+  Generate fast single-page HTML artifacts for daily development communication:
+  status reports, slide decks, flowcharts, PR writeups, incident reports, and
+  structured discussion digests. Use the discussion-digest mode for email
+  threads, GitHub issues/PRs, chat logs, and forum discussions when the user asks
+  "梳理这个讨论", "这条线程结论是什么", "理一下参与人立场",
+  "digest this thread", or "summarize this email chain". Use the general page
+  mode for "quick page", "快速页面", "做个 status report", "画一个 flowchart",
+  "做个 slide deck", "生成报告页面", "visualize this as a page", or
+  "把这个做成 HTML". Not for full product visual design.
 ---
 
 # Quick Page
@@ -21,10 +19,14 @@ Fast, single-page HTML artifacts for daily dev communication.
 ## Core Rule
 
 Speed first, polish follows. A good-enough page in 30 seconds beats a perfect
-page in 5 minutes. Two reference libraries feed every generation: layout
-structure from html-effectiveness, visual tokens from awesome-design-md.
+page in 5 minutes.
 
-## Before You Generate
+Choose one mode:
+
+- **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens.
+- **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
+
+## General Page Mode
 
 Two constraints, always applied:
 
@@ -89,13 +91,31 @@ When invoked by another skill (e.g., Repair), the caller provides the output
 path; Breach accepts it and writes there. Never write HTML into
 `/media/yhr/2T/yunxiao/` or other Phase 0 scraped data directories.
 
+## Discussion Digest Mode
+
+Use this mode for multi-party threads where the useful output is who argued what, how positions changed, what was decided, and what remains open.
+
+1. Acquire the source with the connected GitHub/Gmail capability, a user-provided transcript, or the available web fetcher.
+2. Read `references/discussion-digest-schema.md` before analysis.
+3. Produce schema-compliant JSON. Keep the timeline at 30 entries or fewer, mark at most 8 key events, include at least one decision record, and keep `unresolved` non-empty.
+4. Write the auditable intermediate artifact to `raw/discussions/<slug>.json` unless the caller specifies another path.
+5. Render deterministically:
+
+```bash
+python3 ~/.agents/skills/Breach/scripts/render_discussion.py \
+  raw/discussions/<slug>.json -o queries/<slug>.html
+```
+
+The bundled `assets/discussion-digest.html` owns layout and style for this mode. The renderer adds Breach provenance. Do not rewrite the HTML by hand unless the template itself needs repair.
+
 ## Canon 输出边界
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- HTML 页面是 artifact，仍写在调用者指定的 `.proposal/`、`.research/` 或其他 repo-local 路径。
+- HTML 页面是 artifact，仍写在调用者指定的 `.proposal/`、`.research/`、`queries/` 或其他 repo-local 路径。
+- Discussion digest 的 JSON 是可审计中间产物；决议、争议和 action items 可提升到 Canon `decisions/`、`tasks/`、`patterns/` 或 update-card。
 - Breach 不主动复制 HTML 到 Canon；Canon 默认只记录 absolute path、HTTP URL、页面类型和它支持的 task/decision/incident。
-- 如果页面承载长期结论（incident report、PR writeup、design summary），创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-breach-<topic>.md`，或让调用方 skill 负责 promotion。
+- 如果页面承载长期结论，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-breach-<topic>.md`，或让调用方 skill 负责 promotion。
 
 ## Agent-Specific
 

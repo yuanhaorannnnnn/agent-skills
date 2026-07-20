@@ -8,9 +8,6 @@ skills:
 - name: Neutralize
   enabled: true
   category: debugging
-- name: Kneeboard
-  enabled: true
-  category: utility
 - name: FieldReport
   enabled: true
   category: reporting
@@ -18,9 +15,6 @@ skills:
   enabled: true
   category: reporting
 - name: Acquisition
-  enabled: true
-  category: media
-- name: Propaganda
   enabled: true
   category: media
 - name: SweepHer
@@ -32,13 +26,7 @@ skills:
 - name: tadsim-dynamics-bench
   enabled: true
   category: automation
-- name: CommsDigest
-  enabled: true
-  category: media
 - name: GoNogo
-  enabled: true
-  category: meta
-- name: DoctrineReview
   enabled: true
   category: meta
 - name: Sanitize

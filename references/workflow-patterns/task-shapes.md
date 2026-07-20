@@ -35,11 +35,6 @@ Map local skills and workflows to workflow patterns.
 - Workers: design claims, implementation mapping, test coverage.
 - Verifier: challenge matches that are inferred but weak.
 
-## DoctrineReview
-
-- Shape: fan-out-and-synthesize + generate-and-filter + adversarial-verification.
-- Mine sessions, cluster repeated corrections, filter to real reusable candidates, then Codify survivors.
-
 ## Breach
 
 - Shape: classify-and-act + adversarial-verification.

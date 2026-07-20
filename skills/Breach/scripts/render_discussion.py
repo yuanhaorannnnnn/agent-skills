@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 
 SKILL_DIR = Path(os.environ.get("SKILL_DIR", Path(__file__).resolve().parent.parent))
-TEMPLATE_PATH = SKILL_DIR / "templates" / "discussion-digest.html"
+TEMPLATE_PATH = SKILL_DIR / "assets" / "discussion-digest.html"
 
 
 def _html(text: str) -> str:
@@ -98,7 +98,7 @@ def _build_meta_pills(data: dict) -> str:
     )
 
 
-def render(data: dict, template: str) -> str:
+def render(data: dict, template: str, template_source: str = "") -> str:
     subs = {
         "PLACEHOLDER_TITLE": _html(data.get("title", "Untitled")),
         "PLACEHOLDER_SOURCE_ID": _html(data.get("source_id", "")),
@@ -111,6 +111,7 @@ def render(data: dict, template: str) -> str:
         "PLACEHOLDER_DECISIONS": _build_decisions(data.get("decisions", [])),
         "PLACEHOLDER_UNRESOLVED": _build_unresolved(data.get("unresolved", [])),
         "PLACEHOLDER_ACTION_ITEMS": _build_action_items(data.get("action_items", [])),
+        "PLACEHOLDER_TEMPLATE_SOURCE": _html(template_source),
     }
     html = template
     for placeholder, value in subs.items():
@@ -137,7 +138,7 @@ def main():
     with open(args.template) as f:
         template = f.read()
 
-    result = render(data, template)
+    result = render(data, template, str(Path(args.template).resolve()))
 
     if args.output:
         with open(args.output, "w") as f:
