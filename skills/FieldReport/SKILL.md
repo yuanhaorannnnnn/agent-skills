@@ -1,16 +1,15 @@
 ---
 name: FieldReport
 description: |
-  Generate a Markdown technical report in academic paper structure for a
-  completed task. Use this skill whenever the user asks for a 技术报告,
-  技术总结, 方案汇报, research report, or post-task documentation — even if
-  they don't explicitly name the skill. Accepts an optional task page path or
-  slug to identify the task. Sources material from
-  `/media/yhr/2T/Canon/tasks/<task>.md` (primary) and
-  `.planning/conversations/` / `.agent-state/conversations/` (historical
-  runtime buffers, secondary) by default. Do not use while
-  the task is still actively being implemented unless the user explicitly wants
-  a report artifact at that moment.
+  Use only for a formal, evidence-backed Markdown report covering an entire
+  completed task or deliverable end to end: rationale, implementation,
+  evaluation, outcome, and remaining work. Trigger on "完整任务技术报告",
+  "完成后的技术总结", "成果汇报", "post-task report", or a research report
+  for completed work. Source the report from Canon task pages, planning records,
+  commits, and validation evidence. Do not use for one bug's troubleshooting
+  story; use AfterAction. Do not use for one reusable guardrail; use Codify. Do
+  not use while implementation is active unless the user explicitly requests an
+  interim formal report.
 ---
 
 # Report
@@ -19,6 +18,10 @@ Generate a 6-section technical report in academic paper structure, built from
 Canon task pages (`/media/yhr/2T/Canon/tasks/<task>.md`) as the primary source,
 with `.planning/conversations/` and `.agent-state/conversations/` as secondary
 historical evidence.
+
+## Boundary
+
+Require task-wide scope and both implementation and validation evidence. A report that only explains one failure belongs to AfterAction. A result that can be expressed as wrong/correct/trigger belongs to Codify.
 
 ## Canon 输出边界
 

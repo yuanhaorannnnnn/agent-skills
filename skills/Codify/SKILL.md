@@ -1,13 +1,19 @@
 ---
 name: Codify
 description: |
-  Use when a mistake, misread requirement, repeated implementation error, or
-  important lesson should be recorded as a durable rule so it is not repeated.
-  Trigger on requests like "write this down as a rule", "remember this mistake",
-  "capture a lesson learned", or "add a guardrail for next time".
+  Use only when the desired output is one compact, reusable guardrail that
+  prevents a mistake from recurring. Trigger on "write this down as a rule",
+  "remember this mistake", "capture a lesson learned", or "add a guardrail for
+  next time". Do not use for a narrative of one incident or debugging journey;
+  use AfterAction. Do not use for an end-to-end report on a completed task; use
+  FieldReport.
 ---
 
 # Capture Mistake Rule
+
+## Boundary
+
+Produce a rule, not a story or report. The minimum useful output is wrong approach, correct approach, trigger, and evidence. If incident chronology matters, route to AfterAction. If the full task lifecycle and evaluation matter, route to FieldReport.
 
 ## Workflow
 

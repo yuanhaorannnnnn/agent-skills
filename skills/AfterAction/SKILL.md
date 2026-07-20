@@ -1,20 +1,23 @@
 ---
 name: AfterAction
 description: |
-  Lightweight problem-solving debrief — not an academic report, not a blame
-  document. After fixing a complex or long-running issue, write a concise
-  "what happened, what we tried, what worked, is it really fixed" record
-  for your future self.
-
-  Trigger on: "post-mortem", "post mortem", "复盘", "问题解决记录",
-  "debug 总结", "怎么修好的", "fix log", "写一份修复记录",
-  "故障复盘", "事后分析", "记录一下这个 bug 的解决过程".
+  Use only after a concrete defect, failure, or difficult technical problem has
+  been resolved and the useful output is its incident-specific troubleshooting
+  story: symptom, diagnosis, failed attempts, root cause, final fix, and whether
+  it is truly resolved. Trigger on "故障复盘", "debug 复盘", "怎么修好的",
+  "fix log", "写一份修复记录", "post-mortem", or "记录一下这个 bug 的解决过程".
+  Do not use when the user only wants one reusable guardrail; use Codify. Do not
+  use for a formal end-to-end report on an entire completed task; use FieldReport.
 ---
 
 # Post-Mortem
 
 Write like you're leaving a note for your future self who will hit the same
 problem in 6 months. Human language, no AI slop. Specifics over summaries.
+
+## Boundary
+
+Require a specific incident or difficult problem plus diagnosis/fix evidence. Preserve the chronology and failed attempts. Route a standalone reusable rule to Codify; route a full completed-deliverable report with implementation and evaluation to FieldReport.
 
 ## Structure (5 sections, no more)
 
