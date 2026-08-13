@@ -1,20 +1,31 @@
 ---
-name: Breach
+name: breach
 description: |
   Generate fast single-page HTML artifacts for daily development communication:
-  status reports, slide decks, flowcharts, PR writeups, incident reports, and
-  structured discussion digests. Use the discussion-digest mode for email
+  status pages, HTML slide-like pages, flowcharts, PR writeups, incident pages,
+  and structured discussion digests. Use the discussion-digest mode for email
   threads, GitHub issues/PRs, chat logs, and forum discussions when the user asks
   "梳理这个讨论", "这条线程结论是什么", "理一下参与人立场",
   "digest this thread", or "summarize this email chain". Use the general page
-  mode for "quick page", "快速页面", "做个 status report", "画一个 flowchart",
-  "做个 slide deck", "生成报告页面", "visualize this as a page", or
-  "把这个做成 HTML". Not for full product visual design.
+  mode for "quick HTML page", "快速 HTML 页面", "做个 HTML status page",
+  "画一个 HTML flowchart", "做个 HTML slide page", "生成报告页面",
+  "visualize this as a page", or "把这个做成 HTML". Not for native documents,
+  native slide decks, spreadsheets, or full product visual design.
 ---
 
 # Quick Page
 
 Fast, single-page HTML artifacts for daily dev communication.
+
+## Output Boundary
+
+breach owns HTML and deterministic discussion-digest rendering only.
+
+- Native document, presentation, or spreadsheet requested → use the requested
+  OpenAI Template or native artifact capability.
+- HTML page, HTML slide-like page, or discussion digest requested → use breach.
+- Another workflow may define content and evidence first, then call breach only
+  for HTML presentation.
 
 ## Core Rule
 
@@ -87,8 +98,8 @@ source material directory. Default output paths by context:
 - Research findings → `.research/<topic>/index.html`
 - General artifacts → caller-specified path, defaulting to `.proposal/` if unspecified
 
-When invoked by another skill (e.g., Repair), the caller provides the output
-path; Breach accepts it and writes there. Never write HTML into
+When invoked by another skill (e.g., repair), the caller provides the output
+path; breach accepts it and writes there. Never write HTML into
 `/media/yhr/2T/yunxiao/` or other Phase 0 scraped data directories.
 
 ## Discussion Digest Mode
@@ -102,11 +113,11 @@ Use this mode for multi-party threads where the useful output is who argued what
 5. Render deterministically:
 
 ```bash
-python3 ~/.agents/skills/Breach/scripts/render_discussion.py \
+python3 <skill-dir>/scripts/render_discussion.py \
   raw/discussions/<slug>.json -o queries/<slug>.html
 ```
 
-The bundled `assets/discussion-digest.html` owns layout and style for this mode. The renderer adds Breach provenance. Do not rewrite the HTML by hand unless the template itself needs repair.
+The bundled `assets/discussion-digest.html` owns layout and style for this mode. The renderer adds breach provenance. Do not rewrite the HTML by hand unless the template itself needs repair.
 
 ## Canon 输出边界
 
@@ -114,7 +125,7 @@ The bundled `assets/discussion-digest.html` owns layout and style for this mode.
 
 - HTML 页面是 artifact，仍写在调用者指定的 `.proposal/`、`.research/`、`queries/` 或其他 repo-local 路径。
 - Discussion digest 的 JSON 是可审计中间产物；决议、争议和 action items 可提升到 Canon `decisions/`、`tasks/`、`patterns/` 或 update-card。
-- Breach 不主动复制 HTML 到 Canon；Canon 默认只记录 absolute path、HTTP URL、页面类型和它支持的 task/decision/incident。
+- breach 不主动复制 HTML 到 Canon；Canon 默认只记录 absolute path、HTTP URL、页面类型和它支持的 task/decision/incident。
 - 如果页面承载长期结论，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-breach-<topic>.md`，或让调用方 skill 负责 promotion。
 
 ## Agent-Specific

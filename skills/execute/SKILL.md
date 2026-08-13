@@ -1,36 +1,38 @@
 ---
-name: Execute
+name: execute
 description: |
-  Natural language task → runtime goal.md + Canon task page → launch execution.
-  Use when the user wants to start a coding task without a demand/bug ID — says
-  开动、执行、帮我实现、写一个、帮我改、做出来、开始写、implement this、
-  build this、add this feature. Reads code context, derives structured tasks,
-  writes a repo-local goal.md execution brief, records durable state in Canon,
-  and launches /goal (or Pi /loop custom) with goal.md.
+  Explicit goal authoring request → runtime goal.md + Canon task page → launch
+  execution. Use when the user explicitly asks to write/create goal.md, start a
+  goal-backed run, invoke $execute, or says 开动/执行 in a context where a
+  persistent goal is clearly intended. Reads code context, derives structured
+  tasks, writes a repo-local goal.md execution brief, records durable state in
+  Canon, and launches /goal (or Pi /loop custom) with goal.md.
 
   Supports --plan for complex multi-phase tasks: loads plan-template from
   references/plan-template.md, writes § Plan / § Findings / § Progress into the
   Canon task page, generates goal.md from that task context, and launches /goal.
 
-  Do NOT use when the user works with a known demand/bug ID — Tasking or
-  Repair handle those. Do NOT use for questions, code review, or research.
+  Do NOT auto-trigger for ordinary implementation requests such as 帮我改、
+  写一个、implement this, or add this feature; Codex handles those directly.
+  Do NOT use when the user works with a known demand/bug ID — tasking or repair
+  handle those. Do NOT use for questions, code review, or research.
 ---
 
-# Execute — 火力任务
+# execute — 火力任务
 
-用户一句话 → goal.md + Canon task page → /goal。
+用户显式要求 goal-backed execution → goal.md + Canon task page → /goal。
 
 ## Architecture Role
 
-Execute is a **model-invoked runtime adapter**, not a product/demand lifecycle owner. It packages confirmed work into a runtime brief and hands it to `/goal` or `/loop custom`.
+execute is a **model-invoked runtime adapter**, not a product/demand lifecycle owner. It packages confirmed work into a runtime brief and hands it to `/goal` or `/loop custom`.
 
 - Direct user invocation: resolve or create one Canon task page, then package the brief.
-- Called by Tasking: update only the explicit task page; never create a sibling task, mutate Yunxiao/state phase, choose the demand branch, or claim Tasking gates passed.
+- Called by tasking: update only the explicit task page; never create a sibling task, mutate Yunxiao/state phase, choose the demand branch, or claim tasking gates passed.
 - Called by another orchestrator: preserve caller ownership and return `goal_path`, `task_path`, gate result, and runtime handoff state.
 
 ## Hard Rule
 
-When the user invokes `$Execute`, do not implement inline before `/goal` is actually triggered. First generate or update `goal.md`, create or update the Canon task page, then trigger or hand off:
+When the user invokes `$execute`, do not implement inline before `/goal` is actually triggered. First generate or update `goal.md`, create or update the Canon task page, then trigger or hand off:
 
 ```text
 /goal <absolute-goal-md-path>
@@ -46,7 +48,7 @@ If the current agent cannot directly inject the runtime slash command, stop afte
 | `--plan` | 计划模式：额外加载 plan-template，写入 § Plan / § Findings / § Progress |
 | `<task-page-path>` | 传入已有 Canon task page 路径（如 `/media/yhr/2T/Canon/tasks/JHBN-7679.md`），更新该 task page 并从中生成 `goal.md` |
 
-当 `--plan` 和 `<task-page-path>` 同时传入时（如 `Execute --plan /media/yhr/2T/Canon/tasks/JHBN-7679.md`），plan 写入已有 task page，不新建；随后生成 repo-local `goal.md` 并触发 `/goal <goal.md>`。Tasking Engage 使用此模式。
+当 `--plan` 和 `<task-page-path>` 同时传入时（如 `execute --plan /media/yhr/2T/Canon/tasks/JHBN-7679.md`），plan 写入已有 task page，不新建；随后生成 repo-local `goal.md` 并触发 `/goal <goal.md>`。tasking Engage 使用此模式。
 
 ## 流程
 
@@ -147,13 +149,13 @@ Pi runtime 使用：
 
 **Step 4 后跑 gate**：
 ```bash
-python3 ~/.claude/skills/Execute/scripts/execution_gate.py --goal <goal-md> --task <canon-task-path>
+python3 <skill-dir>/scripts/execution_gate.py --goal <goal-md> --task <canon-task-path>
 ```
 blocked → goal.md 缺失或 Canon task page 未更新。pass → /goal 已准备好。
 
 ### Step 5: Review Gate
 
-实现完成后、Traceback/Sanitize 前，读取共享质量门：
+实现完成后、traceback/sanitize 前，读取共享质量门：
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/review-gate.md
@@ -164,7 +166,7 @@ blocked → goal.md 缺失或 Canon task page 未更新。pass → /goal 已准�
 
 ## Workflow Gate Contract
 
-Execute must satisfy the shared workflow output contract:
+execute must satisfy the shared workflow output contract:
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
@@ -174,18 +176,19 @@ Execute must satisfy the shared workflow output contract:
 
 ## Gotchas
 
-- `$Execute` does not mean “start coding now”. It means prepare `goal.md` + Canon task page, then trigger or hand off `/goal <goal.md>`.
+- `$execute` does not mean “start coding now”. It means prepare `goal.md` + Canon task page, then trigger or hand off `/goal <goal.md>`.
+- Ordinary coding requests do not imply `$execute`. Require explicit goal intent before adding `goal.md` and Canon task overhead.
 - Do not pass the Canon task page to `/goal`; pass the repo-local `goal.md` absolute path.
 - If the runtime cannot inject `/goal`, stop after writing files and report the exact command. Do not continue inline as a substitute.
 - `--plan <task-page-path>` updates the existing Canon task page; it must not create a duplicate task page under a similar slug.
-- Review Gate runs after implementation and before Traceback/Sanitize; blockers stop delivery.
+- Review Gate runs after implementation and before traceback/sanitize; blockers stop delivery.
 - Do not treat code volume as progress. Each implementation slice must close a feedback loop against the observable target.
 - When a public interface changes, record why the module becomes deeper or why expansion is unavoidable.
 
 ## 与其他 skill 的关系
 
 ```
-Tasking Engage → Execute --plan（model-invoked adapter；生成 goal.md，不接管需求 phase/state）
-Repair Fix    → 默认不走 Execute；使用 fix_plan.md + Neutralize
-用户直接调用  → Execute [--plan]（workflow 外的开发启动入口）
+tasking Engage → execute --plan（model-invoked adapter；生成 goal.md，不接管需求 phase/state）
+repair Fix    → 默认不走 execute；使用 fix_plan.md + neutralize
+用户直接调用  → execute [--plan]（workflow 外的开发启动入口）
 ```

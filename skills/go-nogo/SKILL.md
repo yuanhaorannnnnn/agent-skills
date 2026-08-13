@@ -1,5 +1,5 @@
 ---
-name: GoNogo
+name: go-nogo
 description: |
   评估用户描述的功能是否需要新建 skill，还是可用现有工具或已有 skills 实现。
   当用户描述一段功能、说"我想实现..."、"能不能做..."、"这个要不要封装成 skill"、

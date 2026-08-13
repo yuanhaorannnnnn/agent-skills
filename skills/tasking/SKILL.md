@@ -1,21 +1,21 @@
 ---
-name: Tasking
+name: tasking
 description: |
   需求开发全流程作战指挥系统。四阶段：Orient(情报分析→方案)、Briefing(上传知识库→评审日程)、
-  Engage(状态→开发中→Execute --plan→启动/goal)、Turnover(交付物→系统测试)。
+  Engage(状态→开发中→execute --plan→启动/goal)、Turnover(交付物→系统测试)。
   
   Make sure to use this skill whenever the user:
   - mentions a demand/requirement ID (e.g. JHBN-7712, #1234) and wants to process it
   - says 处理需求、需求开发、写方案、方案评审、开始开发、进入开发、交付、提测
   - asks to upload a design doc to knowledge base or schedule a review meeting for a demand
   - wants to change a demand status to 开发中/系统测试 or post deliverable links
-  - uses /Tasking or any of its modes: Orient, Briefing, Engage, Turnover
+  - uses /tasking or any of its modes: Orient, Briefing, Engage, Turnover
   
   Do NOT use for: checking personal todos, writing weekly reports, code review, creating new skills,
   general git operations, or translating documents — even if a demand ID is mentioned in passing.
 ---
 
-# Tasking — 需求开发作战流程
+# tasking — 需求开发作战流程
 
 一个 skill，四个 mode。从情报分析到任务移交，全链路自动化。
 
@@ -25,10 +25,10 @@ description: |
 
 | Mode | 触发 | Phase |
 |------|------|-------|
-| `Orient` | `/Tasking Orient <demand-id> [--base <br>] [--branch <br>]` | 1: 情报分析 |
-| `Briefing` | `/Tasking Briefing <demand-id>` | 2: 战情简报 |
-| `Engage` | `/Tasking Engage <demand-id>` | 3: 接敌开发 |
-| `Turnover` | `/Tasking Turnover <demand-id> --deliverables "<url1> <url2>"` | 4: 任务移交 |
+| `Orient` | `/tasking Orient <demand-id> [--base <br>] [--branch <br>]` | 1: 情报分析 |
+| `Briefing` | `/tasking Briefing <demand-id>` | 2: 战情简报 |
+| `Engage` | `/tasking Engage <demand-id>` | 3: 接敌开发 |
+| `Turnover` | `/tasking Turnover <demand-id> --deliverables "<url1> <url2>"` | 4: 任务移交 |
 
 - 参数不匹配任何 mode → 列出用法帮助
 - 匹配后立即 Read 对应 mode 文件执行完整流程
@@ -43,14 +43,14 @@ description: |
 
 ## 责任边界
 
-- **Tasking 是需求生命周期 owner**：负责 Yunxiao 状态、phase、task page identity、方案来源和阶段 gate。
-- **Execute 是 model-invoked runtime adapter**：只把已确认任务压成 `goal.md`、更新既有 Canon plan，并触发或交付 `/goal`。
-- Tasking 调用 Execute 时必须传入既有 Canon task page。Execute 不得新建近似 task、改变 Yunxiao 状态、选择需求分支或宣称 Engage/Turnover 已完成。
-- runtime 无法注入 `/goal` 时，Execute 返回明确 handoff；Tasking 保持 `dev` 阶段 owner，不以内联实现伪装已启动。
+- **tasking 是需求生命周期 owner**：负责 Yunxiao 状态、phase、task page identity、方案来源和阶段 gate。
+- **execute 是 model-invoked runtime adapter**：只把已确认任务压成 `goal.md`、更新既有 Canon plan，并触发或交付 `/goal`。
+- tasking 调用 execute 时必须传入既有 Canon task page。execute 不得新建近似 task、改变 Yunxiao 状态、选择需求分支或宣称 Engage/Turnover 已完成。
+- runtime 无法注入 `/goal` 时，execute 返回明确 handoff；tasking 保持 `dev` 阶段 owner，不以内联实现伪装已启动。
 
 ## Workflow Gate Contract
 
-Tasking modes must satisfy the shared workflow output contract:
+tasking modes must satisfy the shared workflow output contract:
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
@@ -61,10 +61,10 @@ Each mode must leave a clear phase gate in `state.json`, a Canon task/update-car
 ## Gotchas
 
 - Yunxiao status and user updates require IDs. Resolve status IDs with `get_work_item_workflow`; resolve `樊亮亮` to userId before Turnover assignment.
-- `Engage` must go through the model-invoked `Execute --plan` adapter and a real `/goal <goal.md>` or `/loop custom <goal.md>` handoff. Tasking owns phase/state; Execute owns only goal packaging and runtime handoff.
-- `Turnover` changes demand status to `系统测试` and assignee to `樊亮亮`; this owner-change rule applies to demand flow only, not Repair.
+- `Engage` must go through the model-invoked `execute --plan` adapter and a real `/goal <goal.md>` or `/loop custom <goal.md>` handoff. tasking owns phase/state; execute owns only goal packaging and runtime handoff.
+- `Turnover` changes demand status to `系统测试` and assignee to `樊亮亮`; this owner-change rule applies to demand flow only, not repair.
 - Do not create `.planning/conversations/<demand-id>/` as the durable plan. Canon task page is durable state; `goal.md` is runtime execution brief.
-- Do not enter Turnover unless build/validation evidence and Review Gate/Traceback results are recorded or explicitly waived.
+- Do not enter Turnover unless build/validation evidence and Review Gate/traceback results are recorded or explicitly waived.
 
 ## Resources
 

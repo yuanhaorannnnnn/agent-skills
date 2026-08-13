@@ -1,5 +1,5 @@
 ---
-name: Acquisition
+name: acquisition
 description: |
   Load when the user shares a video or article URL and wants to save it into the
   wiki, or says "把这篇/这个视频消化一下", "提取干货", "整理要点", "ingest this",
@@ -36,7 +36,8 @@ user_invocable: true
   └─ 本地 .mp4 / .wav → 音频提取 → FunASR 转录 → 蒸馏 → queries/
 ```
 
-**客户端自动路由**：`ingest_content.py` 自动检测输入类型并路由。
+**路由方式**：agent 按上表识别输入类型并调用对应脚本；当前没有单一
+`ingest_content.py` 入口，不得引用不存在的 router。
 
 ## 视频管线
 
@@ -52,7 +53,7 @@ X 视频 CDN（video.twimg.com）对国内网络不稳定。**处理 X/Twitter �
 ### Step V1: 下载
 
 ```bash
-python ~/.agents/skills/content-ingest/scripts/ingest_video.py "VIDEO_URL"
+python <skill-dir>/scripts/ingest_video.py "VIDEO_URL"
 ```
 
 选项：
@@ -74,7 +75,7 @@ ffmpeg -i raw/assets/video/<video_id>/<video_id>.mp4 -vn -ar 16000 -ac 1 raw/ass
 ### Step V3: FunASR 转录
 
 ```bash
-python ~/.agents/skills/content-ingest/scripts/transcribe_audio.py raw/assets/audio/<video_id>.wav \
+python <skill-dir>/scripts/transcribe_audio.py raw/assets/audio/<video_id>.wav \
   --video-id <video_id> \
   --source-url "VIDEO_URL" \
   --platform <youtube|x|bilibili|xiaohongshu>
@@ -88,14 +89,14 @@ python ~/.agents/skills/content-ingest/scripts/transcribe_audio.py raw/assets/au
 
 ### Step V4: 蒸馏 → 结构化笔记
 
-读取转录稿，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<slug>.md`。
+读取转录稿，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。
 
 ## 文章管线
 
 ### Step A1: 远程 URL 抓取
 
 ```bash
-python ~/.agents/skills/content-ingest/scripts/extract_article.py "URL" \
+python <skill-dir>/scripts/extract_article.py "URL" \
   --save-raw --wiki-root /media/yhr/2T/files/wiki
 ```
 
@@ -140,7 +141,7 @@ cp "/media/yhr/2T/files/wiki/Clippings/<file>.md" "/media/yhr/2T/files/wiki/raw/
 
 ### Step A3: 蒸馏 → 结构化笔记
 
-读取正文，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<slug>.md`。
+读取正文，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。
 
 ## PDF 管线
 
@@ -168,7 +169,7 @@ for page in doc:
 
 ### Step P3: 蒸馏 → 结构化笔记
 
-读取 `raw/papers/<slug>.txt`，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<slug>.md`。
+读取 `raw/papers/<slug>.txt`，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。
 
 PDF 通常篇幅较长（10-50 页），蒸馏时注意：
 - 先通读全文提取核心论点框架，再填充细节
@@ -196,6 +197,13 @@ PDF 通常篇幅较长（10-50 页），蒸馏时注意：
 - 无法迁移的一次性经验
 
 ## 笔记输出格式
+
+文件名固定为 `queries/YYYYMMDD-<english-slug>.md`：
+
+- `YYYYMMDD` 取 query 的 `created` 日期，即摄入/蒸馏日期。
+- 文件名前缀必须与 `created` 去除连字符后的值一致。
+- 原文发布日期单独保存在 raw frontmatter 的 `published` 或 `date`，不用于 query 文件名。
+- `<english-slug>` 仅使用小写字母、数字和连字符。
 
 ```markdown
 ---
@@ -257,8 +265,24 @@ rating: {1-7}                             # 个人评分：7=改变人生，1=�
 完成笔记后更新 `index.md` 和 `log.md`：
 
 ```markdown
-## [YYYY-MM-DD] create | {标题} → queries/{slug}.md
+## [YYYY-MM-DD] create | {标题} → queries/{YYYYMMDD}-{slug}.md
 ```
+
+完成前验证：
+
+1. query basename 匹配 `^[0-9]{8}-[a-z0-9][a-z0-9-]*\.md$`
+2. basename 日期前缀等于 frontmatter `created` 去除连字符后的值
+3. `sources:` 和 `## 来源` 只引用 `raw/` 归档，不引用 `Clippings/`
+4. `index.md`、`log.md` 和相关 wikilinks 使用最终文件名
+
+完成上述写入后刷新 vault catalog：
+
+```bash
+python3 /media/yhr/2T/files/wiki/.scripts/build_collection_catalog.py \
+  --vault /media/yhr/2T/files/wiki
+```
+
+catalog 刷新失败不回滚已完成的摄入；明确报告失败，并保留 query/raw/index/log 作为已完成产物。不得静默留下 stale catalog。
 
 ## 原始材料归档
 

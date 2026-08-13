@@ -1,5 +1,5 @@
 ---
-name: CONOPS
+name: conops
 description: |
   基于 conversation 对话记录、planning 文档和代码变更，生成面向产品、测试、
   开发同事的技术开发设计方案文档（Markdown）。
@@ -65,14 +65,13 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 1. **Executive Summary** — 1 句话 + 核心结论 bullet list（面向所有人）
 2. **背景与问题** — 为什么需要这个方案，现有能力为什么不够
 3. **方案范围** — 本次包含 / 本次不包含（两节等长或"不包含"更长）
-4. **用户可见行为** — 从使用方视角描述，分 4 小节：
-   - 4.1 Blueprint — 新的 blueprint id、与现有 sensor 的关系
-   - 4.2 Python 回调 — 只需说明如何获取数据。必须包含：回调类型、属性访问路径、代码示例
-   - 4.3 DFS / Proto 数据 — 新增 message 类型、字段列表、单位约定
-   - 4.4 典型配置 — **必须列出所有参数的名称、默认值和含义**（三列表）。读者是上层开发/测试，他们不关心模型内部实现，只关心暴露了什么参数、怎么用
+4. **用户可见行为** — 从使用方视角描述入口、操作流程、API/CLI/UI
+   变化、配置项、默认值和兼容性。只写当前 feature 实际存在的接口；不要
+   强制虚构 Blueprint、Python、Proto 或其他技术栈。
 5. **Architecture / Flow** — ASCII 图 + 文字说明（面向开发同事，可以涉及内部实现）
 6. **Core Logic** — 关键算法/公式/数据流，读者是开发同事
-7. **Protocol And Data Model** — Python API + Proto/DFS + 扩展模型
+7. **Protocol And Data Model** — 公开接口、schema、状态、单位、兼容性；没有
+   协议或数据模型变化时明确写无
 8. **Product Review Points** — 产品评审建议确认的问题
 9. **Test Review Points** — 按层级拆分的测试用例表（编译 → API → Runtime → DFS → 一致性）
 10. **Acceptance Criteria** — 可验收的功能清单
@@ -80,6 +79,17 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 12. **Code Navigation** — 文件/职责三列表
 13. **Current Status And Next Steps** — 已完成 / 未完成 / 建议下一步
 14. **Review Decision Checklist** — 评审会上逐条确认的 checkbox 清单
+
+### Variant References
+
+- CARLA sensor 方案 → 生成第 4、7、9 节前，完整读取
+  `references/carla-sensor-design.md`。
+- 其他领域 → 使用通用 14 节契约，只保留该领域真实存在的接口、数据模型和
+  测试层级。
+
+conops owns content scope, evidence, acceptance criteria, and review decisions.
+If the user requests an OpenAI Template or native document, complete this content
+contract first, then use the requested template only for final rendering.
 
 ### 保存位置
 
@@ -107,7 +117,7 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 - `.proposal/` 中的方案文档是评审 artifact，仍保存在当前工作仓库。
 - 方案中的长期事实进入 Canon：需求/任务状态、方案决策、接口约束、风险、评审结论、后续任务。
 - 生成方案后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-conops-<topic>.md`，把方案文档作为 absolute-path artifact ref。
-- 若由 `Tasking Orient` 调用，优先更新 `/media/yhr/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。
+- 若由 `tasking Orient` 调用，优先更新 `/media/yhr/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。
 
 ---
 
@@ -131,17 +141,17 @@ If a question can be answered by exploring the codebase, explore instead.
 
 ## 写作原则
 
-### 面向 API 使用者编写（最重要）
+### 面向使用者编写（最重要）
 
-这份文档的主要读者不是模型实现者，而是：
-- **上层开发同事**：使用 Python API 调用模型，不关心内部实现
-- **测试同事**：基于暴露的参数设计测试用例
+这份文档的主要读者不是内部实现者，而是调用方、测试和产品评审者。
 
 因此：
-- 典型配置节必须列出**每一个参数的名称、默认值和含义**，缺一不可
-- Python 回调节只需要说明"如何获取数据"，给代码示例即可
-- 不要说"配置方式沿用 XX 类"，直接给参数表——`depth_format` 是什么？默认值多少？单位是什么？测试同事需要这些来写用例
-- 如果参数的含义或用例不清楚，优先补文档，不要让对接方口头来问
+- 所有公开配置项列出名称、默认值、含义和单位；没有公开配置时明确写无
+- API/CLI/UI 用法给最小可运行示例，不展开无关内部实现
+- 不要写"沿用 XX"来省略契约；把调用方需要的信息直接列全
+- 参数、行为或验收不清楚时标为 open question，不编造默认值
+- CARLA sensor 的 Blueprint/Python/DFS 专用要求只来自
+  `references/carla-sensor-design.md`
 
 ### 先保信息，再谈风格
 
@@ -208,7 +218,7 @@ If a question can be answered by exploring the codebase, explore instead.
 文档完成后跑 gate —— 机械检查脚本化：
 
 ```bash
-python3 ~/.claude/skills/CONOPS/scripts/quality_gate.py <path/to/design_doc.md>
+python3 <skill-dir>/scripts/quality_gate.py <path/to/design_doc.md>
 ```
 
 blocked → 禁词命中 / 节缺失 / scope 不平衡 → 修后重跑。pass → 可以发评审。

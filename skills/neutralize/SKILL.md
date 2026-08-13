@@ -1,20 +1,32 @@
 ---
-name: Neutralize
+name: neutralize
 description: |
-  Use when the user asks to fix a bug, regression, failing behavior, broken
-  feature, runtime error, or repeated mistake pattern. Especially use this when
-  the user provides error logs, stack traces, console output, build failures,
-  runtime exceptions, or screenshots of an error and wants the issue fixed, not
-  just explained. Trigger on requests like "fix this", "debug this", "find the
-  root cause", "here is the error log", "here is a screenshot", or "check for
-  similar issues nearby". Focus on root cause, apply the fix, then scan for
-  similar mistakes in nearby code.
+  Use for nontrivial or recurring defects that need explicit root-cause evidence,
+  symptom reproduction, adjacent-pattern scanning, and a machine-readable fix
+  gate. Strong triggers: repeated regression, build/runtime failure, supplied
+  logs or stack traces, cross-module breakage, "find the root cause", or "check
+  for similar issues nearby". Focus on root cause, apply the smallest safe fix,
+  then scan nearby code for the same pattern. Do not auto-trigger for an obvious,
+  localized routine fix that ordinary implementation plus focused validation can
+  resolve safely.
 ---
 
 # Fix Issue
 
 Find the root cause, not just the symptom. Apply the smallest safe fix, then
 scan nearby code for the same mistake pattern.
+
+## Scope Gate
+
+Use this workflow when at least one is true:
+
+- root cause is unknown or spans multiple components
+- the defect recurs or suggests a repeated mistake pattern
+- build/runtime evidence, logs, stack traces, or screenshots must be reconciled
+- the fix needs an auditable reproduction/rerun record
+
+For a small, obvious local correction, fix and validate directly. Do not create
+`.agent-state/neutralize-gate.json` merely because the user used the word "fix".
 
 ## Workflow
 
@@ -29,7 +41,7 @@ scan nearby code for the same mistake pattern.
 8. Write gate evidence file — `failure_observation`, `reproduction_command` or `reproduction_skipped_reason`, `rerun_command`, `rerun_exit_code`, `adjacent_searches`, `adjacent_findings`, `public_interface_changed`, `boundary_assessment`, `remaining_risk` → `.agent-state/neutralize-gate.json`.
 9. Run gate:
    ```bash
-   python3 ~/.claude/skills/Neutralize/scripts/verify_fix_gate.py
+   python3 <skill-dir>/scripts/verify_fix_gate.py
    ```
    blocked → 补证据后重跑。pass → 继续总结。
 
@@ -79,7 +91,7 @@ Small local fixes may stop at validation. Complex fixes, repeated mistake patter
 - Do not patch from the symptom alone. If reproduction is impractical, record the strongest available evidence and the reason reproduction was skipped.
 - Do not turn a bugfix into a broad refactor. Fix the minimum root cause first; adjacent cleanup is only allowed when it reduces the same failure pattern.
 - Do not claim validation from a narrow command when the changed behavior requires a broader build/test. State the validation scope and remaining risk explicitly.
-- If the same mistake appears in multiple places, either fix all confirmed instances or trigger `Codify`/Canon incident so the pattern is not lost.
+- If the same mistake appears in multiple places, either fix all confirmed instances or trigger `codify`/Canon incident so the pattern is not lost.
 
 ## Canon 输出边界
 

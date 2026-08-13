@@ -1,16 +1,20 @@
 ---
-name: Sanitize
+name: sanitize
 description: |
-  开发收尾工作流：每次完成一部分开发内容后，执行 git 提交/推送、更新 Canon
-  task page、并把长期项目/任务/决策/artifact 信息提升到 Canon。
-  当用户说"开发完成了"、"收尾"、"wrap up"、"完成这部分"、"提交并保存"、
-  "done with this"、"commit and save"时触发。跨 agent 通用，适配 Claude Code /
-  Codex / Kimi / Pi 等不同 runtime。
+  Two-mode completion workflow. Closeout mode scopes and publishes the current
+  task with git commit/push, updates the Canon task page, and promotes durable
+  decisions/artifacts. Trigger on "开发完成了", "收尾", "wrap up", "完成这部分",
+  "提交并保存", "done with this", or "commit and save". Report mode generates
+  a formal evidence-backed Markdown report for an entire completed task:
+  rationale, implementation, evaluation, outcome, and remaining work. Trigger
+  on "完整任务技术报告", "完成后的技术总结", "成果汇报", or "post-task report".
+  Report mode does not commit or push unless the user also requests closeout.
+  Cross-runtime: Claude Code, Codex, Kimi, and Pi.
 ---
 
-# Dev Wrapup
+# Completion Closeout
 
-完成开发后的一键收尾：提交代码、更新 Canon task page、把 durable context 推进 Canon。
+完成开发后的 scoped publish、Canon closeout，或 formal task report。
 
 Read the shared Canon contract before finalizing meaningful work:
 
@@ -18,7 +22,18 @@ Read the shared Canon contract before finalizing meaningful work:
 /home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
 ```
 
-## 核心流程
+## Mode Routing
+
+- **Closeout** — user asks to commit, push, save, or wrap up completed work.
+- **Report** — user asks for a formal end-to-end report on completed work. Read
+  `references/formal-report.md`; do not enter git mutation steps.
+- **Both** — user explicitly requests report plus closeout. Generate and gate the
+  report first, include it in the confirmed file scope, then publish and promote.
+
+A one-incident troubleshooting story belongs to after-action. One reusable
+wrong/correct/trigger guardrail belongs to codify.
+
+## Closeout Mode
 
 ```text
 1. 检查 git 状态
@@ -31,16 +46,48 @@ Read the shared Canon contract before finalizing meaningful work:
 8. 写入 Canon update card / artifact reference
 ```
 
+Reuse runtime-native review and Git capabilities:
+
+- Use the shared Review Gate only when equivalent evidence is not already
+  recorded by execute, tasking, repair, or traceback.
+- Use ordinary scoped Git for local commit/push.
+- If the requested outcome includes a GitHub PR, hand off publication to
+  `$github:yeet` instead of duplicating PR creation logic here.
+
+## Formal Report Mode
+
+Read `references/formal-report.md` completely, then:
+
+1. Resolve the completed Canon task page.
+2. Gather implementation and validation evidence from linked artifacts, commits,
+   tests, planning records, and the current repository.
+3. Write the 6-section Markdown report to the user-specified or repo-appropriate
+   artifact path.
+4. Run:
+
+   ```bash
+   python3 <skill-dir>/scripts/report_gate.py <report.md>
+   ```
+
+5. Record the report's absolute path and durable conclusions in the Canon task
+   page or an update card.
+
+If the task is still active, generate an interim report only when explicitly
+requested and label missing validation. Report mode alone never commits, pushes,
+or marks the task done.
+
 
 ## Workflow Gate Contract
 
-Sanitize is the final commit/push/Canon promotion gate and follows the shared workflow output contract:
+sanitize is the final commit/push/Canon promotion gate and follows the shared workflow output contract:
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
-It consumes prior implementation, validation, Review Gate, and Traceback evidence. It should not create new product behavior while trying to close the task.
+Closeout consumes prior implementation, validation, Review Gate, and traceback
+evidence. Report mode consumes the same evidence but does not publish code. Neither
+mode should create new product behavior while completing the task.
 
 ## Gotchas
 
@@ -83,7 +130,7 @@ It consumes prior implementation, validation, Review Gate, and Traceback evidenc
 /home/yhr/.agents/repos/agent-skills/references/review-gate.md
 ```
 
-如果当前 diff 已在 `Repair Fix`、`Tasking Engage` 或 `Execute` 中通过等价 Review Gate，可记录证据后跳过重复 review。否则用 Canon task page、当前 diff、验证摘要执行 review。
+如果当前 diff 已在 `repair Fix`、`tasking Engage` 或 `execute` 中通过等价 Review Gate，可记录证据后跳过重复 review。否则用 Canon task page、当前 diff、验证摘要执行 review。
 
 - 有 blocker：停止，不 commit、不 push。
 - 无 blocker：把 review 结果写入 task page § Findings / § Evidence / § Timeline，然后继续提交。
@@ -132,7 +179,7 @@ It consumes prior implementation, validation, Review Gate, and Traceback evidenc
 收尾完成跑 gate——验证 commit、push、Canon 更新都落地了：
 
 ```bash
-python3 ~/.claude/skills/Sanitize/scripts/wrapup_gate.py --task <canon-task-path> --repo <path>
+python3 <skill-dir>/scripts/wrapup_gate.py --task <canon-task-path> --repo <path>
 ```
 blocked → commit 缺失 / 未 push / Canon 未更新。pass → 收尾完成。
 
