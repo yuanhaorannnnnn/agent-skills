@@ -2,7 +2,7 @@
 
 ## Must Read Before Any Patch/Build/Benchmark
 
-SweepHer is automation. These are hard rules — not "suggestions." Violate any one → terminate the round.
+herdr-carla-tune is automation. These are hard rules — not "suggestions." Violate any one → terminate the round.
 
 ## Gate Scripts
 
@@ -10,10 +10,13 @@ Two gate scripts enforce pre-conditions programmatically:
 
 ```bash
 # Before loop start — repos, branches, baseline, controller
-python3 ~/.claude/skills/SweepHer/scripts/preflight_gate.py
+python3 <skill-dir>/scripts/preflight_gate.py \
+  --target-repo "$TARGET_REPO" --controller-repo "$CONTROLLER_REPO" \
+  --target-branch "$TARGET_BRANCH" --ctrl-branch "$CONTROLLER_BRANCH"
 
 # Before each round — worktree clean, state file valid, hypotheses remain
-python3 ~/.claude/skills/SweepHer/scripts/round_gate.py
+python3 <skill-dir>/scripts/round_gate.py \
+  --target-repo "$TARGET_REPO" --controller-repo "$CONTROLLER_REPO"
 ```
 
 Both return `pass` or `blocked`. **blocked → do not proceed.** Fix the listed failures before continuing.
@@ -53,9 +56,9 @@ Before loop start, verified by `preflight_gate.py`:
 
 ## Rollback Rules
 
-- **Discard/crash**: `git reset --hard HEAD~1` — revert ONLY the current hypothesis commit
+- **Discard/crash**: verify the current hypothesis commit, then `git revert --no-edit <hypothesis-commit>`
 - **Keep**: baseline updated, no revert. Commit stays.
-- Never reset past commits that don't belong to the current hypothesis
+- Never revert commits that don't belong to the current hypothesis
 - If unsure which commit to revert: stop the loop, report to user
 
 ## User Interruption
