@@ -106,20 +106,20 @@ Update on every save:
 
 ### Workflow skills — write task pages
 
-`Sanitize`, `Execute --plan`, `Tasking`, and `Repair` resolve the task page and apply the action-layer merge rules for their sections. Ad-hoc work updates the resolved Canon task page directly using the same contract.
+`sanitize`, `execute --plan`, `tasking`, and `repair` resolve the task page and apply the action-layer merge rules for their sections. Ad-hoc work updates the resolved Canon task page directly using the same contract.
 
-### Passdown — attaches hot context
+### passdown — attaches hot context
 
-Resume from the resolved Canon task page, surface the stable summary and first incomplete task, then invoke Passdown when hot runtime context is needed.
+Resume from the resolved Canon task page, surface the stable summary and first incomplete task, then invoke passdown when hot runtime context is needed.
 
-## Runtime-Neutral Passdown
+## Runtime-Neutral passdown
 
-Skills that need hot session context should call Passdown in a runtime-neutral way:
+Skills that need hot session context should call passdown in a runtime-neutral way:
 
 ```text
-Invoke the Passdown skill with --focus matching the task title.
-The Passdown skill auto-detects the source runtime from available session
+Invoke the passdown skill with --focus matching the task title.
+The passdown skill auto-detects the source runtime from available session
 JSONL files (Claude Code, Codex, Pi) and extracts the most relevant turns.
 ```
 
-Do not hardcode `--former claude` or a specific runtime path. Passdown's extractor discovers available sessions across runtimes.
+Do not hardcode `--former claude` or a specific runtime path. passdown's extractor discovers available sessions across runtimes.

@@ -25,9 +25,14 @@ For each mode or phase, define these surfaces:
 | State change | Which local state fields or external workflow statuses may be changed? |
 | Gate file | Which file proves the phase is ready for the next phase? |
 | Canon update | Which task/update-card/artifact refs must be written for durable state? |
-| Review/verification | Which validation, monitored validation task, Traceback, or Review Gate result proves the work is safe to hand off? |
+| Review/verification | Which validation, monitored validation task, traceback, or Review Gate result proves the work is safe to hand off? |
 
 If a mode does not change state, say so. If a mode cannot update Canon, record the reason in the final response and keep repo-local artifacts as temporary evidence.
+
+Commands inside a skill should resolve self-owned scripts through `<skill-dir>`
+and sibling skills through `<skills-root>`. Absolute installed-runtime roots are
+allowed only for external service configuration that cannot know the loaded
+skill path.
 
 ## Workflow Spine
 
@@ -38,11 +43,11 @@ Plan/Fix brief
   -> implementation
   -> local or monitored validation
   -> Review Gate
-  -> Traceback when a design/fix plan exists
-  -> Sanitize or workflow-specific closeout
+  -> traceback when a design/fix plan exists
+  -> sanitize or workflow-specific closeout
 ```
 
-`Repair Closeout` and `Tasking Turnover` are external handoff phases. They must not start new builds. They consume validation and review evidence produced earlier.
+`repair Closeout` and `tasking Turnover` are external handoff phases. They must not start new builds. They consume validation and review evidence produced earlier.
 
 ## Canon Task Fields
 
@@ -81,7 +86,7 @@ Evidence: review command, reviewer/runtime, validation artifacts, validation tas
 Timeline: review_passed | review_blocked | review_skipped
 ```
 
-Do not proceed to commit, Closeout, Turnover, or Sanitize when Review Gate is blocked unless the user explicitly waives the blocker.
+Do not proceed to commit, Closeout, Turnover, or sanitize when Review Gate is blocked unless the user explicitly waives the blocker.
 
 ## Handoff Rule
 
@@ -93,9 +98,16 @@ A downstream agent should be able to resume from only:
 
 If that is not true, the workflow output is incomplete.
 
+## Telemetry
+
+After a mode reaches its final local verdict, emit one event using the shared
+contract in `references/skill-telemetry.md`. Use `trigger=workflow` when called by
+another skill. Telemetry does not replace gate files or Canon evidence and must
+not contain task content.
+
 ## Gotchas
 
 - Do not treat runtime scratchpads (`.proposal`, `.planning`, `.agent-state`) as durable source of truth. They are execution buffers; Canon owns long-term state.
 - Do not mutate external systems by display name when the API requires IDs. Resolve Yunxiao status/user IDs first.
 - Do not claim a phase advanced unless its gate file and Canon evidence both reflect the transition.
-- Do not run Review Gate after Sanitize/Closeout as a formality. It must run before irreversible handoff or commit.
+- Do not run Review Gate after sanitize/Closeout as a formality. It must run before irreversible handoff or commit.

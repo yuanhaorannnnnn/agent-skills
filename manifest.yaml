@@ -2,38 +2,32 @@ repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
-- name: Codify
+- name: codify
   enabled: true
   category: workflow
   invocation: model
   role: discipline
   calls: []
-- name: Neutralize
+- name: neutralize
   enabled: true
   category: debugging
   invocation: model
   role: discipline
   calls:
-  - Codify
-- name: FieldReport
-  enabled: true
-  category: reporting
-  invocation: model
-  role: renderer
-  calls: []
+  - codify
 - name: SITREP
-  enabled: true
+  enabled: false
   category: reporting
   invocation: user
   role: renderer
   calls: []
-- name: Acquisition
+- name: acquisition
   enabled: true
   category: media
   invocation: user
   role: adapter
   calls: []
-- name: SweepHer
+- name: herdr-carla-tune
   enabled: true
   category: automation
   invocation: user
@@ -53,76 +47,76 @@ skills:
   role: orchestrator
   calls:
   - herdr
-- name: GoNogo
+- name: go-nogo
   enabled: true
   category: meta
   invocation: model
   role: discipline
   calls: []
-- name: Sanitize
+- name: sanitize
   enabled: true
   category: workflow
   invocation: user
   role: orchestrator
   calls: []
-- name: CONOPS
+- name: conops
   enabled: true
   category: workflow
   invocation: model
   role: renderer
   calls: []
-- name: Passdown
+- name: passdown
   enabled: true
   category: workflow
   invocation: user
   role: adapter
   calls: []
-- name: Cover
+- name: cover
   enabled: true
   category: design
   invocation: user
   role: renderer
   calls: []
-- name: AfterAction
+- name: after-action
   enabled: true
   category: workflow
   invocation: model
   role: renderer
   calls:
-  - Breach
-  - Codify
-- name: Breach
+  - breach
+  - codify
+- name: breach
   enabled: true
   category: design
   invocation: model
   role: renderer
   calls: []
-- name: Traceback
+- name: traceback
   enabled: true
   category: review
   invocation: model
   role: discipline
   calls: []
-- name: Tasking
+- name: tasking
   enabled: true
   category: workflow
   invocation: user
   role: orchestrator
   calls:
-  - CONOPS
-  - Execute
-  - Traceback
-- name: Repair
+  - conops
+  - execute
+  - traceback
+- name: repair
   enabled: true
   category: workflow
   invocation: user
   role: orchestrator
   calls:
-  - Breach
-  - Neutralize
-  - Codify
-  - AfterAction
-- name: Execute
+  - breach
+  - neutralize
+  - codify
+  - after-action
+- name: execute
   enabled: true
   category: workflow
   invocation: model

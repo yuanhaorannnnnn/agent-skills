@@ -12,10 +12,10 @@ Read with the workflow output contract:
 
 Run Review Gate when a workflow has produced code or a technical artifact that will be delivered:
 
-- `Repair Fix`: after fix + monitored/local validation, before Closeout.
-- `Tasking Engage`: after implementation, before Traceback/Sanitize.
-- `Execute`: after the goal is implemented, before Traceback/Sanitize.
-- `Sanitize`: before commit/push, unless an equivalent review gate already passed for the same diff.
+- `repair Fix`: after fix + monitored/local validation, before Closeout.
+- `tasking Engage`: after implementation, before traceback/sanitize.
+- `execute`: after the goal is implemented, before traceback/sanitize.
+- `sanitize`: before commit/push, unless an equivalent review gate already passed for the same diff.
 
 For proposal/report-only work, use a lighter review focused on assumptions, evidence, and missing risks.
 
@@ -24,15 +24,15 @@ For proposal/report-only work, use a lighter review focused on assumptions, evid
 Review Gate sits after implementation and local validation, before irreversible handoff:
 
 ```text
-Plan/Fix brief -> implementation -> validation/monitoring -> Review Gate -> Traceback when applicable -> Sanitize/Closeout/Turnover
+Plan/Fix brief -> implementation -> validation/monitoring -> Review Gate -> traceback when applicable -> sanitize/Closeout/Turnover
 ```
 
-- `Execute` and `Tasking Engage`: Review Gate runs before Traceback/Sanitize.
-- `Repair Fix`: Review Gate runs before commit/push and before Closeout.
-- `Sanitize`: consumes prior Review Gate evidence or runs the gate before commit/push.
+- `execute` and `tasking Engage`: Review Gate runs before traceback/sanitize.
+- `repair Fix`: Review Gate runs before commit/push and before Closeout.
+- `sanitize`: consumes prior Review Gate evidence or runs the gate before commit/push.
 - `Closeout`/`Turnover`: do not run new builds; they consume prior validation and Review Gate evidence.
 
-If no design doc, fix plan, acceptance checklist, or public contract exists, Traceback may be skipped, but the skip reason must be recorded in Canon.
+If no design doc, fix plan, acceptance checklist, or public contract exists, traceback may be skipped, but the skip reason must be recorded in Canon.
 
 ## Inputs
 
@@ -99,4 +99,4 @@ Write review results to the task page:
 - `## Evidence`: review runtime, exact command (`/codex:review`, `/codex:adversarial-review`, or `/review`), result/job id or summary, linked update card, validation evidence. If fallback was used, record `Codex review: not used` and the reason.
 - `## Timeline`: material state change such as `review_passed`, `review_blocked`, or `review_skipped`.
 
-If the review blocks delivery, do not proceed to Sanitize, Closeout, or Turnover until blockers are fixed or explicitly waived by the user.
+If the review blocks delivery, do not proceed to sanitize, Closeout, or Turnover until blockers are fixed or explicitly waived by the user.

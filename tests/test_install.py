@@ -9,7 +9,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALL_SCRIPT = REPO_ROOT / "scripts" / "install.sh"
 SKILLS_DIR = REPO_ROOT / "skills"
-MANIFEST_PATH = REPO_ROOT / "manifest.yaml"
 RUNTIME_DIRS = [
     (".agents", "skills"),
     (".claude", "skills"),
@@ -17,8 +16,12 @@ RUNTIME_DIRS = [
 
 
 class InstallScriptTests(unittest.TestCase):
-    def _run_install(self, home: Path) -> subprocess.CompletedProcess:
+    def _run_install(
+        self, home: Path, manifest: Path | None = None
+    ) -> subprocess.CompletedProcess:
         env = {**os.environ, "HOME": str(home)}
+        if manifest is not None:
+            env["AGENT_SKILLS_MANIFEST"] = str(manifest)
         return subprocess.run(
             ["bash", str(INSTALL_SCRIPT)],
             cwd=REPO_ROOT,
@@ -36,9 +39,11 @@ class InstallScriptTests(unittest.TestCase):
             for runtime_parts in RUNTIME_DIRS:
                 runtime = home.joinpath(*runtime_parts)
                 # Enabled skills from manifest should be linked
-                self.assertTrue((runtime / "Codify").is_symlink())
-                self.assertTrue((runtime / "Neutralize").is_symlink())
-                self.assertTrue((runtime / "Execute").is_symlink())
+                self.assertTrue((runtime / "codify").is_symlink())
+                self.assertTrue((runtime / "neutralize").is_symlink())
+                self.assertTrue((runtime / "execute").is_symlink())
+                self.assertTrue((runtime / "herdr-carla-tune").is_symlink())
+                self.assertFalse((runtime / "SweepHer").exists())
                 self.assertTrue((runtime / ".scripts").is_symlink())
 
     def test_install_does_not_touch_foreign_links(self) -> None:
@@ -57,32 +62,29 @@ class InstallScriptTests(unittest.TestCase):
             self.assertEqual(os.readlink(foreign_link), "/some/other/path")
 
     def test_install_skips_disabled_skills(self) -> None:
-        original_manifest = MANIFEST_PATH.read_text()
-        try:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            manifest_path = tmp_path / "manifest.yaml"
             manifest_content = """\
 repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
-  - name: Codify
+  - name: codify
     enabled: false
     category: workflow
-  - name: Neutralize
+  - name: neutralize
     enabled: true
     category: workflow
 """
-            MANIFEST_PATH.write_text(manifest_content)
-
-            with tempfile.TemporaryDirectory() as tmp:
-                home = Path(tmp)
-                result = self._run_install(home)
-                self.assertEqual(result.returncode, 0, result.stderr)
-                for runtime_parts in RUNTIME_DIRS:
-                    runtime = home.joinpath(*runtime_parts)
-                    self.assertFalse((runtime / "Codify").exists())
-                    self.assertTrue((runtime / "Neutralize").is_symlink())
-        finally:
-            MANIFEST_PATH.write_text(original_manifest)
+            manifest_path.write_text(manifest_content)
+            home = tmp_path / "home"
+            result = self._run_install(home, manifest_path)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for runtime_parts in RUNTIME_DIRS:
+                runtime = home.joinpath(*runtime_parts)
+                self.assertFalse((runtime / "codify").exists())
+                self.assertTrue((runtime / "neutralize").is_symlink())
 
 
 if __name__ == "__main__":

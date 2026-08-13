@@ -13,7 +13,7 @@ Patterns: `fan-out-and-synthesize`, `adversarial-verification`, `loop-until-done
 ## Session Mining To Rules
 
 ```text
-Mine recent agent sessions for repeated corrections. Cluster candidates, verify whether each would have prevented a real mistake, then Codify only the survivors.
+Mine recent agent sessions for repeated corrections. Cluster candidates, verify whether each would have prevented a real mistake, then codify only the survivors.
 ```
 
 Patterns: `fan-out-and-synthesize`, `generate-and-filter`, `adversarial-verification`.
@@ -26,7 +26,7 @@ Extract every technical claim from this draft. Verify each claim against the cod
 
 Patterns: `fan-out-and-synthesize`, `adversarial-verification`.
 
-## Repair Root Cause
+## repair Root Cause
 
 ```text
 For this Yunxiao bug, split investigation into logs, code path, recent changes, and known incidents. Synthesize root-cause hypotheses, then have a verifier challenge the top hypothesis before patching.
@@ -34,7 +34,7 @@ For this Yunxiao bug, split investigation into logs, code path, recent changes, 
 
 Patterns: `fan-out-and-synthesize`, `adversarial-verification`.
 
-## Breach Provenance QA
+## breach Provenance QA
 
 ```text
 Generate the page, then verify that layout comes from html-effectiveness, style comes from DESIGN.md, and the footer/comment expose layout_name, style_name, and exact hidden paths.

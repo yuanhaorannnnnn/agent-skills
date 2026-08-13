@@ -3,11 +3,11 @@
 Kimi Code hooks handler — reminder-only mode.
 
 Reminds the user to update the current Canon task page directly and use
-Passdown for hot runtime context.
+passdown for hot runtime context.
 
 Supported events:
   - PreCompact:   remind user to update Canon before context is lost
-  - SessionStart: remind user to resume from Canon and optionally use Passdown
+  - SessionStart: remind user to resume from Canon and optionally use passdown
   - SessionEnd:   remind user to update Canon before leaving
 
 Install in ~/.kimi/config.toml:
@@ -62,7 +62,7 @@ def handle_session_start(cwd: Path) -> None:
     task_hint = resolve_task_page(cwd)
     print_reminder(
         f"\n[会话已启动] 如需恢复之前的上下文：\n"
-        f"   先读取 Canon task page；需要热上下文时调用 Passdown\n"
+        f"   先读取 Canon task page；需要热上下文时调用 passdown\n"
         f"   → {task_hint}\n"
     )
 
