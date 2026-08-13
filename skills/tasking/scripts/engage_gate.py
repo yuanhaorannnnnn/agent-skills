@@ -61,7 +61,7 @@ def check_traceback(repo, demand_id):
     repo = Path(repo).resolve()
     gate_script = (
         Path(__file__).resolve().parents[2]
-        / "Traceback"
+        / "traceback"
         / "scripts"
         / "traceback_gate.py"
     )

@@ -1,0 +1,23 @@
+{
+  "skill_name": "Codify",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "刚才因为直接运行 git add .，把同事未完成的文件一起提交了。把这个错误记成以后可复用的规则。",
+      "expected_output": "生成一条包含具体触发条件、正确动作和可检查结果的 guardrail；不展开完整事故叙事。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我刚才把一个局部变量拼错了一次。把它永久写成一条全局规则。",
+      "expected_output": "拒绝把一次性 typo 提升为长期规则；说明它缺少 consequential、non-obvious、可复用价值。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "记录一下这个持续三天的构建故障是怎么一步步修好的，包括失败尝试和最终根因。",
+      "expected_output": "不使用 Codify 写单条规则；把事故叙事路由到 AfterAction。",
+      "files": []
+    }
+  ]
+}

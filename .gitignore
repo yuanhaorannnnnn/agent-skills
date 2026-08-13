@@ -6,3 +6,9 @@ __pycache__/
 node_modules/
 *.log
 *.tgz
+
+# Runtime scratch dirs
+.eval/
+.planning/
+.proposal/
+skills/.idea/
