@@ -42,7 +42,7 @@ def source_dirs_from_args(args) -> list[str]:
 
 
 def runtimes_from_args(args) -> list[str]:
-    return parse_csv(args.former or args.source, ["codex", "pi", "claude"])
+    return parse_csv(args.former or args.source, ["codex", "pi", "claude", "dsh"])
 
 
 def open_collection(create: bool = False):
@@ -65,6 +65,7 @@ def discover_sessions(source_dirs: list[str], runtimes: list[str]) -> list[dict]
         "codex": eh.find_codex_candidates,
         "pi": eh.find_pi_candidates,
         "claude": eh.find_claude_candidates,
+        "dsh": eh.find_dsh_candidates,
     }
     seen: set[tuple[str, str, str]] = set()
     sessions: list[dict] = []
@@ -114,7 +115,7 @@ def build_index(args) -> int:
     index_path.parent.mkdir(parents=True, exist_ok=True)
     collection = open_collection(create=not index_path.exists())
 
-    parsers = {"codex": eh.parse_codex, "pi": eh.parse_pi, "claude": eh.parse_claude}
+    parsers = {"codex": eh.parse_codex, "pi": eh.parse_pi, "claude": eh.parse_claude, "dsh": eh.parse_dsh}
     sidecar = index_path / "metadata.jsonl"
     total_chunks = 0
     skipped_files = 0
@@ -210,7 +211,7 @@ def query_index(args) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build/query Passdown zvec candidate index")
-    parser.add_argument("--former", action="append", help="Source agent(s): codex,pi,claude. Repeatable/comma-separated.")
+    parser.add_argument("--former", action="append", help="Source agent(s): codex,pi,claude,dsh. Repeatable/comma-separated.")
     parser.add_argument("--source", action="append", help="Alias for --former")
     parser.add_argument("--cwd", action="append", help="Source working directory. Repeatable/comma-separated.")
     parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")

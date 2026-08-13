@@ -1,21 +1,22 @@
 ---
-name: Passdown
+name: passdown
 description: |
   Transfer context from another coding agent session into the current session.
-  Auto-detects runtime (Codex/Pi/Claude Code). Defaults to current directory —
+  Auto-detects runtime (Codex/Pi/Claude Code/DSH). Defaults to current directory —
   no parameters needed for same-repo handoff. Multi-runtime sessions merged by
   recency with focus filtering and deduplication.
 
   Trigger on: "agent handoff", "handoff", "接手上下文", "agent交接",
   "上下文切换", "attach session", "继续上一个agent的对话",
-  "上次在这个目录做了什么".
+  "上次在这个目录做了什么". Also use after starting a fresh conversation
+  to continue a focused thread without resuming the full old transcript.
 ---
 
 # Agent Handoff
 
 Like tmux attach for coding agents. Read a previous agent's raw JSONL session log, extract the essential user/assistant conversation, and inject it into the current context.
 
-Passdown transfers context, not workspace ownership. For durable context and artifacts, follow the shared Canon contract:
+passdown transfers context, not workspace ownership. For durable context and artifacts, follow the shared Canon contract:
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
@@ -27,7 +28,7 @@ Transfer the conversation and relationship map, not the implementation files. Th
 
 ## Modes
 
-`--former` is optional. When omitted, auto-detects sessions from all three runtimes (Codex + Pi + Claude Code) and merges by recency.
+`--former` is optional. When omitted, auto-detects sessions from all four runtimes (Codex + Pi + Claude Code + DSH) and merges by recency.
 
 `--dir` defaults to current working directory when not specified.
 
@@ -38,6 +39,24 @@ python3 <skill-dir>/scripts/extract_handoff.py --focus "<topic>" --json
 ```
 
 Auto-detect runtime, default to current cwd.
+
+### Fresh-conversation rollover handoff
+
+Start a fresh conversation in the same workspace, then invoke passdown with the
+source runtime and focus. Rollover is the caller's conversation-lifecycle
+action; passdown only performs the handoff.
+
+```text
+/passdown --former codex --focus "<current topic>"
+```
+
+```bash
+python3 <skill-dir>/scripts/extract_handoff.py \
+  --former codex --focus "<current topic>" --json
+```
+
+The default 8000-token budget requires no new argument. Use
+`--max-tokens 4000` for a more aggressive handoff.
 
 ### Cross-directory handoff
 
@@ -72,7 +91,7 @@ zvec is integrated as a candidate retriever only. It changes how matching sessio
 # Build/rebuild the local zvec index for the current workspace
 python3 <skill-dir>/scripts/zvec_index.py --dir "$PWD" --rebuild
 
-# Query through Passdown. auto uses zvec for focused queries when available,
+# Query through passdown. auto uses zvec for focused queries when available,
 # then falls back to the legacy keyword/mtime retriever.
 python3 <skill-dir>/scripts/extract_handoff.py --dir "$PWD" --focus "<topic>" --retriever auto --json
 
@@ -90,10 +109,12 @@ python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --
 
 ## Parameters
 
-- `--former <codex|pi|claude,...>` — optional, comma-separated. Auto-detect from all three runtimes if omitted. Multi-runtime matches sorted by mtime desc.
+- `--former <codex|pi|claude|dsh,...>` — optional, comma-separated. Auto-detect from all four runtimes if omitted. Multi-runtime matches sorted by mtime desc.
 - `--dir <path>` — optional, repeatable. Accepts multiple paths via `--dir /a --dir /b` or `--dir /a,/b`. Defaults to current working directory.
 - `--file <path>` — direct session JSONL path; bypass discovery.
+- `--session <id>` — select one source session by UUID or filename stem.
 - `--focus "<topic>"` — find ALL matching sessions across runtimes. Extracts and deduplicates turns from every session with a non-zero focus score.
+- `--max-tokens <n>` — hard cap for returned turns. Defaults to 8000 estimated tokens.
 - `--retriever <auto|keyword|zvec>` — candidate retrieval mode. `auto` uses zvec for focused queries when an index exists, then falls back to keyword/mtime; `zvec` is strict; `keyword` preserves legacy behavior.
 
 ## Non-Negotiable Constraints
@@ -101,7 +122,7 @@ python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --
 - **Read-only on source side.** Never write to another agent's session storage.
 - **Artifacts by reference.** In cross-directory handoff, artifacts remain owned by the source workspace. Use absolute paths. Do not copy `.planning`, `.proposal`, `.research`, `.agent-state`, build outputs, logs, images, tarballs, or reports unless the user explicitly asks for a portable bundle.
 - **Filter aggressively.** Keep only user messages and assistant core replies. Drop tool call arguments, tool results, system/developer prompts, guardian/judge subflows, token logs, and raw system dumps.
-- **Respect token budget.** Cap the extracted conversation at ~8000 words. Prefer recent turns and focus-relevant turns when truncating.
+- **Respect token budget.** Enforce the extractor's hard token budget. Prefer recent turns, initial context, focus hits, explicit decisions, and next steps.
 - **Always show what you learned.** Present source agent, source cwd, current cwd, session file, candidate count, turn count, token estimate, key decisions, artifacts, pending work, and next step.
 
 ## Workflow
@@ -113,8 +134,8 @@ If user gives another directory, use it as the source workspace even if the curr
 Examples:
 
 ```text
-/Passdown --former claude --dir /media/yhr/2T/CarlaUE5 --focus "JHBN-7679"
-/Passdown --former codex --dir /home/yhr/.agents/repos/agent-skills --focus "Canon migration"
+/passdown --former claude --dir /media/yhr/2T/CarlaUE5 --focus "JHBN-7679"
+/passdown --former codex --dir /home/yhr/.agents/repos/agent-skills --focus "Canon migration"
 ```
 
 ### Step 2: Run extractor
@@ -130,6 +151,7 @@ If the extractor returns `No session found`, manually locate the session:
 - **Claude Code**: `ls ~/.claude/projects/-<slug>/*.jsonl`, where slug replaces `/` and `_` with `-`.
 - **Codex**: `find ~/.codex/sessions -name "*.jsonl" | sort` then inspect cwd/focus.
 - **Pi**: `ls -t ~/.pi/agent/sessions/--<cwd-with-dashes>--/`.
+- **DSH**: `ls -t ~/.dsh/sessions/--<cwd-with-dashes>--/`; each subdirectory is a session id holding `session.jsonl.zstd`.
 
 Then rerun with `--file`.
 
@@ -141,10 +163,12 @@ The extractor handles:
 - Codex direct mode fallback
 - Pi message JSONL
 - Claude Code project JSONL
+- DSH zstd-compressed session JSONL
 - focus-ranked candidate selection
 - optional zvec-backed candidate retrieval for focused queries
 
-When compressing manually, keep:
+The extractor enforces `--max-tokens` before returning JSON. When compressing
+the selected turns into the final handoff, keep:
 
 1. first 1-2 turns for initial context
 2. last 3 turns for current state
@@ -207,8 +231,10 @@ Promote stable facts into Canon task/project/decision/pattern/incident pages onl
 
 ## Agent-Specific Quirks
 
+- **Fresh conversation**: use passdown from the new conversation; do not `resume` or `fork` the old transcript when reducing conversation context.
 - **Codex guardian-wrapped sessions**: The real conversation is often in `>>> TRANSCRIPT` blocks inside `user_message` / `input_text`, not assistant `output_text`.
 - **Codex sessions are per-rollout**: Multiple JSONL files may exist per day. Use cwd first, then focus score, then recency.
 - **Pi**: Sessions are keyed by working directory. If multiple sessions exist, focus score ranks them before recency.
+- **DSH**: Sessions are zstd-compressed (`session.jsonl.zstd` under `~/.dsh/sessions/<slug>/<session-id>/`) and keyed by working directory + session id. User turns come from `user/message` events with `source.kind == "user"`; plugin/instruction injections are dropped, as are `reasoning` content blocks.
 - **Claude Code slug**: Project directory slug replaces both `/` and `_` with `-`.
-- **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi are valid. The source session JSONL may still be live; read only.
+- **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi, DSH→DSH are valid. The source session JSONL may still be live; read only.

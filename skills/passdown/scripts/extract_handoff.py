@@ -18,9 +18,25 @@ import json
 import math
 import os
 import re
+import subprocess
 import sys
 import warnings
 from pathlib import Path
+
+
+DEFAULT_MAX_TOKENS = 8_000
+DECISION_MARKERS = (
+    "决定", "结论", "批准", "拒绝", "保留", "删除", "下一步", "未完成",
+    "decision", "approved", "rejected", "keep", "remove", "next step",
+    "pending", "must", "do not",
+)
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed
 
 
 def slugify_claude(cwd: str) -> str:
@@ -39,10 +55,52 @@ def estimate_tokens(text: str) -> int:
     return max(1, len(text) // 3)
 
 
+def truncate_text(text: str, max_tokens: int) -> str:
+    """Keep the beginning and end of an oversized turn within a hard budget."""
+    if estimate_tokens(text) <= max_tokens:
+        return text
+    max_chars = max_tokens * 3
+    marker = "\n...[turn truncated to handoff budget]...\n"
+    if max_chars <= len(marker) + 2:
+        return text[:max_chars]
+    body_chars = max_chars - len(marker)
+    head_chars = body_chars // 2
+    tail_chars = body_chars - head_chars
+    return text[:head_chars].rstrip() + marker + text[-tail_chars:].lstrip()
+
+
 def _focus_terms(focus: str | None) -> list[str]:
     if not focus:
         return []
     return [t.lower() for t in re.split(r"\s+", focus.strip()) if t.strip()]
+
+
+def _decompress_zstd(path: Path) -> str | None:
+    """Decompress a .zstd session file, preferring the zstandard module and
+    falling back to the zstd CLI. Returns None when neither is available."""
+    try:
+        import zstandard  # type: ignore
+
+        with open(path, "rb") as f:
+            reader = zstandard.ZstdDecompressor().stream_reader(f)
+            try:
+                return reader.read().decode("utf-8", errors="ignore")
+            finally:
+                reader.close()
+    except Exception:
+        pass
+    try:
+        result = subprocess.run(
+            ["zstd", "-dc", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            return result.stdout
+    except Exception:
+        pass
+    return None
 
 
 def focus_score(path: Path, focus: str | None) -> int:
@@ -51,12 +109,22 @@ def focus_score(path: Path, focus: str | None) -> int:
     Reads the entire file in chunks to avoid missing focus terms in the
     middle of long sessions. This is intentionally scalar — the file must
     be read eventually for extraction, so the marginal cost is low.
+    zstd-compressed sessions are decompressed first (the raw bytes would
+    never match focus terms).
     """
     terms = _focus_terms(focus)
     if not terms:
         return 0
     score = 0
     try:
+        if str(path).endswith(".zstd"):
+            data = _decompress_zstd(path)
+            if data is None:
+                return 0
+            lowered = data.lower()
+            for term in terms:
+                score += lowered.count(term) * max(1, len(term))
+            return score
         with open(path, "rb") as f:
             chunk = f.read(1_000_000)
             while chunk:
@@ -87,6 +155,103 @@ def token_features(text: str) -> list[str]:
     for word in re.findall(r"[a-z0-9_./:-]{4,}", lowered):
         feats.extend(word[i:i + 4] for i in range(len(word) - 3))
     return feats
+
+
+def turn_focus_score(text: str, focus: str | None) -> int:
+    """Score turn relevance with the same multilingual features used by zvec."""
+    if not focus:
+        return 0
+    query_features = set(token_features(focus))
+    if not query_features:
+        return 0
+    return len(query_features.intersection(token_features(text)))
+
+
+def decision_score(text: str) -> int:
+    lowered = text.lower()
+    return sum(marker in lowered for marker in DECISION_MARKERS)
+
+
+def budget_turns(
+    turns: list[dict], focus: str | None, max_tokens: int
+) -> tuple[list[dict], dict]:
+    """Select a compact chronological handoff while enforcing max_tokens.
+
+    Priority is current state, initial context, focus hits, explicit
+    decisions/next steps, then the remaining recent turns.
+    """
+    original_tokens = sum(estimate_tokens(turn["text"]) for turn in turns)
+    base_stats = {
+        "max_tokens": max_tokens,
+        "source_turns": len(turns),
+        "source_estimated_tokens": original_tokens,
+    }
+    if original_tokens <= max_tokens:
+        selected = [dict(turn) for turn in turns]
+        return selected, {
+            **base_stats,
+            "budget_applied": False,
+            "dropped_turns": 0,
+            "truncated_turns": 0,
+        }
+
+    count = len(turns)
+    recent = list(range(max(0, count - 3), count))[::-1]
+    initial = list(range(min(2, count)))
+
+    focus_scores = [
+        (turn_focus_score(turn["text"], focus), index)
+        for index, turn in enumerate(turns)
+    ]
+    focused = [
+        index
+        for score, index in sorted(
+            focus_scores, key=lambda item: (item[0], item[1]), reverse=True
+        )
+        if score > 0
+    ]
+
+    decision_scores = [
+        (decision_score(turn["text"]), index)
+        for index, turn in enumerate(turns)
+    ]
+    decisions = [
+        index
+        for score, index in sorted(
+            decision_scores, key=lambda item: (item[0], item[1]), reverse=True
+        )
+        if score > 0
+    ]
+    priority = recent + initial + focused + decisions + list(range(count - 1, -1, -1))
+
+    per_turn_budget = max(16, min(1_200, max_tokens // 8))
+    remaining = max_tokens
+    selected_by_index: dict[int, dict] = {}
+    for index in priority:
+        if index in selected_by_index or remaining <= 0:
+            continue
+        turn_budget = min(per_turn_budget, remaining)
+        original = turns[index]
+        clipped_text = truncate_text(original["text"], turn_budget)
+        candidate = dict(original)
+        candidate["text"] = clipped_text
+        if clipped_text != original["text"]:
+            candidate["text_truncated"] = True
+        cost = estimate_tokens(clipped_text)
+        if cost > remaining:
+            continue
+        selected_by_index[index] = candidate
+        remaining -= cost
+
+    selected = [selected_by_index[index] for index in sorted(selected_by_index)]
+    return selected, {
+        **base_stats,
+        "budget_applied": True,
+        "dropped_turns": count - len(selected),
+        "truncated_turns": sum(
+            bool(turn.get("text_truncated")) for turn in selected
+        ),
+    }
 
 
 def embed_text(text: str) -> list[float]:
@@ -147,6 +312,8 @@ def _metadata_matches_sources(meta: dict, source_dirs: list[str]) -> bool:
         return any(path.parent.name == slugify_claude(src) for src in source_dirs)
     if runtime == "pi":
         return any(path.parent.name == slugify_pi(src) for src in source_dirs)
+    if runtime == "dsh":
+        return any(path.parent.parent.name == slugify_dsh(src) for src in source_dirs)
     if runtime == "codex":
         cwd = _codex_session_cwd(path)
         return bool(cwd) and any(_cwd_matches(cwd, src) for src in source_dirs)
@@ -634,6 +801,104 @@ def parse_claude(path: Path) -> dict:
     }
 
 
+# ── DSH (DeepSeek Harness) ─────────────────────────────────────────────────
+
+def slugify_dsh(cwd: str) -> str:
+    """DSH cwd encoding: same --wrap-- convention as Pi."""
+    return slugify_pi(cwd)
+
+
+def find_dsh_candidates(cwd: str, focus: str | None = None) -> list[dict]:
+    """Find DSH session candidates for the given source cwd.
+
+    Sessions live at ~/.dsh/sessions/<slug>/<session-id>/session.jsonl.zstd —
+    zstd-compressed JSONL, keyed by session-id directories.
+    """
+    slug = slugify_dsh(cwd)
+    sessions_dir = Path.home() / ".dsh" / "sessions" / slug
+    if not sessions_dir.is_dir():
+        return []
+    candidates = []
+    for session_dir in sessions_dir.iterdir():
+        if not session_dir.is_dir():
+            continue
+        jsonl = session_dir / "session.jsonl.zstd"
+        if not jsonl.is_file():
+            continue
+        candidates.append({
+            "path": jsonl,
+            "session_id": session_dir.name,
+            "focus_score": focus_score(jsonl, focus),
+            "mtime": _mtime(jsonl),
+        })
+    candidates.sort(key=lambda x: (x["focus_score"], x["mtime"]), reverse=True)
+    return candidates
+
+
+def find_dsh_session(cwd: str, focus: str | None = None) -> Path | None:
+    candidates = find_dsh_candidates(cwd, focus)
+    return candidates[0]["path"] if candidates else None
+
+
+def parse_dsh(path: Path) -> dict:
+    """Parse a DSH session JSONL (zstd-compressed).
+
+    User turns come from user/message events with source.kind == "user";
+    plugin and agent-instructions injections (policy notices, injected
+    instructions) are dropped. Assistant turns come from assistant/message
+    events; reasoning blocks are dropped, only text blocks are kept.
+    Turns are ordered by event seq.
+    """
+    text = _decompress_zstd(path)
+    if text is None:
+        return {"mode": "dsh", "total_lines": 0, "turns": []}
+
+    sequenced: list[tuple[int, dict]] = []
+    for line in text.splitlines():
+        try:
+            d = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        seq = d.get("seq", 0)
+        etype = d.get("type", "")
+        data = d.get("data") or {}
+
+        if etype == "user/message":
+            if data.get("role") != "user":
+                continue
+            if (data.get("source") or {}).get("kind") != "user":
+                continue
+            texts = [
+                block.get("text", "")
+                for block in (data.get("content") or [])
+                if isinstance(block, dict) and block.get("type") == "text"
+            ]
+        elif etype == "assistant/message":
+            message = data.get("message") or {}
+            if message.get("role") != "assistant":
+                continue
+            texts = [
+                block.get("text", "")
+                for block in (message.get("content") or [])
+                if isinstance(block, dict) and block.get("type") == "text"
+            ]
+        else:
+            continue
+
+        joined = "\n".join(t for t in texts if t).strip()
+        if not joined:
+            continue
+        role = "user" if etype == "user/message" else "assistant"
+        sequenced.append((seq, {"role": role, "text": joined}))
+
+    sequenced.sort(key=lambda item: item[0])
+    return {
+        "mode": "dsh",
+        "total_lines": len(text.splitlines()),
+        "turns": [turn for _, turn in sequenced],
+    }
+
+
 # ── Session ID resolution ──────────────────────────────────────────────────
 
 def resolve_session_by_id(session_id: str, source_dirs: list[str], runtimes: list[str]) -> tuple[Path, str] | None:
@@ -676,6 +941,13 @@ def _resolve_session_for_runtime(session_id: str, src_dir: str, runtime: str) ->
             for f in sorted(sessions_dir.glob("*.jsonl"), key=_mtime, reverse=True):
                 if session_id in f.stem:
                     return f
+    elif runtime == "dsh":
+        slug = slugify_dsh(src_dir)
+        sessions_dir = Path.home() / ".dsh" / "sessions" / slug
+        if sessions_dir.is_dir():
+            for f in sorted(sessions_dir.glob("*/*.zstd"), key=_mtime, reverse=True):
+                if session_id in f.parent.name:
+                    return f
     return None
 
 
@@ -683,7 +955,7 @@ def _resolve_session_for_runtime(session_id: str, src_dir: str, runtime: str) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Extract handoff context from coding agent sessions")
-    parser.add_argument("--former", help="Source agent(s): codex,pi,claude (comma-separated). Auto-detect if omitted.")
+    parser.add_argument("--former", help="Source agent(s): codex,pi,claude,dsh (comma-separated). Auto-detect if omitted.")
     parser.add_argument("--source", help="Alias for --former")
     parser.add_argument("--cwd", action="append", help="Source working directory (repeatable, comma-separated). Default: current cwd")
     parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")
@@ -691,6 +963,7 @@ def main() -> int:
     parser.add_argument("--session", help="Session ID (UUID/filename stem); lookup in runtime dirs, bypass discovery")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
     parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="Candidate retriever. auto uses zvec for focused queries when an index is available, then falls back to keyword.")
+    parser.add_argument("--max-tokens", type=positive_int, default=DEFAULT_MAX_TOKENS, help=f"Hard cap for extracted handoff turns (default: {DEFAULT_MAX_TOKENS})")
     parser.add_argument("--json", action="store_true", help="Output raw JSON (default: human-readable)")
     args = parser.parse_args()
 
@@ -715,13 +988,13 @@ def main() -> int:
             if s and s not in runtimes_to_scan:
                 runtimes_to_scan.append(s)
     else:
-        runtimes_to_scan = ALL_RUNTIMES = ["codex", "pi", "claude"]
+        runtimes_to_scan = ALL_RUNTIMES = ["codex", "pi", "claude", "dsh"]
 
     if args.retriever == "zvec" and not args.focus:
         print("Error: --retriever zvec requires --focus", file=sys.stderr)
         return 1
 
-    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude}
+    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude, "dsh": parse_dsh}
 
     candidates = []
     retriever_used = "file" if args.file else "keyword"
@@ -759,7 +1032,7 @@ def main() -> int:
         total_candidates = 1
         matched = [{"path": session_path, "direct_file": True, "mtime": _mtime(session_path)}]
     else:
-        candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates}
+        candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates, "dsh": find_dsh_candidates}
 
         all_candidates = []
         if args.focus and args.retriever in ("auto", "zvec"):
@@ -867,6 +1140,7 @@ def main() -> int:
             seen.add(key)
             turns.append(t)
 
+    turns, budget_stats = budget_turns(turns, args.focus, args.max_tokens)
     total_words = sum(len(t["text"].split()) for t in turns)
     total_tokens = sum(estimate_tokens(t["text"]) for t in turns)
 
@@ -897,6 +1171,7 @@ def main() -> int:
         "extracted_turns": len(turns),
         "estimated_words": total_words,
         "estimated_tokens": total_tokens,
+        "budget": budget_stats,
         "turns": turns,
     }
 
@@ -924,9 +1199,15 @@ def main() -> int:
         print(f"candidates:   {output['candidate_count']}")
         print(f"mode:         {output['mode']}")
         print(f"lines:        {output['total_lines']}")
-        print(f"turns:        {output['extracted_turns']}")
+        print(f"turns:        {output['extracted_turns']} / {budget_stats['source_turns']} source")
         print(f"words:        ~{output['estimated_words']}")
-        print(f"tokens:       ~{output['estimated_tokens']}")
+        print(f"tokens:       ~{output['estimated_tokens']} / {budget_stats['source_estimated_tokens']} source")
+        if budget_stats["budget_applied"]:
+            print(
+                f"budget:       {budget_stats['max_tokens']} tokens "
+                f"({budget_stats['dropped_turns']} turns dropped, "
+                f"{budget_stats['truncated_turns']} clipped)"
+            )
         print(f"{'─'*60}")
         for i, turn in enumerate(turns):
             role = turn["role"]
