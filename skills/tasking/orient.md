@@ -83,7 +83,7 @@
 Orient 完成跑 gate 脚本：
 
 ```bash
-python3 ~/.claude/skills/Tasking/scripts/orient_gate.py <demand-id> --json
+python3 <skill-dir>/scripts/orient_gate.py <demand-id> --json
 ```
 
 输出 `orient_gate.json`。verdict 四态：

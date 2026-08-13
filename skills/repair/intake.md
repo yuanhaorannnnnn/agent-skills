@@ -167,7 +167,7 @@ cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/d
 Intake 完成必须跑 gate 脚本——不再靠 Agent 自己打勾：
 
 ```bash
-python3 ~/.claude/skills/Repair/scripts/intake_gate.py <bug-id> --json
+python3 <skill-dir>/scripts/intake_gate.py <bug-id> --json
 ```
 
 输出 `intake_gate.json`，verdict 三态：

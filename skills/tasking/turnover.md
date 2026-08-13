@@ -74,7 +74,7 @@ gate 通过后继续：
 Turnover 完成跑 gate 脚本——验证需求被干净地移交：
 
 ```bash
-python3 ~/.claude/skills/Tasking/scripts/turnover_gate.py <demand-id> --json
+python3 <skill-dir>/scripts/turnover_gate.py <demand-id> --json
 ```
 
 输出 `turnover_gate.json`。Turnover 无下游 phase——gate 验证移交状态完整（state/deliverables/comment/assignee/Canon）。

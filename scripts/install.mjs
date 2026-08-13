@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
 const SCRIPTS_DIR = path.join(ROOT_DIR, 'scripts');
-const MANIFEST_PATH = path.join(ROOT_DIR, 'manifest.yaml');
+const MANIFEST_PATH = process.env.AGENT_SKILLS_MANIFEST || path.join(ROOT_DIR, 'manifest.yaml');
 const HOME_DIR = process.env.HOME;
 const RUNTIME_DIRS = [
   path.join(HOME_DIR, '.agents', 'skills'),
@@ -274,7 +274,7 @@ function cmdDoctor() {
   const knownSharedScripts = [
     'common.py', 'note_rule.py', 'planning_paths.py', 'planning_status.py',
     'restore_conversation.py', 'review_diff.py',
-    'save_conversation.py'
+    'save_conversation.py', 'skill_telemetry.py', 'run_skill_ab_eval.py'
   ];
   for (const script of knownSharedScripts) {
     const scriptPath = path.join(SCRIPTS_DIR, script);

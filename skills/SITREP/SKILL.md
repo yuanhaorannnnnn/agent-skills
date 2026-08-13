@@ -75,12 +75,12 @@ Markdown 报告。扁平任务列表，项目名/agent/耗时/状态作为元信
 
 旧链路（已废弃）：周五 checklist 生成后跑：
 ```bash
-python3 ~/.claude/skills/SITREP/scripts/report_gate.py --mode checklist <checklist.md>
+python3 <skill-dir>/scripts/report_gate.py --mode checklist <checklist.md>
 ```
 
 旧链路（已废弃）：周日 final report 生成后跑：
 ```bash
-python3 ~/.claude/skills/SITREP/scripts/report_gate.py --mode report <report.md> --checklist <checklist.md>
+python3 <skill-dir>/scripts/report_gate.py --mode report <report.md> --checklist <checklist.md>
 ```
 
 blocked → 缺文件或空。Checklist 模式检查文件存在 + 非空 + Canon 来源。Report 模式检查文件存在 + 基于 checklist（非 fresh scan）+ 非空。

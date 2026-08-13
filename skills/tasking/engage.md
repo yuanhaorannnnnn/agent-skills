@@ -95,7 +95,12 @@ gate 通过后继续：
 
 用 Canon task page、`goal.md`、方案文档、当前 diff、测试/编译证据做 review。有 blocker 时停在 Engage，不进入 Traceback/Sanitize；无 blocker 时把 review 结果写入 Canon task page § Findings / § Evidence / § Timeline，再运行 Traceback。
 
-Traceback 完成后停止——需手动编译验证，通过后手动运行 Sanitize 收尾。
+Traceback 完成后运行机器 gate：
+
+    python3 <skills-root>/Traceback/scripts/traceback_gate.py \
+      --dir .planning/<demand-id> --repo <repo-root> --json
+
+'pass' 或有 Canon skip reason 的 'skipped' 才能进入 Engage gate。随后停止——需手动编译验证，通过后手动运行 Sanitize 收尾。
 
 ### Canon promotion
 
@@ -118,7 +123,7 @@ Traceback 完成后停止——需手动编译验证，通过后手动运行 San
 Engage 完成跑 gate 脚本：
 
 ```bash
-python3 ~/.claude/skills/Tasking/scripts/engage_gate.py <demand-id> --json
+python3 <skill-dir>/scripts/engage_gate.py <demand-id> --repo <repo-root> --json
 ```
 
-输出 `engage_gate.json`。Engage 无 human gate——全部 machine check：state phase、goal.md 存在、review gate 通过、traceback 完成、Canon 更新。
+输出 'engage_gate.json'。Engage 无 human gate——全部 machine check：state phase、goal.md 存在、Review Gate 通过、当前 workspace 的 'traceback-gate.json' 为 'pass|skipped'、Canon 更新。不要读取 'state.json.traceback_done'。

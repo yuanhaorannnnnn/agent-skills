@@ -213,7 +213,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 Fix 完成必须跑 gate 脚本——不再靠 Agent 自己打勾：
 
 ```bash
-python3 ~/.claude/skills/Repair/scripts/fix_gate.py <bug-id> --json
+python3 <skill-dir>/scripts/fix_gate.py <bug-id> --json
 ```
 
 输出 `fix_gate.json`，verdict 三态：

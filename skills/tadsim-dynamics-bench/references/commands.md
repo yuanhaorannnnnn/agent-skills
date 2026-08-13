@@ -30,7 +30,7 @@ python3 PythonAPI/test/validation/tadsim/run_carsim_tadsim_case.py \
 ## Herdr Run
 
 ```bash
-python3 ~/.agents/repos/agent-skills/skills/tadsim-dynamics-bench/scripts/run_in_herdr.py \
+python3 <skill-dir>/scripts/run_in_herdr.py \
   --case M2 \
   --reference-dir /media/yhr/2T/files/stuff/M2/Run_xxx
 ```

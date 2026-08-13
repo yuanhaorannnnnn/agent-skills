@@ -1,5 +1,5 @@
 {
-  "skill_name": "skill-evaluator",
+  "skill_name": "GoNogo",
   "evals": [
     {
       "id": 1,
@@ -16,7 +16,7 @@
     {
       "id": 3,
       "prompt": "我想做一个 skill，能把我的代码注释整理成正式的 API 文档",
-      "expected_output": "扩展现有 skill。report、doc-coauthoring 或 docx skill 可能已部分覆盖，可以考虑扩展。",
+      "expected_output": "默认不创建 skill；优先使用 TypeDoc、Javadoc、Sphinx、Doxygen 等确定性文档生成器。只有需求升级为跨仓库、多语言、统一校验和发布的高频流程时才考虑编排 skill。",
       "files": []
     }
   ]

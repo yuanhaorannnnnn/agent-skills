@@ -88,7 +88,7 @@ If dry-run fails, fix the CarSim reference setup before running TadSim.
 If inside herdr, use the bundled script:
 
 ```bash
-python3 ~/.agents/repos/agent-skills/skills/tadsim-dynamics-bench/scripts/run_in_herdr.py \
+python3 <skill-dir>/scripts/run_in_herdr.py \
   --case M2 \
   --reference-dir <Run_dir>
 ```
@@ -149,24 +149,15 @@ record model-difference finding
 register next M-case in manifest
 ```
 
-## M1 Baseline Decision
+## Current Project State
 
-M1 v28 remains best shot:
-
-```text
-confidence_results/M1_v28_lp03_dec06/tadsim_carsim_replay_20260625_195702.json
-nrmse_speed = 0.005589391454822707
-r2_speed = 0.9997102465507869
-```
-
-It uses speed-target replay plus `M_EngOut` torque feed-forward. Do not present it as same-driver-input calibration.
-
-## API Note
-
-`apply_oasissim_config` is the new full-config/auto-enable API. `apply_tadsim_config` is a deprecated compatibility path for runtime updates and must not alias to full-config repeated apply. Future cleanup target:
+Current best-shot metrics, accepted replay semantics, API migration state, and
+next M-case belong to the Canon task, not this stable workflow contract. Read:
 
 ```text
-apply_oasissim_config = first full config / auto enable
-update_oasissim_config = runtime/config update
-apply_tadsim_config = deprecated alias to update_oasissim_config
+/media/yhr/2T/Canon/tasks/carsim-tadsim-diagnostic-benchmark.md
 ```
+
+Treat a baseline as current only when that task page links the exact report and
+states the comparison boundary. Do not present speed-target/torque-feed-forward
+evidence as same-driver-input calibration.

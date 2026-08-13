@@ -88,7 +88,7 @@ gate 通过后继续：
 Briefing 完成跑 gate 脚本：
 
 ```bash
-python3 ~/.claude/skills/Tasking/scripts/briefing_gate.py <demand-id> --json
+python3 <skill-dir>/scripts/briefing_gate.py <demand-id> --json
 ```
 
 输出 `briefing_gate.json`。verdict 四态：

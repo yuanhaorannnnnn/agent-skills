@@ -88,7 +88,7 @@ git push origin <base_branch>
 Clear 完成跑 gate 脚本：
 
 ```bash
-python3 ~/.claude/skills/Repair/scripts/clear_gate.py <bug-id> --json
+python3 <skill-dir>/scripts/clear_gate.py <bug-id> --json
 ```
 
 输出 `clear_gate.json`。检查：merge 完成、commit 存在、构建产物存在、云效状态为关闭、Canon 已更新。

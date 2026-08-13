@@ -150,7 +150,7 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
 Closeout 完成跑 gate 脚本验证收尾干净：
 
 ```bash
-python3 ~/.claude/skills/Repair/scripts/closeout_gate.py <bug-id> --json
+python3 <skill-dir>/scripts/closeout_gate.py <bug-id> --json
 ```
 
 输出 `closeout_gate.json`。4 项检查：state outcome/status 已填、comment 证据存在、owner 未变（skipped，需 MCP）、Canon 已更新。
