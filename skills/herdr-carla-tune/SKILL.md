@@ -17,6 +17,14 @@ description: |
 
 # herdr-carla-tune — CARLA herdr-native autotune loop
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`.agent-state/autoresearch-loop-state.yaml`、hypothesis queue、keep/discard/crash
+记录属于 `audit`；Terminate 阶段提升到 Canon 的 baseline、实际保留改动和验证
+结果属于 `delivery`。最终报告不复述被 discard 的实验，除非解释兼容性或安全边界。
+
 compile→package→server→benchmark→decide 闭环。AI 驱动假设生成 + herdr pane 原语执行 + 本 skill 的 loop-policy 判定。
 
 ## 和其他 skill 的选择

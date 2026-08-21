@@ -12,6 +12,7 @@ Use this contract together with:
 /home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
 /home/yhr/.agents/repos/agent-skills/references/review-gate.md
 /media/yhr/2T/Canon/SCHEMA.md
+/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md
 ```
 
 ## Required Surfaces
@@ -28,6 +29,16 @@ For each mode or phase, define these surfaces:
 | Review/verification | Which validation, monitored validation task, traceback, or Review Gate result proves the work is safe to hand off? |
 
 If a mode does not change state, say so. If a mode cannot update Canon, record the reason in the final response and keep repo-local artifacts as temporary evidence.
+
+## Artifact Mode
+
+Every mode that emits a durable artifact must declare `artifact_mode` as one of
+`delivery`, `audit`, or `knowledge`. Delivery modes require a validated
+`accepted_spec.json` (or an explicitly approved final brief) and render only
+the accepted final state. Audit and knowledge modes may preserve history,
+source claims, rejected hypotheses, or discussion context, but their output
+must not be presented as a clean delivery. See the clean-delivery contract for
+the exception list and input-boundary rules.
 
 Commands inside a skill should resolve self-owned scripts through `<skill-dir>`
 and sibling skills through `<skills-root>`. Absolute installed-runtime roots are

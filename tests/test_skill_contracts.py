@@ -58,6 +58,65 @@ class SkillContractTests(unittest.TestCase):
         for variable in ("BUILD_PANE", "SERVER_PANE", "CLIENT_PANE"):
             self.assertIn(variable, text)
 
+    def test_delivery_skills_reference_shared_contract(self) -> None:
+        contract = "clean-delivery-contract.md"
+        paths = [
+            SKILLS_DIR / "conops" / "SKILL.md",
+            SKILLS_DIR / "breach" / "SKILL.md",
+            SKILLS_DIR / "execute" / "SKILL.md",
+            SKILLS_DIR / "sanitize" / "SKILL.md",
+            SKILLS_DIR / "tasking" / "SKILL.md",
+            SKILLS_DIR / "SITREP" / "SKILL.md",
+            SKILLS_DIR / "repair" / "SKILL.md",
+            SKILLS_DIR / "neutralize" / "SKILL.md",
+            SKILLS_DIR / "herdr-carla-tune" / "SKILL.md",
+            SKILLS_DIR / "cover" / "SKILL.md",
+            SKILLS_DIR / "acquisition" / "SKILL.md",
+            SKILLS_DIR / "codify" / "SKILL.md",
+            SKILLS_DIR / "go-nogo" / "SKILL.md",
+            SKILLS_DIR / "tadsim-dynamics-bench" / "SKILL.md",
+            SKILLS_DIR / "traceback" / "SKILL.md",
+        ]
+        missing = [str(path.relative_to(REPO_ROOT)) for path in paths
+                   if contract not in path.read_text()]
+        self.assertEqual(missing, [])
+
+    def test_passdown_remains_context_only(self) -> None:
+        text = (SKILLS_DIR / "passdown" / "SKILL.md").read_text()
+        self.assertNotIn("clean-delivery-contract.md", text)
+        self.assertNotIn("accepted_spec", text)
+
+    def test_delivery_owners_are_explicit(self) -> None:
+        execute = (SKILLS_DIR / "execute" / "SKILL.md").read_text()
+        conops = (SKILLS_DIR / "conops" / "SKILL.md").read_text()
+        self.assertIn("负责把已确认内容固化为", execute)
+        self.assertIn("由 `conops` 固化已确认的最终 brief", conops)
+
+    def test_audit_exceptions_are_declared(self) -> None:
+        self.assertIn("audit", (SKILLS_DIR / "after-action" / "SKILL.md").read_text())
+        breach = (SKILLS_DIR / "breach" / "SKILL.md").read_text()
+        self.assertIn("Discussion Digest 属于", breach)
+        self.assertIn("X", breach)
+
+    def test_accepted_spec_artifact_mode_is_validated(self) -> None:
+        module = load_module("accepted_spec_contract", REPO_ROOT / "scripts" / "accepted_spec.py")
+        spec = {
+            "schema_version": 1,
+            "task_id": "contract-test",
+            "spec_version": 1,
+            "state": "accepted",
+            "artifact_mode": "not-a-mode",
+            "scope": ["src/**"],
+            "constraints": ["keep defaults"],
+            "acceptance": ["gate validates mode"],
+            "non_goals": ["new framework"],
+            "approved_dependencies": [],
+            "artifacts": [],
+        }
+        spec["spec_hash"] = module.compute_spec_hash(spec)
+        errors = module.validate_spec(spec)
+        self.assertTrue(any("artifact_mode" in error for error in errors))
+
 
 class WorkflowGateHelperTests(unittest.TestCase):
     @classmethod
@@ -78,6 +137,18 @@ class WorkflowGateHelperTests(unittest.TestCase):
         cls.herdr_round = load_module(
             "herdr_round_gate",
             SKILLS_DIR / "herdr-carla-tune" / "scripts" / "round_gate.py",
+        )
+        cls.conops = load_module(
+            "conops_quality_gate", SKILLS_DIR / "conops" / "scripts" / "quality_gate.py"
+        )
+        cls.report = load_module(
+            "sanitize_report_gate", SKILLS_DIR / "sanitize" / "scripts" / "report_gate.py"
+        )
+        cls.cover = load_module(
+            "cover_synthesis_gate", SKILLS_DIR / "cover" / "scripts" / "synthesis_gate.py"
+        )
+        cls.sitrep = load_module(
+            "sitrep_report_gate", SKILLS_DIR / "SITREP" / "scripts" / "report_gate.py"
         )
 
     def test_repair_accepts_confirmed_intake_contract(self) -> None:
@@ -116,6 +187,21 @@ class WorkflowGateHelperTests(unittest.TestCase):
             self.assertTrue(self.tasking.check_goal_md(state, root)[0])
             self.assertTrue(self.tasking.check_review_gate(state)[0])
 
+    def test_tasking_delivery_contract_requires_accepted_spec(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            goal = root / "goal.md"
+            goal.write_text(
+                "## Goal\nP0\n## Tasks\n- [ ] test\n"
+                "- artifact_mode: delivery\n",
+                encoding="utf-8",
+            )
+            state = root / "state.json"
+            state.write_text(json.dumps({"goal_path": str(goal)}))
+            ok, message = self.tasking.check_delivery_contract(state, root)
+            self.assertFalse(ok)
+            self.assertIn("accepted_spec_path required", message)
+
     def test_sanitize_requires_progress_commit_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             task = Path(tmp) / "task.md"
@@ -123,6 +209,15 @@ class WorkflowGateHelperTests(unittest.TestCase):
             self.assertTrue(self.sanitize.check_canon_updated(task)[0])
             task.write_text("## Progress\n- implementation pending\n")
             self.assertFalse(self.sanitize.check_canon_updated(task)[0])
+
+    def test_sanitize_consumes_scope_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gate = root / "scope-gate.json"
+            gate.write_text(json.dumps({"verdict": "pass"}))
+            self.assertTrue(self.sanitize.check_scope_gate(gate)[0])
+            gate.write_text(json.dumps({"verdict": "blocked"}))
+            self.assertFalse(self.sanitize.check_scope_gate(gate)[0])
 
     def test_herdr_tune_gates_accept_injected_state_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -146,6 +241,24 @@ class WorkflowGateHelperTests(unittest.TestCase):
             self.assertTrue(self.herdr_round.check_not_terminated(state)[0])
             self.assertTrue(self.herdr_round.check_hypotheses_remaining(state)[0])
             self.assertTrue(self.herdr_round.check_round_limits(state)[0])
+
+    def test_delivery_renderers_require_accepted_spec(self) -> None:
+        self.assertFalse(self.conops.check_delivery_contract(mode="delivery")[0])
+        self.assertFalse(self.report.check_artifact_contract(mode="delivery")[0])
+        self.assertFalse(self.cover.check_artifact_contract(mode="delivery")[0])
+
+    def test_sitrep_delivery_requires_confirmed_checklist(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report = root / "report.md"
+            report.write_text("# report")
+            checklist = root / "checklist.json"
+            checklist.write_text(json.dumps({"confirmed": False}))
+            ok, message = self.sitrep.check_artifact_mode(
+                "delivery", report, checklist
+            )
+            self.assertFalse(ok)
+            self.assertIn("confirmed checklist", message)
 
 
 if __name__ == "__main__":

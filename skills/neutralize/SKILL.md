@@ -13,6 +13,14 @@ description: |
 
 # Fix Issue
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`neutralize-gate.json`、复现日志、邻近扫描和 hypotheses 是 `audit` evidence；
+最终修复摘要是 `delivery` projection，只引用确认根因、实际 diff、验证结果和剩余风险。
+不要把整个诊断争论传给交付物 writer。
+
 Find the root cause, not just the symptom. Apply the smallest safe fix, then
 scan nearby code for the same mistake pattern.
 

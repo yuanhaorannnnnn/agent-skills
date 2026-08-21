@@ -10,6 +10,14 @@ description: |
 
 # Skill Evaluator
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+评估结论是 `delivery` decision：只输出当前接受的创建/扩展/不创建结论和依据。
+候选方案讨论可作为 `audit` 输入，但不把被否决方案写入最终 skill 名称、接口或
+交付摘要。
+
 判断一个功能值得封装成新 skill，还是用现有工具/已安装 skill 就能搞定。
 在"过度封装"和"该封不封"之间找平衡。
 

@@ -11,6 +11,14 @@ description: |
 
 # Capture Mistake Rule
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+Codify 的错误/正确/触发规则是 `delivery` guardrail，输入必须是已确认的单条可
+执行规则。事故叙事、失败尝试和原始讨论属于 `audit`，不复制到规则正文；规则只
+描述将被长期执行的最终不变量。
+
 ## Boundary
 
 Produce a rule, not a story or report. The minimum useful output is wrong approach, correct approach, trigger, and evidence. If incident chronology matters, route to after-action. If the full task lifecycle and evaluation matter, route to `sanitize report`.

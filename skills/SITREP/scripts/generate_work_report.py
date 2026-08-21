@@ -167,6 +167,28 @@ def cmd_weekly(args):
         canon_tasks = collect_canon_tasks(since, until)
         work_canon = _select_work_canon_tasks(canon_tasks)
 
+        if args.artifact_mode == "delivery":
+            from friday_review import _canon_task_to_report_task
+
+            tasks = [_canon_task_to_report_task(ct) for ct in work_canon]
+            if args.topic:
+                tasks = filter_by_topic(tasks, args.topic)
+            if args.project:
+                tasks = filter_by_project(tasks, args.project)
+            if not tasks:
+                print("No accepted Canon tasks found; delivery report not generated.")
+                return
+            report_md = render_weekly_report(
+                tasks, since, until, artifact_mode="delivery"
+            )
+            if args.output:
+                output_path = Path(args.output)
+            else:
+                output_path = get_report_dir() / since.strftime("%Y-%m") / f"weekly-{since.strftime('%Y-%m-%d')}.md"
+            save_report(report_md, output_path)
+            print(f"Delivery report: {len(tasks)} Canon tasks; session transcript not read.")
+            return
+
         # Collect sessions (enrichment)
         sessions = collect_all_sessions(since, until, args.agent)
         total_sessions = len(sessions)
@@ -182,7 +204,7 @@ def cmd_weekly(args):
             print(f"No sessions found. Generating Canon-only report from {len(work_canon)} tasks.")
             tasks = [_canon_task_to_report_task(ct) for ct in work_canon]
             # Skip clustering + STAR
-            report_md = render_weekly_report(tasks, since, until)
+            report_md = render_weekly_report(tasks, since, until, artifact_mode=args.artifact_mode)
             print(f"\n{report_md}")
             report_path = save_report(report_md, since, until)
             print(f"\nReport saved to: {report_path}")
@@ -223,7 +245,9 @@ def cmd_weekly(args):
             print()
 
         # Render report
-        report = render_weekly_report(tasks, since, until, total_sessions)
+        report = render_weekly_report(
+            tasks, since, until, total_sessions, artifact_mode=args.artifact_mode
+        )
 
         # Save
         if args.output:
@@ -267,6 +291,28 @@ def cmd_monthly(args):
         if args.auto:
             print(f"[auto mode] Log: {log_path}")
         print()
+
+        if args.artifact_mode == "delivery":
+            from collectors.canon_collector import collect_canon_tasks
+            from friday_review import _canon_task_to_report_task, _select_work_canon_tasks
+
+            canon_tasks = _select_work_canon_tasks(collect_canon_tasks(since, until))
+            tasks = [_canon_task_to_report_task(ct) for ct in canon_tasks]
+            if args.topic:
+                tasks = filter_by_topic(tasks, args.topic)
+            if args.project:
+                tasks = filter_by_project(tasks, args.project)
+            if not tasks:
+                print("No accepted Canon tasks found; delivery report not generated.")
+                return
+            report = render_weekly_report(tasks, since, until, artifact_mode="delivery")
+            if args.output:
+                output_path = Path(args.output)
+            else:
+                output_path = get_report_dir() / since.strftime("%Y-%m") / f"monthly-{since.strftime('%Y-%m')}.md"
+            save_report(report, output_path)
+            print(f"Delivery report: {len(tasks)} Canon tasks; session transcript not read.")
+            return
 
         # Check LLM availability
         llm_available, llm_reason = _check_llm_availability()
@@ -314,7 +360,9 @@ def cmd_monthly(args):
             print("[basic mode] Skipping STAR extraction and merge (LLM unavailable)")
             print()
 
-        report = render_weekly_report(tasks, since, until, total_sessions)
+        report = render_weekly_report(
+            tasks, since, until, total_sessions, artifact_mode=args.artifact_mode
+        )
 
         if args.output:
             output_path = Path(args.output)
@@ -372,6 +420,11 @@ def main():
         "--auto", action="store_true",
         help="Auto mode: silent execution, log to file, suitable for cron"
     )
+    weekly_parser.add_argument(
+        "--artifact-mode", choices=["delivery", "audit", "knowledge"],
+        default="delivery",
+        help="delivery reads Canon accepted state only; audit preserves session history",
+    )
 
     # Monthly command
     monthly_parser = subparsers.add_parser("monthly", help="Generate monthly report")
@@ -406,6 +459,11 @@ def main():
     monthly_parser.add_argument(
         "--auto", action="store_true",
         help="Auto mode: silent execution, log to file, suitable for cron"
+    )
+    monthly_parser.add_argument(
+        "--artifact-mode", choices=["delivery", "audit", "knowledge"],
+        default="delivery",
+        help="delivery reads Canon accepted state only; audit preserves session history",
     )
 
     args = parser.parse_args()

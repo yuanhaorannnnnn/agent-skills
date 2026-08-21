@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-GATE = REPO_ROOT / "skills" / "Neutralize" / "scripts" / "verify_fix_gate.py"
+GATE = REPO_ROOT / "skills" / "neutralize" / "scripts" / "verify_fix_gate.py"
 
 
 class NeutralizeGateTests(unittest.TestCase):

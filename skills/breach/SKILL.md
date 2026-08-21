@@ -17,6 +17,19 @@ description: |
 
 Fast, single-page HTML artifacts for daily dev communication.
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+一般页面属于 `delivery`：调用方先提供 accepted brief 或 `accepted_spec.json`，
+breach 只负责页面呈现，不把完整纠错对话传给渲染器。Discussion Digest 属于
+`audit`：它保留参与人、时间线、立场变化、决议和未决项，典型输入包括 X
+讨论串，也包括邮件、GitHub issue/PR、聊天和论坛线程。Digest 的 JSON 是审计
+中间产物，不应伪装成干净的最终实现说明。
+
+General Page 没有 accepted brief/spec 时停止并回到调用方补齐最终状态；不要从
+纠错 transcript 自行猜测范围。Discussion Digest 是明确的 `audit` 例外。
+
 ## Output Boundary
 
 breach owns HTML and deterministic discussion-digest rendering only.

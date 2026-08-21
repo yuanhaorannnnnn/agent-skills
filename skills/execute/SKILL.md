@@ -30,6 +30,52 @@ execute is a **model-invoked runtime adapter**, not a product/demand lifecycle o
 - Called by tasking: update only the explicit task page; never create a sibling task, mutate Yunxiao/state phase, choose the demand branch, or claim tasking gates passed.
 - Called by another orchestrator: preserve caller ownership and return `goal_path`, `task_path`, gate result, and runtime handoff state.
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+交付型 goal 必须写入：
+
+```yaml
+artifact_mode: delivery
+accepted_spec_path: .proposal/<task>/accepted_spec.json
+```
+
+执行 brief 只包含 accepted state、范围和验收；纠错历史留在 audit 记录，不传给
+后续实现器或交付物 writer。`execution_gate.py` 会在 `artifact_mode: delivery`
+时强制校验 accepted spec。
+
+## Accepted-state ownership
+
+在普通代码开发路径中，用户讨论完成后直接进入 `execute`；因此 `execute`
+负责把已确认内容固化为 `.proposal/<task>/accepted_spec.json`，再生成
+`goal.md`。只写最终保留的目标、范围、约束、验收、非目标和 artifact refs，
+并按 [accepted-spec-schema.md](/home/yhr/.agents/repos/agent-skills/references/accepted-spec-schema.md)
+计算 `spec_hash`。讨论仍有歧义时先确认，不用原始 transcript 代替 spec。
+
+如果调用方已经提供有效 accepted spec，`execute` 复用并校验它，不另建第二份。
+
+最小文件形状如下；列表必须来自已确认讨论，不能用占位猜测：
+
+```json
+{
+  "schema_version": 1,
+  "task_id": "<task-slug>",
+  "spec_version": 1,
+  "state": "accepted",
+  "artifact_mode": "delivery",
+  "scope": ["<path-pattern>"],
+  "constraints": ["<confirmed-constraint>"],
+  "acceptance": ["<observable-check>"],
+  "non_goals": ["<explicitly-out-of-scope-item>"],
+  "approved_dependencies": [],
+  "artifacts": []
+}
+```
+
+写入后用 `scripts/accepted_spec.py` 的 `compute_spec_hash` 补齐
+`spec_hash`，再运行 Execute Gate；不要手填或跳过 hash。
+
 ## Hard Rule
 
 When the user invokes `$execute`, do not implement inline before `/goal` is actually triggered. First generate or update `goal.md`, create or update the Canon task page, then trigger or hand off:
@@ -63,10 +109,16 @@ If the current agent cannot directly inject the runtime slash command, stop afte
 
 ### Step 2: 编写执行目标
 
+先完成 Accepted-state ownership 中的 `accepted_spec.json`，再用同一份 accepted
+state 填写下面的 `goal.md`。`goal.md` 不重新解释讨论，也不新增范围。
+
 基于用户描述 + Step 1 的代码上下文，用以下模板输出结构化目标，写入 repo-local `goal.md`。同时把摘要同步到 Canon task page § Goal。
 
 ```markdown
 # <任务标题>
+
+- artifact_mode: delivery
+- accepted_spec_path: .proposal/<task>/accepted_spec.json
 
 ## 目标
 [一段话描述核心功能]
@@ -118,6 +170,14 @@ Canon task page 记录 durable state：Goal / Tasks / Plan / Findings / Progress
 `goal.md` 是 runtime execution brief；Canon task page 是 durable task state。不要把 Canon task page 直接传给 `/goal`。
 
 ### Step 4: 启动执行
+
+When the goal contains accepted_spec_path metadata, the execution preparation
+gate must validate that accepted specification before reporting pass. For a
+direct path, pass the optional accepted-spec argument:
+
+    python3 <skill-dir>/scripts/execution_gate.py \
+      --goal <goal-md> --task <canon-task-path> \
+      --accepted-spec <accepted-spec-json>
 
 解析最终 `goal.md` 绝对路径：
 
@@ -177,6 +237,8 @@ execute must satisfy the shared workflow output contract:
 ## Gotchas
 
 - `$execute` does not mean “start coding now”. It means prepare `goal.md` + Canon task page, then trigger or hand off `/goal <goal.md>`.
+- For a direct code-development run, prepare the accepted spec during Execute
+  before writing `goal.md`; a delivery goal without it is blocked.
 - Ordinary coding requests do not imply `$execute`. Require explicit goal intent before adding `goal.md` and Canon task overhead.
 - Do not pass the Canon task page to `/goal`; pass the repo-local `goal.md` absolute path.
 - If the runtime cannot inject `/goal`, stop after writing files and report the exact command. Do not continue inline as a substitute.

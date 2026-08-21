@@ -6,6 +6,15 @@ description: |
 
 # TadSimDynamicsBench
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+原始 CarSim run、parser 诊断和多假设分类属于 `audit` evidence；`summary.md`、
+`diagnosis.json` 和 Canon promotion 只有在对应 case 的 accepted replay contract
+与验证结果齐全时才作为 `delivery` projection。不要把样本内标定或未验证假设写成
+正式结论。
+
 CarSim-TadSim diagnostic benchmark workflow for CarlaUE5. This is not a score-chasing replay tuner. Use it to turn M1-M7 into repeatable evidence that localizes mismatch across the validation chain.
 
 ## Scope

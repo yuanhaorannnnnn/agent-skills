@@ -9,6 +9,10 @@ import sys
 from pathlib import Path
 
 REQ_ROOT = Path("/media/yhr/2T/yunxiao/requirements")
+SHARED_SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
+if str(SHARED_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SHARED_SCRIPTS))
+from accepted_spec import artifact_mode, load_spec  # noqa: E402
 
 
 def check_state_phase(sp):
@@ -38,6 +42,47 @@ def check_goal_md(sp, repo):
         )
     except Exception as exc:
         return False, f"goal.md: error {exc} FAIL"
+
+
+def _goal_metadata(goal_path):
+    metadata = {}
+    for line in Path(goal_path).read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        for key in ("artifact_mode", "accepted_spec_path"):
+            prefix = f"- {key}:"
+            if stripped.startswith(prefix):
+                metadata[key] = stripped.split(":", 1)[1].strip()
+    return metadata
+
+
+def check_delivery_contract(sp, repo):
+    """Validate the accepted-state boundary when Engage declares delivery."""
+
+    if not sp.exists():
+        return False, "delivery-contract: state.json missing FAIL"
+    try:
+        data = json.loads(sp.read_text())
+        goal_path = Path(data.get("goal_path", "")).expanduser()
+        if not goal_path.is_file():
+            return False, "delivery-contract: goal.md missing FAIL"
+        metadata = _goal_metadata(goal_path)
+        mode = metadata.get("artifact_mode")
+        if mode != "delivery":
+            return True, "delivery-contract: not declared (legacy/non-delivery) OK"
+        raw_path = metadata.get("accepted_spec_path")
+        if not raw_path:
+            return False, "delivery-contract: accepted_spec_path required FAIL"
+        spec_path = Path(raw_path).expanduser()
+        if not spec_path.is_absolute():
+            spec_path = goal_path.parent / spec_path
+        spec, errors = load_spec(spec_path, require_artifact_mode=True)
+        if errors:
+            return False, "delivery-contract: " + "; ".join(errors) + " FAIL"
+        if artifact_mode(spec) != "delivery":
+            return False, "delivery-contract: accepted_spec artifact_mode must be delivery FAIL"
+        return True, f"delivery-contract: accepted ({spec['spec_hash']}) OK"
+    except Exception as exc:
+        return False, f"delivery-contract: error {exc} FAIL"
 
 
 def check_review_gate(sp):
@@ -126,13 +171,14 @@ def main():
     checks = [
         ("1.state", check_state_phase(sp)),
         ("2.goal_md", check_goal_md(sp, repo)),
-        ("3.review", check_review_gate(sp)),
-        ("4.traceback", check_traceback(repo, args.demand_id)),
-        ("5.yunxiao", check_yunxiao_status(sp)),
-        ("6.canon", check_canon(args.demand_id)),
+        ("3.delivery-contract", check_delivery_contract(sp, repo)),
+        ("4.review", check_review_gate(sp)),
+        ("5.traceback", check_traceback(repo, args.demand_id)),
+        ("6.yunxiao", check_yunxiao_status(sp)),
+        ("7.canon", check_canon(args.demand_id)),
     ]
 
-    hard = {"1", "2", "3", "4", "6"}
+    hard = {"1", "2", "3", "4", "5", "7"}
     fails = [
         check
         for check in checks

@@ -8,6 +8,11 @@ Usage:
 import json, re, sys
 from pathlib import Path
 
+SHARED_SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
+if str(SHARED_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SHARED_SCRIPTS))
+from accepted_spec import artifact_mode, load_spec  # noqa: E402
+
 FORBIDDEN = [
     "此外", "值得注意的是", "需要强调的是", "综上所述", "通过...实现", "基于...进行",
     "显著提升", "深入探讨", "全方位", "赋能", "助力", "在...的过程中", "其目的在于",
@@ -68,11 +73,39 @@ def check_word_counts(p):
     ok = len(issues) == 0
     return ok, f"word counts: 需要={xuyao} 建议={jianyi} 后续={houxu}" + (" OK" if ok else f" WARN ({', '.join(issues)})")
 
+
+def check_delivery_contract(spec_path=None, mode=None, required=False):
+    """Require accepted-state input only for an explicitly declared delivery."""
+
+    if required and not mode:
+        mode = "delivery"
+    if not mode and not required:
+        return True, "artifact contract: not requested"
+    if mode not in ("delivery", "audit", "knowledge"):
+        return False, f"artifact contract: invalid mode {mode!r} FAIL"
+    if not spec_path:
+        if mode == "delivery" or required:
+            return False, "artifact contract: accepted_spec required for delivery FAIL"
+        return True, f"artifact contract: {mode} without accepted_spec OK"
+    spec, errors = load_spec(
+        spec_path,
+        require_artifact_mode=mode == "delivery",
+    )
+    if errors:
+        return False, "artifact contract: " + "; ".join(errors) + " FAIL"
+    declared = artifact_mode(spec)
+    if declared != mode:
+        return False, f"artifact contract: spec mode={declared!r}, expected {mode!r} FAIL"
+    return True, f"artifact contract: {mode} accepted ({spec['spec_hash']}) OK"
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("doc", nargs="?", help="Path to design doc")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--accepted-spec", help="Accepted specification path")
+    ap.add_argument("--artifact-mode", choices=("delivery", "audit", "knowledge"))
+    ap.add_argument("--require-accepted-spec", action="store_true")
     args = ap.parse_args()
 
     if not args.doc:
@@ -85,9 +118,17 @@ def main():
         ("3.sections", check_sections(args.doc)),
         ("4.scope", check_scope_balance(args.doc)),
         ("5.words", check_word_counts(args.doc)),
+        (
+            "6.artifact-contract",
+            check_delivery_contract(
+                args.accepted_spec,
+                args.artifact_mode,
+                args.require_accepted_spec,
+            ),
+        ),
     ]
 
-    hard = {"1","2","3","4"}
+    hard = {"1","2","3","4","6"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"
 

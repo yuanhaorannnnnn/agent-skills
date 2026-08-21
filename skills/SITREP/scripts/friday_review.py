@@ -103,6 +103,9 @@ def _merge_session_evidence(canon_task: Task, session_task: Task) -> Task:
     canon_description = canon_task.task_description
     canon_status = canon_task.status
     canon_actions = list(canon_task.actions)
+    canon_situation = canon_task.situation
+    canon_result = canon_task.result
+    canon_files_modified = list(canon_task.files_modified)
 
     canon_task.sessions = session_task.sessions
     canon_task.agent = session_task.agent
@@ -126,6 +129,10 @@ def _merge_session_evidence(canon_task: Task, session_task: Task) -> Task:
     canon_task.title = canon_title
     canon_task.task_description = canon_description
     canon_task.status = canon_status
+    setattr(canon_task, "_canon_situation", canon_situation)
+    setattr(canon_task, "_canon_actions", canon_actions)
+    setattr(canon_task, "_canon_result", canon_result)
+    setattr(canon_task, "_canon_files_modified", canon_files_modified)
     setattr(canon_task, "source", "canon+session")
     return canon_task
 
@@ -475,7 +482,7 @@ def main():
 
     # 6. 保存完整报告到本地（必生成）
     from report_renderer import render_weekly_report, save_report
-    report_md = render_weekly_report(tasks, since, until)
+    report_md = render_weekly_report(tasks, since, until, artifact_mode="audit")
     report_dir = get_report_dir()
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / f"weekly-{until.strftime('%Y-%m-%d')}.md"

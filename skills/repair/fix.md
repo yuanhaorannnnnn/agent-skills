@@ -1,5 +1,10 @@
 # Fix — 执行修复
 
+Fix 的 goal 和最终交付摘要遵循
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`fix_plan.json`/Neutralize evidence 可以保留审计历史；交付 writer 只接收确认后的
+修复目标、实际 diff 和验证结果。
+
 ## 预检
 
 **第一步：读 gate。在碰任何代码之前。**
@@ -121,7 +126,8 @@ gate 通过后继续以下预检：
    - 更新 `root-cause.md`：如果修复过程中发现根因假设有偏差，修正为实际根因。
    - 更新 `goal.md`：标记已完成和跳过的项。
    - 更新 Breach 页面（`.proposal/repair/<bug-id>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
-   - 如果 Intake 假设被否决（如 FOV 减半→实际是 FaceScale），必须在更新中标注"已否决的原假设"。
+   - 如果 Intake 假设被否决，更新审计用 `root-cause.md` 和 gate evidence；最终 goal、Breach
+     交付页和 commit message 只写实际根因与保留修复，不复制被否决假设的名字。
    - 更新后同步 LAN 分享目录：`cp .../index.html /media/yhr/2T/carla_images/doc/<bug-id>.html`
 
 ### Step 4: Review Gate

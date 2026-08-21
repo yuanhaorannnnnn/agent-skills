@@ -8,6 +8,11 @@ Usage:
 import json, sys
 from pathlib import Path
 
+SHARED_SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
+if str(SHARED_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SHARED_SCRIPTS))
+from accepted_spec import artifact_mode, load_spec  # noqa: E402
+
 def check_design_md(p):
     if not Path(p).exists():
         return False, "DESIGN.md: missing FAIL"
@@ -43,12 +48,31 @@ def check_no_wholesale_copy(ep):
     except Exception:
         return True, "copy check: skip OK"
 
+
+def check_artifact_contract(spec_path=None, mode=None, required=False):
+    if required and not mode:
+        mode = "delivery"
+    if not mode and not required:
+        return True, "artifact contract: not requested"
+    if not spec_path:
+        return False, "artifact contract: accepted_spec required for cover delivery FAIL"
+    spec, errors = load_spec(spec_path, require_artifact_mode=mode == "delivery")
+    if errors:
+        return False, "artifact contract: " + "; ".join(errors) + " FAIL"
+    declared = artifact_mode(spec)
+    if declared != mode:
+        return False, f"artifact contract: spec mode={declared!r}, expected {mode!r} FAIL"
+    return True, f"artifact contract: {mode} accepted ({spec['spec_hash']}) OK"
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--design", required=True)
     ap.add_argument("--evidence", required=True)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--accepted-spec", help="Accepted specification path")
+    ap.add_argument("--artifact-mode", choices=("delivery", "audit", "knowledge"))
+    ap.add_argument("--require-accepted-spec", action="store_true")
     args = ap.parse_args()
 
     checks = [
@@ -56,9 +80,17 @@ def main():
         ("2.ref_count", check_reference_count(args.evidence)),
         ("3.max_refs", check_max_refs(args.evidence)),
         ("4.no_copy", check_no_wholesale_copy(args.evidence)),
+        (
+            "5.artifact-contract",
+            check_artifact_contract(
+                args.accepted_spec,
+                args.artifact_mode,
+                args.require_accepted_spec,
+            ),
+        ),
     ]
 
-    hard = {"1","2"}
+    hard = {"1","2","5"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"
 

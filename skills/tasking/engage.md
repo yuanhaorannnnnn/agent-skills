@@ -41,6 +41,10 @@ gate 通过后继续：
 - 生成 repo-local `goal.md`: `<repo-root>/.proposal/<demand-id>/goal.md`
 - `goal.md` 是 `/goal` 的 runtime 输入；Canon task page 是 durable state
 - 把 Step 2 的任务列表、方案约束、observable target 和受影响 module boundary 作为输入
+- 先生成或确认 `.proposal/<demand-id>/accepted_spec.json`，包含 `state: accepted`
+  和 `artifact_mode: delivery`；`goal.md` 必须写入：
+  `- artifact_mode: delivery`、`- accepted_spec_path: <absolute-or-goal-relative-path>`。
+- 不把完整评审/纠错 transcript 传给 `/goal`；只传 accepted spec 和最终方案。
 
 不再创建 `.planning/conversations/<demand-id>/` 工作区；Canon task page 承载计划，`goal.md` 承载 runtime 执行目标。Tasking 仍是需求 phase/state owner；Execute 不修改 Yunxiao、`state.json.phase`、需求分支或 task identity。
 
@@ -125,5 +129,8 @@ Engage 完成跑 gate 脚本：
 ```bash
 python3 <skill-dir>/scripts/engage_gate.py <demand-id> --repo <repo-root> --json
 ```
+
+若 `goal.md` 声明 `artifact_mode: delivery`，Engage gate 会阻断缺少或模式不匹配
+的 accepted spec。
 
 输出 'engage_gate.json'。Engage 无 human gate——全部 machine check：state phase、goal.md 存在、Review Gate 通过、当前 workspace 的 'traceback-gate.json' 为 'pass|skipped'、Canon 更新。不要读取 'state.json.traceback_done'。

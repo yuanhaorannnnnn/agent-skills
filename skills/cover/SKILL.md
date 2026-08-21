@@ -13,6 +13,14 @@ description: |
 
 # Visual Design
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`DESIGN.md` 是 `delivery` artifact：先形成项目的 accepted design brief，再把参考
+库的适配结果写入最终 token。参考选择和适配证据可放在 evidence JSON（`audit`），
+但不把未采用的风格或对话纠错写进 `DESIGN.md` 的命名和正文。
+
 Generate a DESIGN.md — a plain-text design token specification that AI coding
 agents read to produce consistent, on-brand UI. Synthesize from the
 awesome-design-md reference library, adapted to the user's project.

@@ -5,6 +5,11 @@ description: "Control herdr from inside it. Manage workspaces and tabs, split pa
 
 # herdr — agent skill
 
+This is an execution adapter, not a delivery renderer. It does not create a
+durable artifact mode by itself; callers must apply the clean-delivery contract
+when pane output is promoted to a report, handoff, or Canon artifact:
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`.
+
 before using this skill, check that `HERDR_ENV=1`. if it is not set to `1`, say you are not running inside a herdr-managed pane and stop. do not inspect or control the focused herdr pane from outside herdr.
 
 you are running inside herdr, a terminal-native agent multiplexer. herdr gives you workspaces, tabs, and panes — each pane is a real terminal with its own shell, agent, server, or log stream — and you can control all of it from the cli.

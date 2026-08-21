@@ -181,7 +181,7 @@ def generate_and_submit(tasks, since, until, should_send: bool, dry_run: bool):
     """生成完整周报，保存本地，可选提交钉钉。"""
     from report_renderer import render_weekly_report, save_report
 
-    report_md = render_weekly_report(tasks, since, until)
+    report_md = render_weekly_report(tasks, since, until, artifact_mode="delivery")
     report_dir = get_report_dir()
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / f"weekly-{until.strftime('%Y-%m-%d')}.md"

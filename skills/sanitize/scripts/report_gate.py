@@ -8,6 +8,11 @@ Usage:
 import json, sys
 from pathlib import Path
 
+SHARED_SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
+if str(SHARED_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SHARED_SCRIPTS))
+from accepted_spec import artifact_mode, load_spec  # noqa: E402
+
 REQUIRED_SECTIONS = [
     "Abstract", "Related Work", "Method", "Implementation", "Evaluation", "Conclusion",
 ]
@@ -37,11 +42,34 @@ def check_evidence_cited(p):
     if has_commit: evidence.append("commit ref")
     return ok, f"evidence: {'+'.join(evidence) if evidence else 'NONE cited'}" + (" OK" if ok else " FAIL")
 
+
+def check_artifact_contract(spec_path=None, mode=None, required=False):
+    if required and not mode:
+        mode = "delivery"
+    if not mode and not required:
+        return True, "artifact contract: not requested"
+    if mode not in ("delivery", "audit", "knowledge"):
+        return False, f"artifact contract: invalid mode {mode!r} FAIL"
+    if not spec_path:
+        if mode == "delivery" or required:
+            return False, "artifact contract: accepted_spec required for delivery FAIL"
+        return True, f"artifact contract: {mode} without accepted_spec OK"
+    spec, errors = load_spec(spec_path, require_artifact_mode=mode == "delivery")
+    if errors:
+        return False, "artifact contract: " + "; ".join(errors) + " FAIL"
+    declared = artifact_mode(spec)
+    if declared != mode:
+        return False, f"artifact contract: spec mode={declared!r}, expected {mode!r} FAIL"
+    return True, f"artifact contract: {mode} accepted ({spec['spec_hash']}) OK"
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("report", nargs="?")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--accepted-spec", help="Accepted specification path")
+    ap.add_argument("--artifact-mode", choices=("delivery", "audit", "knowledge"))
+    ap.add_argument("--require-accepted-spec", action="store_true")
     args = ap.parse_args()
 
     if not args.report:
@@ -52,9 +80,17 @@ def main():
         ("1.file", check_file(args.report)),
         ("2.sections", check_sections(args.report)),
         ("3.evidence", check_evidence_cited(args.report)),
+        (
+            "4.artifact-contract",
+            check_artifact_contract(
+                args.accepted_spec,
+                args.artifact_mode,
+                args.require_accepted_spec,
+            ),
+        ),
     ]
 
-    hard = {"1","2","3"}
+    hard = {"1","2","3","4"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"
 

@@ -10,6 +10,14 @@ description: |
 
 # Work Report
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`Materials` 是 `audit`/`knowledge` 原始素材，允许保留 session 证据；Weekly/Monthly
+正式报告是 `delivery` projection，只从 Canon task page 和已确认事实生成，不把
+STAR 提取过程或 session 争论直接写入交付报告。
+
 从 coding agent conversation 中整理周报/月报素材。当前用户偏好：agent 只提供原始素材，不代写最终周报；每周五 17:30 发送“周报参考素材”钉钉文档；不再发送 Friday checklist，也不再自动提交 Sunday final report。
 
 ## 用法
@@ -46,6 +54,16 @@ Collect → Cluster → STAR Extract → Render → Submit
 ```
 
 输出是“周报参考素材”钉钉文档，不是 checklist，也不是最终周报。
+
+最终 Weekly/Monthly 报告使用：
+
+```bash
+python3 <skill-dir>/scripts/generate_work_report.py weekly --artifact-mode delivery
+```
+
+`delivery` 分支只读取 `report_scope: work AND weekly: true` 的 Canon task，不扫描
+session；需要原始 session 摘录时显式使用 `--artifact-mode audit`，不得把 audit
+输出直接发送为正式周报。
 
 ### 1. Collect
 
@@ -84,6 +102,13 @@ python3 <skill-dir>/scripts/report_gate.py --mode report <report.md> --checklist
 ```
 
 blocked → 缺文件或空。Checklist 模式检查文件存在 + 非空 + Canon 来源。Report 模式检查文件存在 + 基于 checklist（非 fresh scan）+ 非空。
+
+正式报告 gate：
+
+```bash
+python3 <skill-dir>/scripts/report_gate.py --mode report \
+  <report.md> --checklist <confirmed-checklist.json> --artifact-mode delivery
+```
 
 提交流程详见 `references/dingtalk-report.md` 和 `references/cron-ops.md`。
 

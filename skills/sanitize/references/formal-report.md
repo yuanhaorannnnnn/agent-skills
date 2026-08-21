@@ -37,3 +37,9 @@ the gap and do not upgrade an unverified claim into a result.
 - A report covering only one defect's troubleshooting chronology belongs to
   AfterAction.
 - A result expressible as wrong/correct/trigger belongs to Codify.
+
+Formal reports are `delivery` artifacts. Build the report from the accepted
+specification, Canon task, final diff, and validation evidence. “Related Works”
+contains only final-state alternatives that explain a real design choice; do
+not reproduce correction dialogue, rejected prompt proposals, or negative
+feature names merely to show that they were removed.

@@ -41,6 +41,11 @@ description: |
 - **不确定点**: 列出向用户确认，不要假设
 - **只读保护**: 不修改 state.json 中自己未负责的字段
 
+交付型需求统一遵循：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+Briefing/用户确认后必须形成 `accepted_spec.json`，Engage 生成的 `goal.md`
+声明 `artifact_mode: delivery` 并引用该 spec；讨论历史只保留在 audit 证据中。
+
 ## 责任边界
 
 - **tasking 是需求生命周期 owner**：负责 Yunxiao 状态、phase、task page identity、方案来源和阶段 gate。

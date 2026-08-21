@@ -78,6 +78,14 @@ def workspace_snapshot(repo):
     return {
         "checked_commit": head,
         "workspace_fingerprint": digest.hexdigest(),
+        "changed_files": sorted(
+            set(
+                path
+                for path in git(repo, "diff", "--name-only", "HEAD", "--").splitlines()
+                if path
+            )
+            | set(untracked)
+        ),
         "untracked_files": untracked,
     }
 
@@ -416,10 +424,38 @@ def write_json_atomic(path, data):
     os.replace(tmp, path)
 
 
+def read_scope_gate(path, current):
+    gate_path = Path(path).expanduser().resolve()
+    if not gate_path.is_file():
+        return None, [f"scope-gate: file not found: {gate_path}"]
+    try:
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, [f"scope-gate: {exc}"]
+    errors = []
+    if not isinstance(gate, dict):
+        return None, ["scope-gate: root object required"]
+    if gate.get("verdict") != "pass":
+        errors.append("scope-gate: verdict is not pass")
+        errors.extend(
+            f"scope-gate: {message}"
+            for message in gate.get("errors", [])
+            if isinstance(message, str)
+        )
+    checked_commit = gate.get("checked_commit")
+    if checked_commit and checked_commit != current["checked_commit"]:
+        errors.append("scope-gate: checked_commit is stale")
+    if "changed_files" in gate:
+        if set(gate.get("changed_files", [])) != set(current.get("changed_files", [])):
+            errors.append("scope-gate: workspace changes are stale")
+    return gate, errors
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", help="Path to .planning/<slug>/")
     ap.add_argument("--repo", default=os.getcwd())
+    ap.add_argument("--scope-gate", help="Path to a scope-gate.json result to consume.")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--fingerprint", action="store_true")
     args = ap.parse_args()
@@ -455,18 +491,25 @@ def main():
     findings = []
     data = None
     digest = ""
+    scope_gate = None
+    scope_errors = []
+    if args.scope_gate:
+        scope_gate, scope_errors = read_scope_gate(args.scope_gate, current)
     if not alignment_path.is_file():
-        errors.append("alignment.json: missing")
+        errors = list(scope_errors) + ["alignment.json: missing"]
         verdict = "blocked"
     else:
         try:
             data = json.loads(alignment_path.read_text(encoding="utf-8"))
             digest = canonical_digest(data)
-            errors, warnings, findings, verdict = validate_alignment(
+            alignment_errors, warnings, findings, verdict = validate_alignment(
                 data, repo, current
             )
+            errors = list(scope_errors) + alignment_errors
+            if errors:
+                verdict = "blocked"
         except Exception as exc:
-            errors.append(f"alignment.json: {exc}")
+            errors = list(scope_errors) + [f"alignment.json: {exc}"]
             verdict = "blocked"
 
     if data is not None:
@@ -489,6 +532,12 @@ def main():
         "alignment_sha256": digest,
         "checked_commit": current["checked_commit"],
         "workspace_fingerprint": current["workspace_fingerprint"],
+        "scope_gate_path": (
+            str(Path(args.scope_gate).expanduser().resolve())
+            if args.scope_gate
+            else ""
+        ),
+        "scope_gate": scope_gate,
         "errors": errors,
         "warnings": warnings,
         "findings": findings,

@@ -124,12 +124,29 @@ def check_based_on_checklist(report_path: str, checklist_path: str):
 
     return True, f"based-on-checklist: confirmed, {checklist_items} checklist → {report_items} report items OK"
 
+
+def check_artifact_mode(mode: str, report_path: str, checklist_path: str | None = None):
+    if mode == "audit":
+        return True, "artifact mode: audit (history allowed) OK"
+    if mode != "delivery":
+        return False, f"artifact mode: unsupported {mode!r} FAIL"
+    if not checklist_path:
+        return False, "artifact mode: delivery requires confirmed checklist FAIL"
+    data = _find_checklist_json(checklist_path)
+    if not data or not data.get("confirmed"):
+        return False, "artifact mode: delivery requires confirmed checklist FAIL"
+    return True, "artifact mode: delivery uses confirmed checklist OK"
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", required=True, choices=["checklist", "report"])
     ap.add_argument("path", nargs="?", help="Path to checklist or report")
     ap.add_argument("--checklist", help="Path to checklist (report mode)")
+    ap.add_argument(
+        "--artifact-mode", choices=("delivery", "audit"),
+        help="delivery is final report; audit may retain session history",
+    )
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -138,23 +155,27 @@ def main():
         sys.exit(2)
 
     if args.mode == "checklist":
+        artifact_mode = args.artifact_mode or "audit"
         checks = [
             ("1.file", check_file(args.path, "checklist")),
             ("2.not-empty", check_not_empty(args.path, "checklist")),
             ("3.canon", check_from_canon(args.path)),
+            ("4.artifact-mode", check_artifact_mode(artifact_mode, args.path)),
         ]
         hard = {"1","2"}
     else:
         if not args.checklist:
             print("--checklist required in report mode", file=sys.stderr)
             sys.exit(2)
+        artifact_mode = args.artifact_mode or "delivery"
         checks = [
             ("1.file", check_file(args.path, "report")),
             ("2.checklist-ref", check_file(args.checklist, "checklist")),
             ("3.based-on", check_based_on_checklist(args.path, args.checklist)),
             ("4.not-empty", check_not_empty(args.path, "report")),
+            ("5.artifact-mode", check_artifact_mode(artifact_mode, args.path, args.checklist)),
         ]
-        hard = {"1","2","3"}
+        hard = {"1","2","3","5"}
 
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"

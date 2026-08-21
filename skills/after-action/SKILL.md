@@ -13,6 +13,15 @@ description: |
 
 # Post-Mortem
 
+## Intentional Audit Exception
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+after-action 明确是 `audit` artifact，必须保留失败尝试、时间顺序和根因证据；
+只有单条可复用规则才提升为 codify 的 `delivery` guardrail。不要把复盘正文当作
+干净的产品/代码交付说明。它仍是正式交付物，但 gate 输入是 incident/fix
+evidence，不是 `accepted_spec.json`。
+
 Write like you're leaving a note for your future self who will hit the same
 problem in 6 months. Human language, no AI slop. Specifics over summaries.
 

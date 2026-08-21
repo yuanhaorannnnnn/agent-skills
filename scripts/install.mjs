@@ -274,12 +274,22 @@ function cmdDoctor() {
   const knownSharedScripts = [
     'common.py', 'note_rule.py', 'planning_paths.py', 'planning_status.py',
     'restore_conversation.py', 'review_diff.py',
-    'save_conversation.py', 'skill_telemetry.py', 'run_skill_ab_eval.py'
+    'save_conversation.py', 'skill_telemetry.py', 'run_skill_ab_eval.py',
+    'accepted_spec.py'
   ];
   for (const script of knownSharedScripts) {
     const scriptPath = path.join(SCRIPTS_DIR, script);
     if (!fs.existsSync(scriptPath)) {
       console.log(`[MISSING SCRIPT] scripts/${script}`);
+      issues++;
+    }
+  }
+
+  const sharedReferences = ['accepted-spec-schema.md', 'clean-delivery-contract.md'];
+  for (const reference of sharedReferences) {
+    const referencePath = path.join(ROOT_DIR, 'references', reference);
+    if (!fs.existsSync(referencePath)) {
+      console.log(`[MISSING REFERENCE] references/${reference}`);
       issues++;
     }
   }

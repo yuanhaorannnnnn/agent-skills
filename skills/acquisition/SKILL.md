@@ -11,6 +11,14 @@ user_invocable: true
 
 # Content Ingest: 统一内容摄入 + 知识蒸馏
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`raw/`、来源链和抓取记录属于 `knowledge`，保留原文与出处；`queries/` 是经过
+蒸馏的知识 artifact，仍须分开来源主张、证据、解释和阅读讨论。它们不是代码
+delivery，不把过程争论伪装成最终实现说明。
+
 将视频、文章摄入到 wiki，去噪、蒸馏、生成结构化笔记。
 
 ## 自动路由

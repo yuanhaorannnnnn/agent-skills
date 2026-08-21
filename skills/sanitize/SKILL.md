@@ -20,6 +20,12 @@ Read the shared Canon contract before finalizing meaningful work:
 
 ```text
 /home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
+
+Read the clean delivery contract before producing a durable report or closeout:
+
+```text
+/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md
+```
 ```
 
 ## Mode Routing
@@ -34,6 +40,13 @@ A one-incident troubleshooting story belongs to after-action. One reusable
 wrong/correct/trigger guardrail belongs to codify.
 
 ## Closeout Mode
+
+If the task has a scope-gate artifact, pass it to wrapup_gate.py. Sanitize
+must not close out a blocked or stale scope result.
+
+    python3 <skill-dir>/scripts/wrapup_gate.py \
+      --task <canon-task-path> --repo <repo-root> \
+      --scope-gate <scope-gate-json>
 
 ```text
 1. 检查 git 状态
@@ -68,6 +81,12 @@ Read `references/formal-report.md` completely, then:
    ```bash
    python3 <skill-dir>/scripts/report_gate.py <report.md>
    ```
+
+For a delivery report, pass `--artifact-mode delivery --accepted-spec
+<accepted-spec.json>` (or `--require-accepted-spec`). The report describes the
+implemented final state; correction dialogue and rejected proposals remain
+audit-only. A comparison is included only when it explains an actual final
+design choice or compatibility constraint.
 
 5. Record the report's absolute path and durable conclusions in the Canon task
    page or an update card.

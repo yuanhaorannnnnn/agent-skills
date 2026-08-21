@@ -16,6 +16,12 @@ description: |
 
 # traceback — Delivery Alignment Gate
 
+Traceback consumes the clean-delivery contract as an approved-source boundary:
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+`alignment.json` may preserve evidence and waivers, but `alignment.md` maps only
+accepted requirements to implementation and passed validation; it is not a
+transcript summary.
+
 Verify one chain with file evidence:
 
     approved source -> implementation -> test mapping -> executed validation
@@ -65,6 +71,14 @@ Read 'references/alignment-schema.md' before creating or updating
 Do not recreate the retired document/dev/test checklist files.
 
 ## Workflow
+
+When an execution task has a scope-gate result, pass its absolute JSON path to
+the Traceback gate. A missing, blocked, stale, or malformed scope gate blocks
+Traceback; without the option, existing Traceback behavior remains unchanged.
+
+    python3 <skill-dir>/scripts/traceback_gate.py \
+      --dir .planning/<slug> --repo <repo-root> \
+      --scope-gate .planning/<slug>/scope-gate.json --json
 
 ### 1. Capture current workspace identity
 

@@ -18,6 +18,15 @@ description: |
 
 基于开发 conversation 生成结构化技术设计方案，面向产品/测试/开发评审。
 
+## Artifact Mode
+
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+方案评审文档属于 `delivery`：讨论结束后由 `conops` 固化已确认的最终 brief
+或生成 `accepted_spec.json`，再渲染 14 节方案。当前对话只作草稿输入；被否决
+的方案、纠错过程和替代命名不进入正式方案。若需要记录方案演进，另存为
+`audit` 材料。`breach` 只消费这份最终输入。
+
 ## 为什么需要这个 skill
 
 开发方案是评审阶段的核心输出物。它需要同时满足三个受众：
@@ -43,18 +52,19 @@ description: |
 dev-design 通常在代码开发之前执行，因此代码不是主要输入源。
 优先级按实际可用性排列：
 
-1. **当前对话中的设计讨论** — 所有方案决策、trade-off、参数取舍都在这里。
-   这是最丰富的信息源，不要只依赖文件而忽略对话。
+1. **accepted_spec / 已确认的最终 brief** — 交付范围、约束和验收的唯一输入边界。
 2. `/media/yhr/2T/Canon/tasks/<task>.md` — Canon task page 中的 § Plan / § Findings /
    § Decisions / § Artifacts。包含架构决策、约束和 artifact 路径。
-3. `.planning/conversations/<id>/` — runtime scratch buffer（spec / task_plan /
+3. **当前对话中的设计讨论** — 只提取已确认决策；未确认讨论不作为交付输入。
+4. `.planning/conversations/<id>/` — runtime scratch buffer（spec / task_plan /
    findings / progress）。历史参考，不作为 durable truth。
-4. `.agent-state/conversations/<id>.md` — 历史 runtime recap，补充参考。
-5. **代码 diff / 参考实现**（可选）— 仅在已有部分代码或参考文件时使用，
+5. `.agent-state/conversations/<id>.md` — 历史 runtime recap，补充参考。
+6. **代码 diff / 参考实现**（可选）— 仅在已有部分代码或参考文件时使用，
    例如 Code Navigation 节需要具体文件路径时。
 
-**如果 Canon task page 或 planning 文档不存在**，直接基于当前对话生成，
-并标注缺失的信息源。不要因为文件缺失而拒绝生成。
+**如果 Canon task page 或 planning 文档不存在**，只要 accepted brief/spec 已
+确认，仍可直接生成并标注缺失的信息源。若 accepted brief/spec 也不存在，先
+回到用户确认最终范围，不得把完整讨论当作正式方案输入。
 
 ---
 
@@ -218,7 +228,8 @@ If a question can be answered by exploring the codebase, explore instead.
 文档完成后跑 gate —— 机械检查脚本化：
 
 ```bash
-python3 <skill-dir>/scripts/quality_gate.py <path/to/design_doc.md>
+python3 <skill-dir>/scripts/quality_gate.py <path/to/design_doc.md> \
+  --artifact-mode delivery --accepted-spec <accepted-spec.json>
 ```
 
 blocked → 禁词命中 / 节缺失 / scope 不平衡 → 修后重跑。pass → 可以发评审。

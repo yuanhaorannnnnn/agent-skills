@@ -32,6 +32,12 @@ description: |
 
 ## 全局约定
 
+读取共享契约：
+`/home/yhr/.agents/repos/agent-skills/references/clean-delivery-contract.md`。
+Intake/root-cause 和 Neutralize gate 属于 `audit`，保留复现、假设和证据；Fix
+的 goal、最终修复摘要、Closeout 交付属于 `delivery`，只描述实际保留的修复。
+被否决假设只能留在根因审计记录，不能进入最终命名、提交说明或交付页。
+
 - **缺陷目录**: `/media/yhr/2T/yunxiao/bugs/<bug-id>/` — Phase 0 原始材料和
   `state.json` 的存放位置。`detail.md`、附件和其他 raw 输入只读；`state.json`
   仅允许按下方 mode 字段表 scoped write

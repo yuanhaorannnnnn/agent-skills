@@ -152,17 +152,20 @@ class TracebackGateTests(unittest.TestCase):
             ]
         )
 
-    def _gate(self):
+    def _gate(self, scope_gate=None):
+        command = [
+            "python3",
+            str(GATE),
+            "--dir",
+            str(self.plan),
+            "--repo",
+            str(self.repo),
+            "--json",
+        ]
+        if scope_gate:
+            command.extend(["--scope-gate", str(scope_gate)])
         return self._run(
-            [
-                "python3",
-                str(GATE),
-                "--dir",
-                str(self.plan),
-                "--repo",
-                str(self.repo),
-                "--json",
-            ],
+            command,
             check=False,
         )
 
@@ -171,6 +174,27 @@ class TracebackGateTests(unittest.TestCase):
         result = self._gate()
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertEqual(json.loads(result.stdout)["verdict"], "pass")
+
+    def test_scope_gate_block_is_consumed(self):
+        self._write_and_render(self._alignment())
+        scope_gate = self.root / "scope-gate.json"
+        scope_gate.write_text(
+            json.dumps(
+                {
+                    "verdict": "blocked",
+                    "checked_commit": self._fingerprint()["checked_commit"],
+                    "errors": ["changed files outside accepted scope"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self._gate(scope_gate)
+        self.assertEqual(result.returncode, 1)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "scope-gate: verdict is not pass",
+            payload["errors"],
+        )
 
     def test_placeholder_markdown_without_alignment_blocks(self):
         for name in (
