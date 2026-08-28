@@ -9,8 +9,11 @@ description: |
   "digest this thread", or "summarize this email chain". Use the general page
   mode for "quick HTML page", "快速 HTML 页面", "做个 HTML status page",
   "画一个 HTML flowchart", "做个 HTML slide page", "生成报告页面",
-  "visualize this as a page", or "把这个做成 HTML". Not for native documents,
-  native slide decks, spreadsheets, or full product visual design.
+  "visualize this as a page", or "把这个做成 HTML". When the task already
+  calls for a general page, support an optional ELI5 content profile for
+  explicit requests such as "ELI5", "像给小孩解释", or "给新手讲". Not for
+  native documents, native slide decks, spreadsheets, or full product visual
+  design.
 ---
 
 # Quick Page
@@ -36,6 +39,21 @@ Choose one mode:
 
 - **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
+
+## Content Routing
+
+Apply the content profile after choosing the artifact mode; it does not create
+another renderer:
+
+- **Default** — preserve the caller's normal level of detail and structure.
+- **ELI5** — select when the caller marks `content_profile: eli5` or the user
+  makes an explicit beginner-level request. Keep the General page renderer,
+  but use one idea per section, short sentences, and concrete analogies
+  labelled as analogies. Preserve evidence, qualifiers, uncertainty, and
+  provenance; never invent a fact to make an explanation simpler.
+- Do not force HTML for a plain request to "explain simply". If no HTML artifact
+  is requested, answer inline; use `visualize` only when a visual materially
+  improves understanding.
 
 ## General Page Mode
 
