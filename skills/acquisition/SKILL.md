@@ -6,7 +6,7 @@ description: |
   "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
   article URLs (including public WeChat Official Account links and albums), PDF
   files, or local Clippings files.
-version: "3.2.0"
+version: "3.3.0"
 user_invocable: true
 ---
 
@@ -26,8 +26,8 @@ user_invocable: true
   ├─ youtube.com / bilibili.com / xhslink.com → 视频管线
   │     下载(yt-dlp) → 音频提取 → FunASR 转录 → 蒸馏 → queries/
   │
-  ├─ mp.weixin.qq.com/mp/appmsgalbum → 专辑发现管线
-  │     滚动发现 → 规范化/去重 article URLs → manifest 或人工选择 → 单篇文章管线
+  ├─ mp.weixin.qq.com/mp/appmsgalbum → 专辑管线
+  │     滚动发现 → 规范化/去重 → 选择 N 篇 → 单篇 raw → 每篇 query → index/log/catalog
   │
   ├─ mp.weixin.qq.com/s → 文章管线
   │     直接抓取 → 标题/正文 gate 失败 → WeChat CLI 回退 → 蒸馏 → queries/
@@ -102,9 +102,9 @@ python <skill-dir>/scripts/transcribe_audio.py raw/assets/audio/<video_id>.wav \
 
 ### Step A0-WeChat album discovery：公开专辑
 
-`/mp/appmsgalbum` 是文章清单，不是文章正文。默认只发现、规范化和去重单篇
-`/s?...` URL，**不自动抓取文章、写 query 或批量摄入**。默认按最新优先返回全部
-文章；`--limit` 只限制输出/manifest 中的待选 URL，不改变完整性检查。
+`/mp/appmsgalbum` 是文章清单，不是文章正文。仅当用户要求“查看/列出专辑”时，
+执行 discovery-only：只发现、规范化和去重单篇 `/s?...` URL，不抓取文章、不写 query。
+默认按最新优先返回全部文章；`--limit` 只限制输出/manifest 中的待选 URL，不改变完整性检查。
 
 ```bash
 python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL"
@@ -132,8 +132,24 @@ python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
 
 manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json`，包含
 专辑标题、声明篇数、发现篇数、是否完整、去重数量、选择参数和 article URL。发现篇数少于声明篇数时
-`complete: false`；停止并报告，不得对不完整清单启动批量摄入。用户选择单篇后，才将该 `/s`
-URL 送入 Step A1 与必要的 WeChat fallback。
+`complete: false`；停止并报告，不得对不完整清单启动批量摄入。
+
+#### 专辑摄入：raw → 每篇 query
+
+当用户要求“处理/摄入专辑”或明确要求生成 query 时，这个路由进入完整 Acquisition 管线：
+
+1. 用 `discover_wechat_album.py` 完整发现并显式保存 manifest；专辑摄入必须提供
+   `--limit N`，`--order` 默认 `latest`。未给数量时，先询问，避免把整张专辑当作默认批量任务。
+2. 仅在 `complete: true` 时，按 manifest 的 `items` 顺序逐篇执行 Step A1；每篇独立通过
+   标题/正文 gate，失败才走一次 WeChat fallback。
+3. 每个成功 raw archive 都生成**一篇独立 query**，遵守 [笔记输出格式](#笔记输出格式)：
+   `sources:` 与 `## 来源` 指向该篇 `raw/articles/`，不指向专辑 manifest；正文至少包含 2 个
+   概念 wikilink。
+4. 全部成功 query 完成后更新 `index.md`、`log.md` 并刷新 catalog。任何单篇失败须在交付
+   摘要中列出 URL 与 gate 原因；不能伪称为全量完成，也不能用空壳 query 占位。
+
+因此，`--limit 10` 表示“摄入并生成最近 10 篇的 query”，而 discovery-only 中它只表示“列出最近
+10 篇”。单篇的 raw 和 query 仍遵循既有命名、验证与来源链，不把“未处理其余 50 篇”写入 query。
 
 ### Step A1: 远程 URL 抓取
 
