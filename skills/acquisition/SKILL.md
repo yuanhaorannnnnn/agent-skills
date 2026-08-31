@@ -6,13 +6,14 @@ description: |
   "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
   article URLs (including public WeChat Official Account links and albums), PDF
   files, or local Clippings files.
-version: "3.3.0"
+version: "3.3.1"
 user_invocable: true
 ---
 
 # Content Ingest: 统一内容摄入 + 知识蒸馏
 
-将视频、文章摄入到 wiki，去噪、蒸馏、生成结构化笔记。
+将视频、文章摄入到 wiki，去噪、蒸馏、生成结构化笔记。默认交付是“原始归档 + query”；
+只有用户明确要求 raw-only 时才跳过 query。
 
 ## 自动路由
 
@@ -29,8 +30,8 @@ user_invocable: true
   ├─ mp.weixin.qq.com/mp/appmsgalbum → 专辑管线
   │     滚动发现 → 规范化/去重 → 选择 N 篇 → 单篇 raw → 每篇 query → index/log/catalog
   │
-  ├─ mp.weixin.qq.com/s → 文章管线
-  │     直接抓取 → 标题/正文 gate 失败 → WeChat CLI 回退 → 蒸馏 → queries/
+  ├─ mp.weixin.qq.com/s → 文章管线（默认交付 raw + query）
+  │     直接抓取 → 标题/正文 gate 失败 → WeChat CLI 回退 → 蒸馏 → query
   │
   ├─ 普通网页 URL (substack/medium/博客等) → 文章管线
   │     抓取(trafilatura) → Cloudflare 被挡 → Jina Reader 回退 → 蒸馏 → queries/
@@ -136,7 +137,8 @@ manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json
 
 #### 专辑摄入：raw → 每篇 query
 
-当用户要求“处理/摄入专辑”或明确要求生成 query 时，这个路由进入完整 Acquisition 管线：
+当用户要求“处理/摄入专辑”时，这个路由进入完整 Acquisition 管线；query 是默认交付物，
+不需要额外说“生成 query”：
 
 1. 用 `discover_wechat_album.py` 完整发现并显式保存 manifest；专辑摄入必须提供
    `--limit N`，`--order` 默认 `latest`。未给数量时，先询问，避免把整张专辑当作默认批量任务。
@@ -229,9 +231,10 @@ cp "/media/yhr/2T/files/wiki/Clippings/<file>.md" "/media/yhr/2T/files/wiki/raw/
 
 笔记的 `sources:` 和 `## 来源` 段引用 `raw/clippings/<file>.md`，不引用 `Clippings/`。
 
-### Step A3: 蒸馏 → 结构化笔记
+### Step A3: 蒸馏 → 结构化笔记（默认）
 
-读取正文，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。
+读取正文，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。这是单篇文章、
+专辑选中文章及其他成功摄入材料的默认下一步；不要把 query 生成当作额外触发条件。
 
 ## PDF 管线
 
