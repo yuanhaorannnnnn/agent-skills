@@ -4,9 +4,9 @@ description: |
   Load when the user shares a video or article URL and wants to save it into the
   wiki, or says "把这篇/这个视频消化一下", "提取干货", "整理要点", "ingest this",
   "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
-  article URLs (including public WeChat Official Account links), PDF files, or
-  local Clippings files.
-version: "3.1.0"
+  article URLs (including public WeChat Official Account links and albums), PDF
+  files, or local Clippings files.
+version: "3.2.0"
 user_invocable: true
 ---
 
@@ -26,7 +26,10 @@ user_invocable: true
   ├─ youtube.com / bilibili.com / xhslink.com → 视频管线
   │     下载(yt-dlp) → 音频提取 → FunASR 转录 → 蒸馏 → queries/
   │
-  ├─ mp.weixin.qq.com → 文章管线
+  ├─ mp.weixin.qq.com/mp/appmsgalbum → 专辑发现管线
+  │     滚动发现 → 规范化/去重 article URLs → manifest 或人工选择 → 单篇文章管线
+  │
+  ├─ mp.weixin.qq.com/s → 文章管线
   │     直接抓取 → 标题/正文 gate 失败 → WeChat CLI 回退 → 蒸馏 → queries/
   │
   ├─ 普通网页 URL (substack/medium/博客等) → 文章管线
@@ -96,6 +99,27 @@ python <skill-dir>/scripts/transcribe_audio.py raw/assets/audio/<video_id>.wav \
 读取转录稿，按 [蒸馏规则](#蒸馏规则) 生成笔记 → `queries/<YYYYMMDD>-<slug>.md`。
 
 ## 文章管线
+
+### Step A0-WeChat album discovery：公开专辑
+
+`/mp/appmsgalbum` 是文章清单，不是文章正文。默认只发现、规范化和去重单篇
+`/s?...` URL，**不自动抓取文章、写 query 或批量摄入**。
+
+```bash
+python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL"
+```
+
+对需要保留或审核的清单，显式写入 manifest：
+
+```bash
+python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
+  --save-manifest --wiki-root /media/yhr/2T/files/wiki
+```
+
+manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json`，包含
+专辑标题、声明篇数、发现篇数、是否完整、去重数量和 article URL。发现篇数少于声明篇数时
+`complete: false`；停止并报告，不得对不完整清单启动批量摄入。用户选择单篇后，才将该 `/s`
+URL 送入 Step A1 与必要的 WeChat fallback。
 
 ### Step A1: 远程 URL 抓取
 
@@ -329,6 +353,7 @@ catalog 刷新失败不回滚已完成的摄入；明确报告失败，并保留
 | YouTube/Bilibili/X 视频 | `raw/assets/video/` + `raw/transcripts/` |
 | 网页文章 | `raw/articles/` |
 | 网页文章（Cloudflare 被挡，Jina Reader 抓取） | `raw/articles/` |
+| 微信专辑 URL 清单 | `raw/collections/`（显式 `--save-manifest`） |
 | Clippings（浏览器剪藏） | `raw/clippings/`（处理前先复制归档） |
 | 本地 mp4/wav | `raw/transcripts/` |
 | PDF（远程/本地） | `raw/papers/` |
@@ -350,6 +375,7 @@ raw/ 是图书馆——永久留存，不因是否写了笔记而增删。query/
 - `scripts/ingest_video.py`：yt-dlp 视频下载
 - `scripts/transcribe_audio.py`：FunASR 转录
 - `scripts/extract_article.py`：文章正文提取 + 图片下载
+- `scripts/discover_wechat_album.py`：微信专辑 article URL 发现 + 去重
 - `references/download-notes.md`：平台注意事项和排错
 
 ## Canon 输出边界
