@@ -4,8 +4,9 @@ description: |
   Load when the user shares a video or article URL and wants to save it into the
   wiki, or says "把这篇/这个视频消化一下", "提取干货", "整理要点", "ingest this",
   "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
-  article URLs (Substack, Medium, blog posts), PDF files, or local Clippings files.
-version: "3.0.0"
+  article URLs (including public WeChat Official Account links), PDF files, or
+  local Clippings files.
+version: "3.1.0"
 user_invocable: true
 ---
 
@@ -24,6 +25,9 @@ user_invocable: true
   │
   ├─ youtube.com / bilibili.com / xhslink.com → 视频管线
   │     下载(yt-dlp) → 音频提取 → FunASR 转录 → 蒸馏 → queries/
+  │
+  ├─ mp.weixin.qq.com → 文章管线
+  │     直接抓取 → 标题/正文 gate 失败 → WeChat CLI 回退 → 蒸馏 → queries/
   │
   ├─ 普通网页 URL (substack/medium/博客等) → 文章管线
   │     抓取(trafilatura) → Cloudflare 被挡 → Jina Reader 回退 → 蒸馏 → queries/
@@ -104,6 +108,38 @@ python <skill-dir>/scripts/extract_article.py "URL" \
 提取正文中的图片到 `raw/articles/images/<slug>/`，过滤 logo/icon/avatar 等噪声。
 
 输出 JSON（含 title/author/date/body/platform/slug/images）。
+
+**成功 gate**：标题非空、正文不是验证码/导航页且内容足以蒸馏；任一项失败，
+不得把该结果归档为 raw article。
+
+### Step A1-WeChat fallback：公开微信文章
+
+仅当 `https://mp.weixin.qq.com/...` 的直接抓取未通过标题/正文 gate 时使用。它是
+**一次性回退**，不重试、不使用账号/cookie，也不接触非公开文章。
+
+前置条件（由环境管理员一次性安装，不在常规摄入时自动安装）：
+
+```bash
+uv tool install wechat-article-to-markdown
+uv tool run --from 'camoufox[geoip]' camoufox fetch
+```
+
+调用 adapter；`--fallback-reason` 必须记录已经观察到的 direct gate 失败事实：
+
+```bash
+python <skill-dir>/scripts/ingest_wechat_article.py "WECHAT_URL" \
+  --wiki-root /media/yhr/2T/files/wiki \
+  --fallback-reason "direct extraction returned an empty article body"
+```
+
+adapter 使用隔离临时目录运行 CLI，验证唯一 Markdown、非空标题和足够正文后，写入：
+
+- `raw/articles/YYYYMMDD-wechat-<url-sha12>.md`
+- `raw/articles/images/YYYYMMDD-wechat-<url-sha12>/`（若下载到图片）
+
+它不会覆盖既有 raw capture；同一 URL 已归档时停止并复用现有 raw。adapter 完成的是
+**原始归档**，随后仍执行 Step A3；不要把第三方 CLI 的 `output/` 当作 wiki 来源。
+若 adapter 不可用或仍未通过 gate，改走 Step A2 的 Clippings/分享文本路径，不再循环回退。
 
 ### Step A1-fallback: Jina Reader（Cloudflare 被挡时）
 
