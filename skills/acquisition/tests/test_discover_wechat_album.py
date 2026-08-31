@@ -51,6 +51,21 @@ class WeChatAlbumDiscoveryTests(unittest.TestCase):
         self.assertTrue(manifest["complete"])
         self.assertEqual(manifest["items"][0]["title"], "最新文章")
 
+    def test_selection_defaults_to_latest_and_can_choose_oldest(self):
+        items = [
+            {"article_number": 3, "title": "最新"},
+            {"article_number": 2, "title": "中间"},
+            {"article_number": 1, "title": "最早"},
+        ]
+        self.assertEqual(
+            [item["title"] for item in MODULE.select_items(items, 2, "latest")],
+            ["最新", "中间"],
+        )
+        self.assertEqual(
+            [item["title"] for item in MODULE.select_items(items, 2, "oldest")],
+            ["最早", "中间"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

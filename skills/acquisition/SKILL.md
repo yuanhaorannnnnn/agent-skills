@@ -103,10 +103,24 @@ python <skill-dir>/scripts/transcribe_audio.py raw/assets/audio/<video_id>.wav \
 ### Step A0-WeChat album discovery：公开专辑
 
 `/mp/appmsgalbum` 是文章清单，不是文章正文。默认只发现、规范化和去重单篇
-`/s?...` URL，**不自动抓取文章、写 query 或批量摄入**。
+`/s?...` URL，**不自动抓取文章、写 query 或批量摄入**。默认按最新优先返回全部
+文章；`--limit` 只限制输出/manifest 中的待选 URL，不改变完整性检查。
 
 ```bash
 python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL"
+```
+
+只看最新 10 篇：
+
+```bash
+python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" --limit 10
+```
+
+取最早 10 篇：
+
+```bash
+python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
+  --order oldest --limit 10
 ```
 
 对需要保留或审核的清单，显式写入 manifest：
@@ -117,7 +131,7 @@ python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
 ```
 
 manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json`，包含
-专辑标题、声明篇数、发现篇数、是否完整、去重数量和 article URL。发现篇数少于声明篇数时
+专辑标题、声明篇数、发现篇数、是否完整、去重数量、选择参数和 article URL。发现篇数少于声明篇数时
 `complete: false`；停止并报告，不得对不完整清单启动批量摄入。用户选择单篇后，才将该 `/s`
 URL 送入 Step A1 与必要的 WeChat fallback。
 

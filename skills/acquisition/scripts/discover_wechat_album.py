@@ -125,6 +125,40 @@ def compile_manifest(source_url: str, browser_data: dict[str, object]) -> dict[s
     }
 
 
+def select_items(
+    items: list[dict[str, object]], limit: int | None, order: str
+) -> list[dict[str, object]]:
+    """Select the requested portion after discovery has established completeness."""
+    if order not in {"latest", "oldest"}:
+        raise ValueError("order must be latest or oldest")
+    numbered = all(item["article_number"] is not None for item in items)
+    if numbered:
+        ordered = sorted(
+            items,
+            key=lambda item: int(item["article_number"]),
+            reverse=order == "latest",
+        )
+    elif order == "latest":
+        ordered = list(items)
+    else:
+        ordered = list(reversed(items))
+    return ordered if limit is None else ordered[:limit]
+
+
+def apply_selection(
+    manifest: dict[str, object], limit: int | None, order: str
+) -> dict[str, object]:
+    selected = select_items(list(manifest["items"]), limit, order)
+    result = dict(manifest)
+    result["items"] = selected
+    result["selection"] = {
+        "order": order,
+        "limit": limit,
+        "selected_items": len(selected),
+    }
+    return result
+
+
 def installed_cli_python(command: str) -> str:
     executable = shutil.which(command)
     if executable is None:
@@ -217,6 +251,17 @@ def parse_args() -> argparse.Namespace:
         help="Write the discovered URL list to raw/collections; otherwise print JSON only.",
     )
     parser.add_argument("--wiki-root", type=Path, help="Required with --save-manifest")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Return at most N article URLs after full discovery; default is all.",
+    )
+    parser.add_argument(
+        "--order",
+        choices=("latest", "oldest"),
+        default="latest",
+        help="Selection order; default is latest.",
+    )
     parser.add_argument("--max-scrolls", type=int, default=DEFAULT_MAX_SCROLLS)
     parser.add_argument("--command", default="wechat-article-to-markdown")
     return parser.parse_args()
@@ -226,13 +271,17 @@ def main() -> int:
     args = parse_args()
     try:
         validate_album_url(args.url)
-        if args.max_scrolls < 1:
-            raise ValueError("--max-scrolls must be positive")
+        if args.max_scrolls < 1 or (args.limit is not None and args.limit < 1):
+            raise ValueError("--max-scrolls and --limit must be positive")
         if args.save_manifest != bool(args.wiki_root):
             raise ValueError("--save-manifest and --wiki-root must be provided together")
-        manifest = compile_manifest(
-            args.url,
-            fetch_album_dom(args.url, args.command, args.max_scrolls),
+        manifest = apply_selection(
+            compile_manifest(
+                args.url,
+                fetch_album_dom(args.url, args.command, args.max_scrolls),
+            ),
+            args.limit,
+            args.order,
         )
         if args.save_manifest:
             manifest["manifest_path"] = str(save_manifest(manifest, args.wiki_root.resolve()))
