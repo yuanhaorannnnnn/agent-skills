@@ -15,18 +15,13 @@ skills:
   role: discipline
   calls:
   - codify
-- name: SITREP
-  enabled: false
-  category: reporting
-  invocation: user
-  role: renderer
-  calls: []
 - name: acquisition
   enabled: true
   category: media
   invocation: user
   role: adapter
-  calls: []
+  calls:
+  - engineering-doc-writing
 - name: herdr-carla-tune
   enabled: true
   category: automation
@@ -53,6 +48,13 @@ skills:
   invocation: model
   role: discipline
   calls: []
+- name: software-study
+  enabled: true
+  category: learning
+  invocation: user
+  role: orchestrator
+  calls:
+  - engineering-doc-writing
 - name: sanitize
   enabled: true
   category: workflow
@@ -64,6 +66,12 @@ skills:
   category: workflow
   invocation: model
   role: renderer
+  calls: []
+- name: engineering-doc-writing
+  enabled: true
+  category: writing
+  invocation: model
+  role: discipline
   calls: []
 - name: passdown
   enabled: true
@@ -90,7 +98,8 @@ skills:
   category: design
   invocation: model
   role: renderer
-  calls: []
+  calls:
+  - engineering-doc-writing
 - name: traceback
   enabled: true
   category: review
@@ -120,6 +129,12 @@ skills:
   enabled: true
   category: workflow
   invocation: model
+  role: orchestrator
+  calls: []
+- name: x-likes-digest
+  enabled: true
+  category: automation
+  invocation: user
   role: adapter
   calls: []
 metadata_schema:

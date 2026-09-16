@@ -1,6 +1,7 @@
 {
   "name": "@yuanhaorannnnnn/agent-skills",
   "version": "0.1.0",
+  "license": "MIT",
   "private": false,
   "description": "Agent-neutral skills distribution repository",
   "type": "module",
