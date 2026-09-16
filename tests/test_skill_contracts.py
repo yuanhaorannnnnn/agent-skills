@@ -58,6 +58,14 @@ class SkillContractTests(unittest.TestCase):
         for variable in ("BUILD_PANE", "SERVER_PANE", "CLIENT_PANE"):
             self.assertIn(variable, text)
 
+    def test_breach_declares_writing_discipline_dependency(self) -> None:
+        manifest = yaml.safe_load((REPO_ROOT / "manifest.yaml").read_text())
+        breach = next(entry for entry in manifest["skills"] if entry["name"] == "breach")
+        self.assertIn("engineering-doc-writing", breach["calls"])
+        text = (SKILLS_DIR / "breach" / "SKILL.md").read_text()
+        self.assertIn("invoke `engineering-doc-writing`", text)
+        self.assertIn("HTML structure, visual tokens, rendering, and provenance", text)
+
 
 class WorkflowGateHelperTests(unittest.TestCase):
     @classmethod
@@ -146,6 +154,126 @@ class WorkflowGateHelperTests(unittest.TestCase):
             self.assertTrue(self.herdr_round.check_not_terminated(state)[0])
             self.assertTrue(self.herdr_round.check_hypotheses_remaining(state)[0])
             self.assertTrue(self.herdr_round.check_round_limits(state)[0])
+
+
+class ExecuteGateTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.execute = load_module(
+            "execute_gate", SKILLS_DIR / "execute" / "scripts" / "execution_gate.py"
+        )
+
+    @staticmethod
+    def write_task(
+        path: Path,
+        *,
+        routing_mode: str = "auto",
+        resolved_route: str = "direct",
+        depth: int = 0,
+        extra: str = "",
+    ) -> None:
+        routing = (
+            "## Routing\n"
+            f"- routing_mode: {routing_mode}\n"
+            f"- resolved_route: {resolved_route}\n"
+            "- reason: bounded task\n"
+            "- router_owner: main Execute router\n"
+            f"- delegation_depth: {depth}\n"
+            "- downstream_auto_delegate: forbidden\n"
+            "- models: current\n"
+            "- scope: scoped files\n"
+            "- status: active\n"
+            "- evidence: contract\n\n"
+        )
+        path.write_text(
+            "# Task\n\n## Goal\nDo work.\n\n## Current State\nActive.\n\n"
+            "## Next Step\nImplement.\n\n## Tasks\n- [ ] Work\n\n"
+            f"## Progress\nStarted.\n\n{routing}{extra}",
+            encoding="utf-8",
+        )
+
+    def test_auto_route_records_direct_without_goal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task = Path(tmp) / "task.md"
+            self.write_task(task)
+            self.assertEqual(self.execute.main(["--mode", "none", "--task", str(task)]), 0)
+
+    def test_direct_and_delegate_routes_require_matching_records(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task = Path(tmp) / "task.md"
+            self.write_task(task, routing_mode="direct")
+            self.assertEqual(
+                self.execute.main(["--mode", "none", "--direct", "--task", str(task)]), 0
+            )
+            self.write_task(
+                task,
+                routing_mode="delegate",
+                resolved_route="delegate",
+                depth=1,
+                extra=(
+                    "## Delegation\n"
+                    "- executor: luna\n"
+                    "- scope: scoped files\n"
+                    "- status: returned\n"
+                    "- evidence: tests\n"
+                ),
+            )
+            self.assertEqual(
+                self.execute.main(["--mode", "none", "--delegate", "--task", str(task)]), 0
+            )
+
+    def test_plan_delegate_requires_goal_plan_and_delegation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task = root / "task.md"
+            goal = root / "goal.md"
+            self.write_task(
+                task,
+                routing_mode="delegate",
+                resolved_route="delegate",
+                depth=1,
+                extra=(
+                    "## Plan\nPlan it.\n\n## Delegation\n"
+                    "- executor: terra\n"
+                    "- scope: scoped files\n"
+                    "- status: returned\n"
+                    "- evidence: tests\n"
+                ),
+            )
+            goal.write_text("# Goal\n\n## Goal\nShip it.\n\n## Tasks\n- [ ] Implement\n", encoding="utf-8")
+            self.assertEqual(
+                self.execute.main(
+                    ["--mode", "plan", "--delegate", "--task", str(task), "--goal", str(goal)]
+                ),
+                0,
+            )
+
+    def test_rejects_conflicting_or_recursive_delegate_flags(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task = Path(tmp) / "task.md"
+            self.write_task(task)
+            with self.assertRaises(SystemExit):
+                self.execute.main(
+                    ["--mode", "none", "--direct", "--delegate", "--task", str(task)]
+                )
+            with self.assertRaises(SystemExit):
+                self.execute.main(
+                    [
+                        "--mode", "none", "--delegate", "--delegation-depth", "1",
+                        "--task", str(task),
+                    ]
+                )
+
+    def test_downstream_auto_cannot_resolve_to_delegate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task = Path(tmp) / "task.md"
+            self.write_task(task, resolved_route="delegate", depth=2)
+            self.assertEqual(
+                self.execute.main(
+                    ["--mode", "none", "--route", "auto", "--delegation-depth", "1", "--task", str(task)]
+                ),
+                1,
+            )
 
 
 if __name__ == "__main__":

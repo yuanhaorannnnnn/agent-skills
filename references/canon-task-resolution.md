@@ -6,7 +6,7 @@ Shared resolution logic for reading and writing Canon task pages. All skills tha
 
 - demand/bug ID: use the raw ID string (e.g. `JHBN-7679`, `154395`)
 - project + branch: sanitize branch name — strip non-alphanumeric chars, replace `/` with `-`, lowercase
-- new task: extract English keywords from title, kebab-case, max 4 words
+- new task: use a concise English semantic slug, kebab-case, max 4 words. For a Chinese-only title, translate its core intent into 2-4 stable English keywords; never create an empty or punctuation-only slug.
 
 ## Resolution Priority
 
@@ -54,7 +54,7 @@ Pick the highest-scoring match above a minimum threshold. If no candidate clears
 
 ### 5. Create new
 
-Generate a kebab-slug from the task title:
+Generate a kebab-slug from the task title. If the title contains no usable ASCII keywords, first derive a concise English semantic title (for example, `委托模型执行任务` → `delegate-model-task`) and then normalize it:
 
 ```python
 import re
@@ -106,7 +106,7 @@ Update on every save:
 
 ### Workflow skills — write task pages
 
-`sanitize`, `execute --plan`, `tasking`, and `repair` resolve the task page and apply the action-layer merge rules for their sections. Ad-hoc work updates the resolved Canon task page directly using the same contract.
+`sanitize`, all `execute` modes, `tasking`, and `repair` resolve the task page and apply the action-layer merge rules for their sections. Every Execute mode also records its routing mode, resolved route, reason, models, scope, status/evidence, and delegation depth in `## Routing`; `execute --goal` adds a runtime brief; `execute --plan` additionally owns the Plan/Findings/Progress structure. Ad-hoc work updates the resolved Canon task page directly using the same contract.
 
 ### passdown — attaches hot context
 

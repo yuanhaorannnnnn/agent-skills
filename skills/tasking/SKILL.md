@@ -44,7 +44,7 @@ description: |
 ## 责任边界
 
 - **tasking 是需求生命周期 owner**：负责 Yunxiao 状态、phase、task page identity、方案来源和阶段 gate。
-- **execute 是 model-invoked runtime adapter**：只把已确认任务压成 `goal.md`、更新既有 Canon plan，并触发或交付 `/goal`。
+- **execute 是统一任务执行 adapter**：Tasking Engage 固定调用 `execute --plan <task-page>`，把已确认任务压成 `goal.md`、更新既有 Canon plan，并触发或交付 `/goal`。
 - tasking 调用 execute 时必须传入既有 Canon task page。execute 不得新建近似 task、改变 Yunxiao 状态、选择需求分支或宣称 Engage/Turnover 已完成。
 - runtime 无法注入 `/goal` 时，execute 返回明确 handoff；tasking 保持 `dev` 阶段 owner，不以内联实现伪装已启动。
 

@@ -1,194 +1,115 @@
 ---
 name: execute
 description: |
-  Explicit goal authoring request → runtime goal.md + Canon task page → launch
-  execution. Use when the user explicitly asks to write/create goal.md, start a
-  goal-backed run, invoke $execute, or says 开动/执行 in a context where a
-  persistent goal is clearly intended. Reads code context, derives structured
-  tasks, writes a repo-local goal.md execution brief, records durable state in
-  Canon, and launches /goal (or Pi /loop custom) with goal.md.
-
-  Supports --plan for complex multi-phase tasks: loads plan-template from
-  references/plan-template.md, writes § Plan / § Findings / § Progress into the
-  Canon task page, generates goal.md from that task context, and launches /goal.
-
-  Do NOT auto-trigger for ordinary implementation requests such as 帮我改、
-  写一个、implement this, or add this feature; Codex handles those directly.
-  Do NOT use when the user works with a known demand/bug ID — tasking or repair
-  handle those. Do NOT use for questions, code review, or research.
+  执行具体任务并在 Canon task page 留下可恢复记录。用户说“执行”“开始做”“开动”
+  “落实”“实施”“修改”“修复”“处理这个任务”“帮我做”“委托执行”“交给其他模型”，
+  或显式调用 $execute / /execute 时使用。默认自动选择当前 agent 或一层委托；--direct
+  和 --delegate 强制覆盖。--goal 创建 goal.md；--plan 创建详细计划并隐含 --goal。普通问答、
+  解释、只读 review、单纯调研不触发；已知需求/缺陷 ID 分别由 tasking/repair 管理。
 ---
 
-# execute — 火力任务
+# execute — 任务执行入口
 
-用户显式要求 goal-backed execution → goal.md + Canon task page → /goal。
+统一承接普通任务执行、轻量委托和持久 goal。所有路径创建或更新 Canon task；执行者路由与持久化深度正交。
 
-## Architecture Role
+## 参数与模式
 
-execute is a **model-invoked runtime adapter**, not a product/demand lifecycle owner. It packages confirmed work into a runtime brief and hands it to `/goal` or `/loop custom`.
+| 维度 | 默认 | 覆盖 | 作用 |
+|---|---|---|---|
+| 执行者 | `auto` | `--direct` / `--delegate` | 自动路由、强制当前 agent、强制一层委托 |
+| 持久化 | 无 | `--goal` / `--plan` | 无 `goal.md`、创建 runtime brief、增加 Canon Plan 并隐含 `--goal` |
 
-- Direct user invocation: resolve or create one Canon task page, then package the brief.
-- Called by tasking: update only the explicit task page; never create a sibling task, mutate Yunxiao/state phase, choose the demand branch, or claim tasking gates passed.
-- Called by another orchestrator: preserve caller ownership and return `goal_path`, `task_path`, gate result, and runtime handoff state.
+因此 `execute`、`execute --direct`、`execute --delegate`、`execute --plan --delegate` 都合法；`--direct` 与 `--delegate` 互斥。`--plan` 优先于显式 `--goal`。
 
-## Hard Rule
+可选参数：
 
-When the user invokes `$execute`, do not implement inline before `/goal` is actually triggered. First generate or update `goal.md`, create or update the Canon task page, then trigger or hand off:
+- `<task-page-path>`：复用明确的 Canon task page。
+- `--designer <model>`：仅与 `--delegate` 一起使用，让指定模型先产出执行 brief。
+- `--executor <model>`：指定执行模型；未指定时按任务和 runtime 可用模型选择。
 
-```text
-/goal <absolute-goal-md-path>
-```
+## 触发边界
 
-If the current agent cannot directly inject the runtime slash command, stop after preparing `goal.md` and report the exact `/goal` command for the user to run. Do not continue implementation inline and do not claim `/goal` was launched.
+以下中文表达应触发普通执行：执行、开始做、开动、落实、实施、修改、改一下、修复、处理这个任务、帮我做、按这个方案做。出现“委托、交给其他模型、低级模型执行、让 Terra/Luna 做”时选择 `--delegate`。
 
-## 参数
+不用于纯问答、概念解释、只读诊断/review、单纯调研或用户明确说“先不动手”。已知 demand/bug ID 继续由 `tasking`/`repair` 持有生命周期；它们可调用本 skill，但 execute 不接管其状态、分支或 task identity。
 
-| 参数 | 作用 |
-|------|------|
-| (无参数) | 标准模式：从用户描述生成 `goal.md`，并创建新 Canon task page |
-| `--plan` | 计划模式：额外加载 plan-template，写入 § Plan / § Findings / § Progress |
-| `<task-page-path>` | 传入已有 Canon task page 路径（如 `/media/yhr/2T/Canon/tasks/JHBN-7679.md`），更新该 task page 并从中生成 `goal.md` |
+## 共同流程
 
-当 `--plan` 和 `<task-page-path>` 同时传入时（如 `execute --plan /media/yhr/2T/Canon/tasks/JHBN-7679.md`），plan 写入已有 task page，不新建；随后生成 repo-local `goal.md` 并触发 `/goal <goal.md>`。tasking Engage 使用此模式。
+### 1. 解析任务与 Canon task
 
-## 流程
+读取当前 repo、dirty baseline、用户约束和相关 Canon 页面。按 `<skills-root>/references/canon-task-resolution.md` 解析或创建一个 Canon task page。所有模式在修改代码或委托前写入：
 
-### Step 1: 感知战场
+- `## Goal`、`## Current State`、`## Next Step`、`## Key Decisions`
+- `## Tasks`、`## Progress`、`## Artifacts`
+- frontmatter 的 `workflows: [execute]`、`report_scope`、`weekly`、日期
 
-快速扫描当前上下文——不是深度分析：
+轻量模式只写足以恢复任务的摘要，不创建 `.proposal` 文件。完成后更新任务状态、checklist、验证证据和时间线。
 
-- 当前项目、语言、仓库根目录
-- 最近修改的文件（`git diff --stat HEAD` 或未提交改动）
-- 任务描述中提到或涉及到的模块名/接口名
-- Canon 相关约束（`rg` /media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}）。Canon-first for durable context; code-first for current implementation facts
+### 2. 形成执行契约与路由记录
 
-### Step 2: 编写执行目标
+执行契约至少包含：目标、非目标、scoped files、既有 dirty baseline、关键约束、可观察成功条件、验证命令。小任务可直接存在 Canon task；`--goal`/`--plan` 再把它压缩成 runtime brief。
 
-基于用户描述 + Step 1 的代码上下文，用以下模板输出结构化目标，写入 repo-local `goal.md`。同时把摘要同步到 Canon task page § Goal。
+在选择执行者后，所有模式必须写入 `## Routing`：
 
 ```markdown
-# <任务标题>
-
-## 目标
-[一段话描述核心功能]
-
-## 任务清单
-- [ ] <task1>
-- [ ] <task2>
-
-## 关键约束
-- <constraint1>
-- <constraint2>
-
-## 接口影响
-[涉及的函数签名/参数变更，如无则写"无"]
-
-## Observable Target
-[修改前证据或目标状态、成功判据、验证命令；无法预先复现时写明原因]
-
-## Module Boundary
-[受影响模块、public interface、预期扩大/保持/收敛]
+## Routing
+- routing_mode: auto | direct | delegate
+- resolved_route: direct | delegate
+- reason: <收益、上下文或显式覆盖理由>
+- router_owner: main Execute router
+- delegation_depth: 0 | 1
+- downstream_auto_delegate: forbidden
+- models: <current model and any designer/executor>
+- scope: <delegated or local scope>
+- status: <active | blocked | returned | verified>
+- evidence: <brief, diff, test, or handoff reference>
 ```
 
-### Step 2b: --plan 模式（可选）
+reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择；它不是执行 owner，也不绕过这份记录。
 
-如果传了 `--plan`，加载 `references/plan-template.md`，在 Canon task page 中写入：
+### 3. 选择执行路径
 
-- **§ Plan** — 5-phase 结构（Discovery → Planning → Implementation → Testing → Delivery），含 phase checklist、architecture decisions 表、validation 命令
-- **§ Findings** — Requirements / Code Observations / Research Findings / Open Questions / Resources
-- **§ Progress** — Session log + Test Results + Handoff Notes
+#### `auto`：默认路由
 
-task page 已有对应 section 时合并更新，不覆盖。
+仅主/main agent 可在形成契约后自动选择：任务可独立拆分、下游能获得完整 scope/验收条件、委托收益超过交接成本且主 agent 可复核时，解析为 `delegate`；否则解析为 `direct`。小改动、强上下文依赖、频繁用户交互、不可独立验收的任务保持 direct。
 
-### Step 3: 落盘 goal.md + Canon
+下游 agent 的 `auto` 必须解析为 `direct`，不得再次组队。默认最大 delegation depth 是 1；已在 depth 1 的 agent 不得使用 `--delegate`。主 agent 保留任务 owner、复核责任和 Canon 写回责任。
 
-解析 `<task-slug>`：从已有 task page 文件名或任务标题生成。默认写入当前 repo：
+#### `--direct`：强制当前 agent
 
-```text
-<repo-root>/.proposal/<task-slug>/goal.md
-```
+当前 agent 实现、验证并回写 Canon。不创建 `goal.md`，除非同时传 `--goal` 或 `--plan`。
 
-如果传入 `<task-page-path>`，更新该 Canon task page；否则按 slug 规则创建新路径：
+#### `--delegate`：强制轻量委托
 
-```text
-/media/yhr/2T/Canon/tasks/<task-slug>.md
-```
+主 agent 使用 runtime 的子代理能力传递执行契约；runtime 不支持时记录 blocker 并明确报告，不能把 inline 执行伪装成委托。Astra 适合高风险架构，Sol 适合常规设计与拆解，Terra 适合跨文件实现，Luna 适合边界清楚的机械修改和简单测试；以 runtime 可用模型和用户指定为准。
 
-Canon task page 记录 durable state：Goal / Tasks / Plan / Findings / Progress / Artifacts，并在 § Artifacts 或 frontmatter `artifacts` 引用 `goal_path`。
+在 `## Delegation` 记录 executor、scope、status、evidence（以及可选 designer）。主 agent 复核下游 diff、测试和完成条件后才可标记完成。
 
-`goal.md` 是 runtime execution brief；Canon task page 是 durable task state。不要把 Canon task page 直接传给 `/goal`。
+#### `--goal` / `--plan`：持久化维度
 
-### Step 4: 启动执行
+`--goal` 创建 `<repo-root>/.proposal/<task-slug>/goal.md`，包含目标、任务清单、关键约束、接口影响、Observable Target、Module Boundary，并把绝对路径写入 Canon artifacts。用 `/goal <absolute-goal-md-path>`（Pi 使用 `/loop custom <path>`）启动；无法注入命令时返回准确 handoff，不以内联执行伪装已启动。
 
-解析最终 `goal.md` 绝对路径：
+`--plan` 先读取 `references/plan-template.md`，合并更新 Canon 的 `## Plan`、`## Findings`、`## Progress`，再创建并启动 `goal.md`。已有 section 按 task-resolution merge contract 更新，不覆盖历史。
 
-```text
-<repo-root>/.proposal/<task-slug>/goal.md
-```
+### 4. Gate 与 review
 
-Codex 和 Claude Code 都内置 `/goal`，必须真实触发 runtime slash command：
+按持久化和路由维度运行 gate：
 
-```text
-/goal <absolute-goal-md-path>
-```
-
-示例：
-
-```text
-/goal /media/yhr/2T/CarlaUE5/.proposal/JHBN-7712/goal.md
-```
-
-`/goal` 的唯一参数是 `goal.md` 的绝对路径。不要把“当前 agent 继续手动执行”伪装成已启动 `/goal`；如果 slash command 触发失败，报告失败原因并停止，不做 inline 替代。
-
-Pi runtime 使用：
-
-```text
-/loop custom <absolute-goal-md-path>
-```
-
-触发后，agent 读取 `goal.md` 执行；Canon task page 用于持久记录进度、证据和回写结果。
-
-**Step 4 后跑 gate**：
 ```bash
-python3 <skill-dir>/scripts/execution_gate.py --goal <goal-md> --task <canon-task-path>
-```
-blocked → goal.md 缺失或 Canon task page 未更新。pass → /goal 已准备好。
-
-### Step 5: Review Gate
-
-实现完成后、traceback/sanitize 前，读取共享质量门：
-
-```text
-/home/yhr/.agents/repos/agent-skills/references/review-gate.md
+python3 <skill-dir>/scripts/execution_gate.py --mode none --route auto --task <canon-task>
+python3 <skill-dir>/scripts/execution_gate.py --mode none --direct --task <canon-task>
+python3 <skill-dir>/scripts/execution_gate.py --mode goal --delegate --task <canon-task> --goal <goal-md>
+python3 <skill-dir>/scripts/execution_gate.py --mode plan --route auto --task <canon-task> --goal <goal-md>
 ```
 
-用 Canon task page、`goal.md`、当前 diff、测试/构建证据执行 review。有 blocker 时先修复；无 blocker 时把结果写入 Canon task page § Findings / § Evidence / § Timeline。
+代码或配置修改后，读取 `<skills-root>/references/review-gate.md`，以 task page、当前 diff 和验证证据 review；blocker 未解除不得宣称完成。
 
+## 调用方约束
 
-## Workflow Gate Contract
+- `tasking Engage` → `execute --plan <existing-task-page>`；tasking 仍是 phase/state owner。
+- `repair Fix` 默认不走 execute，继续使用自己的 `fix_plan` 与 gate。
+- 其他 orchestrator 必须传入既有 task page，并保留自己的生命周期所有权。
 
-execute must satisfy the shared workflow output contract:
+## 输出契约
 
-```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
-```
-
-`goal.md` is the runtime execution brief; the Canon task page is durable state. A downstream agent must be able to resume from those two files plus linked artifacts.
-
-## Gotchas
-
-- `$execute` does not mean “start coding now”. It means prepare `goal.md` + Canon task page, then trigger or hand off `/goal <goal.md>`.
-- Ordinary coding requests do not imply `$execute`. Require explicit goal intent before adding `goal.md` and Canon task overhead.
-- Do not pass the Canon task page to `/goal`; pass the repo-local `goal.md` absolute path.
-- If the runtime cannot inject `/goal`, stop after writing files and report the exact command. Do not continue inline as a substitute.
-- `--plan <task-page-path>` updates the existing Canon task page; it must not create a duplicate task page under a similar slug.
-- Review Gate runs after implementation and before traceback/sanitize; blockers stop delivery.
-- Do not treat code volume as progress. Each implementation slice must close a feedback loop against the observable target.
-- When a public interface changes, record why the module becomes deeper or why expansion is unavoidable.
-
-## 与其他 skill 的关系
-
-```
-tasking Engage → execute --plan（model-invoked adapter；生成 goal.md，不接管需求 phase/state）
-repair Fix    → 默认不走 execute；使用 fix_plan.md + neutralize
-用户直接调用  → execute [--plan]（workflow 外的开发启动入口）
-```
+遵守 `<skills-root>/references/skill-output-contract.md` 与 `<skills-root>/references/canon-output-contract.md`。最终至少返回：`task_path`、持久化模式、`routing_mode`、`resolved_route`、执行者/委托状态、验证结果；只有 goal/plan 模式返回 `goal_path`。
