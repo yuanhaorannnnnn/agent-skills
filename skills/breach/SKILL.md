@@ -40,10 +40,43 @@ Choose one mode:
 - **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
 
+## Optional Chart Renderer
+
+In General page mode, `lieflat-charts` may render a chart module inside the
+page. Breach still owns page integration and chart placement;
+`engineering-doc-writing` owns the surrounding narrative.
+
+Use it only when all are true:
+
+- the input contains real quantitative data or an honest relationship graph;
+- a chart carries an independent conclusion better than prose, cards, or a table;
+- the visual encoding does not require invented scores, weights, or benchmarks;
+- the artifact's use is compatible with the renderer's license.
+
+Keep this route small: normally 1–3 charts, each with a distinct conclusion.
+Do not chart decorative KPIs, qualitative comparisons, or every available
+column. If `lieflat-charts` is unavailable, continue with native HTML/CSS/SVG;
+do not install a dependency implicitly. Preserve both Breach page provenance
+and the chart template/license provenance.
+
 ## Content Routing
 
 Apply the content profile after choosing the artifact mode; it does not create
 another renderer:
+
+### Writing discipline
+
+Before drafting or materially restructuring technical narrative in either mode,
+invoke `engineering-doc-writing`. It owns the content model, reader task,
+information relationships, evidence calibration, and prose quality; Breach owns
+HTML structure, visual tokens, rendering, and provenance. Follow that skill's
+required calibration-corpus step before writing.
+
+Apply this discipline when generating page copy, explanations, conclusions,
+decision rationale, status narratives, or discussion-digest synthesis. If the
+caller supplies approved prose and asks only for faithful HTML rendering, keep
+the prose unchanged and skip re-authoring. Deterministic rendering never grants
+Breach permission to invent or strengthen facts.
 
 - **Default** — preserve the caller's normal level of detail and structure.
 - **ELI5** — select when the caller marks `content_profile: eli5` or the user

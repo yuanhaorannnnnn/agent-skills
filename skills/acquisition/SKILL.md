@@ -6,14 +6,36 @@ description: |
   "summarize into the wiki". Handles X/YouTube/Bilibili/Xiaohongshu videos and
   article URLs (including public WeChat Official Account links and albums), PDF
   files, or local Clippings files.
-version: "3.3.1"
-user_invocable: true
+metadata:
+  version: "3.5.0"
 ---
 
 # Content Ingest: 统一内容摄入 + 知识蒸馏
 
 将视频、文章摄入到 wiki，去噪、蒸馏、生成结构化笔记。默认交付是“原始归档 + query”；
 只有用户明确要求 raw-only 时才跳过 query。
+
+## Step 0：跨入口身份检查
+
+路由、下载或复制 raw 之前，先对每个独立来源执行：
+
+```bash
+python <skill-dir>/scripts/source_identity.py \
+  --wiki-root /media/yhr/2T/files/wiki --url "SOURCE_URL"
+
+python <skill-dir>/scripts/source_identity.py \
+  --wiki-root /media/yhr/2T/files/wiki --file "Clippings/FILE.md"
+```
+
+脚本统一比较 `canonical_url` 和正文 `content_sha256`，覆盖手机书签、PC clipping、
+直接 URL、X bookmark 等不同入口。URL 规范化只移除 fragment、常见追踪参数和 viewer noise；
+保留用于识别内容的参数。
+
+- 命中已有完整 raw + query：复用现有产物，报告 `skipped`，不得再次归档或生成 query。
+- 只命中 raw：复用 raw，继续生成缺失 query。
+- 只命中 query 或来源链不完整：检查其 `sources:`，补齐缺失环节，不复制完整产物。
+- 同 URL 但正文变化：保留已有 raw，使用可追溯的新文件名归档新版本，并在结果中标明更新。
+- URL 不可用且无本地正文：无法做可靠身份判断；继续管线，但明确这是弱去重。
 
 ## 自动路由
 
@@ -289,6 +311,37 @@ PDF 通常篇幅较长（10-50 页），蒸馏时注意：
 - 纯观点/态度（无论证和数据）
 - 无法迁移的一次性经验
 
+### 先保真，再成文
+
+生成 query 前先完成 evidence pass。不要在读取每个来源后立即写一段连贯摘要；这会在跨来源综合之前丢失数字、限定条件和相互冲突的细节。
+
+在内部按原子信息记录：
+
+```text
+claim | evidence ref/位置 | evidence type | 条件或不确定性
+```
+
+- `claim` 只表达一个可独立检查的事实、数据、机制、作者判断或失败记录。
+- `evidence ref/位置` 指向 raw 文件及可定位的章节、页码、时间戳、图表或原文片段。
+- `evidence type` 区分原文陈述、source-reported 结果、本机观察、推断和个人判断。
+- 精确保留数字、单位、标识符、版本、样本范围和否定条件；相互冲突的信息分别记录，不先行调和。
+
+完成 evidence pass 后再按读者任务和信息关系组织 prose。该原子记录默认是内部工作状态，不要求额外生成永久文件；来源多、材料长或用户要求审计时，再把它保存为显式 evidence ledger。
+
+## Query 写作门禁
+
+生成或实质重写 query 时，默认加载 `engineering-doc-writing`，在写入前按其失效机制完成一次清理。该步骤属于 Acquisition 的默认 query 管线；用户不需要额外触发。只生成 raw archive 时跳过。
+
+把 query 视为面向未来自己的技术说明或评价，而不是对原材料的形式化摘要：
+
+1. 先确定文档对象、核心主张、证据层级和主要信息关系，再选择结构；下方“笔记输出格式”是最低字段契约，不要求机械补齐同名章节。
+2. 对照 evidence pass 保留关键事实、标识符、数值、适用条件、不确定性以及用户在 `## 阅读讨论` 中提出的问题；不得为了流畅或缩短文字损失这些内容。
+3. 删除元叙事、语义重复、模板补全、抽象评价、预防性辩护、错位教学和表演性文风；把机制、证据与边界放在对应结论附近。
+4. 区分原文主张、source-reported 结果、本机验证、推断和个人判断；不能把其中一类改写成另一类。
+5. 重写后执行双向检查：从正文回到来源，确认主张有证据；从 evidence pass 回到正文，确认关键原子信息没有在摘要和重组中消失。删除任一句话，如果不改变理解、判断、证据强度或后续行动，则继续删除或合并。
+
+`engineering-doc-writing` 只负责组织与表达，不替代本 skill 的 raw 来源链、frontmatter、wikilink、index/log 和 catalog 门禁。
+
 ## 笔记输出格式
 
 文件名固定为 `queries/YYYYMMDD-<english-slug>.md`：
@@ -409,6 +462,7 @@ raw/ 是图书馆——永久留存，不因是否写了笔记而增删。query/
 - `scripts/transcribe_audio.py`：FunASR 转录
 - `scripts/extract_article.py`：文章正文提取 + 图片下载
 - `scripts/discover_wechat_album.py`：微信专辑 article URL 发现 + 去重
+- `scripts/source_identity.py`：跨入口 canonical URL + content hash 身份检查
 - `references/download-notes.md`：平台注意事项和排错
 
 ## Canon 输出边界
