@@ -1,11 +1,34 @@
 ---
 name: herdr
-description: "Control herdr from inside it. Manage workspaces and tabs, split panes, spawn agents, read output, and wait for state changes — all via CLI commands that talk to the running herdr instance over a local unix socket. Use when running inside herdr (HERDR_ENV=1)."
+description: "Inspect or control Herdr. In a Herdr-managed pane (HERDR_ENV=1), use the local CLI; from ChatGPT Web, Mobile, or Desktop, use the herdr_control MCP Bridge and never fall back to the CLI."
 ---
 
 # herdr — agent skill
 
-before using this skill, check that `HERDR_ENV=1`. if it is not set to `1`, say you are not running inside a herdr-managed pane and stop. do not inspect or control the focused herdr pane from outside herdr.
+## runtime routing
+
+choose exactly one control path before doing anything:
+
+1. if `HERDR_ENV=1`, this is a Herdr-managed pane. use the `herdr` CLI instructions below.
+2. otherwise, if the `mcp__herdr_control__*` tools are available, this is an external ChatGPT client. use only the MCP Bridge instructions below.
+3. otherwise, report that the Herdr Bridge is unavailable and stop.
+
+when `HERDR_ENV` is not `1`, never inspect or control Herdr through the local `herdr` CLI, shell commands, socket files, or an HTTP fallback. ChatGPT Web, Mobile, and Desktop must always use the MCP Bridge.
+
+### external ChatGPT clients: MCP Bridge
+
+use only the capabilities actually exposed in the current tool list:
+
+- `mcp__herdr_control__list_agents` — list current agents and status.
+- `mcp__herdr_control__list_panes` — list current panes and obtain fresh pane ids.
+- `mcp__herdr_control__read_pane` — read an existing pane.
+- `mcp__herdr_control__prompt_agent` — prompt an existing agent when the user authorized that write action.
+
+pane ids are ephemeral. call `list_agents` or `list_panes` immediately before every `read_pane` or `prompt_agent`; never reuse an id from an earlier turn. for `prompt_agent`, verify the selected pane still belongs to the intended agent and report the resulting state.
+
+if the requested operation is not exposed by the Bridge, say which capability is missing and stop. do not fall back to `herdr` CLI. in particular, do not imply that workspace, tab, split, run, close, or wait operations exist unless matching MCP tools are present.
+
+### Herdr-managed panes: local CLI
 
 you are running inside herdr, a terminal-native agent multiplexer. herdr gives you workspaces, tabs, and panes — each pane is a real terminal with its own shell, agent, server, or log stream — and you can control all of it from the cli.
 
@@ -139,13 +162,13 @@ block until specific text appears in a pane. useful for waiting on servers, buil
 for `--source recent`, matching uses unwrapped recent terminal text, so pane width and soft wrapping do not break matches. `pane read --source recent` still shows the pane as rendered. if you want to inspect the same transcript that the waiter matches, use `pane read --source recent-unwrapped`.
 
 ```bash
-herdr wait output 1-3 --match "ready on port 3000" --timeout 30000
+herdr pane wait-output 1-3 --match "ready on port 3000" --timeout 30000
 ```
 
 with regex:
 
 ```bash
-herdr wait output 1-3 --match "server.*ready" --regex --timeout 30000
+herdr pane wait-output 1-3 --match "server.*ready" --regex --timeout 30000
 ```
 
 if it times out, exit code is `1`.
@@ -155,7 +178,7 @@ if it times out, exit code is `1`.
 block until another agent reaches a specific status:
 
 ```bash
-herdr wait agent-status 1-1 --status done --timeout 60000
+herdr agent wait 1-1 --until done --timeout 60000
 ```
 
 use this when you want the same `done` / `idle` distinction the UI shows.
@@ -233,7 +256,7 @@ herdr pane close 1-3
 ```bash
 NEW_PANE=$(herdr pane split 1-2 --direction right --no-focus | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])')
 herdr pane run "$NEW_PANE" "npm run dev"
-herdr wait output "$NEW_PANE" --match "ready" --timeout 30000
+herdr pane wait-output "$NEW_PANE" --match "ready" --timeout 30000
 herdr pane read "$NEW_PANE" --source recent --lines 20
 ```
 
@@ -242,7 +265,7 @@ herdr pane read "$NEW_PANE" --source recent --lines 20
 ```bash
 herdr pane split 1-2 --direction down --no-focus
 herdr pane run 1-3 "cargo test"
-herdr wait output 1-3 --match "test result" --timeout 60000
+herdr pane wait-output 1-3 --match "test result" --timeout 60000
 herdr pane read 1-3 --source recent --lines 30
 ```
 
@@ -262,7 +285,7 @@ use this pattern when you need to coordinate with a sibling pane:
 herdr pane read 1-3 --source recent --lines 40
 
 # wait only for the next output you expect
-herdr wait output 1-3 --match "ready" --timeout 30000
+herdr pane wait-output 1-3 --match "ready" --timeout 30000
 
 # if you need to inspect the same transcript the waiter matched,
 # read the unwrapped recent text directly
@@ -274,26 +297,26 @@ herdr pane read 1-3 --source recent-unwrapped --lines 40
 ```bash
 herdr pane split 1-2 --direction right --no-focus
 herdr pane run 1-3 "claude"
-herdr wait output 1-3 --match ">" --timeout 15000
+herdr pane wait-output 1-3 --match ">" --timeout 15000
 herdr pane run 1-3 "review the test coverage in src/api/"
 ```
 
 ### coordinate with another agent
 
 ```bash
-herdr wait agent-status 1-1 --status done --timeout 120000
+herdr agent wait 1-1 --until done --timeout 120000
 herdr pane read 1-1 --source recent --lines 100
 ```
 
 ## notes
 
-- `workspace list`, `workspace create`, `tab list`, `tab create`, `tab get`, `tab focus`, `tab rename`, `tab close`, `pane list`, `pane get`, `pane split`, `wait output`, and `wait agent-status` print json on success.
+- `workspace list`, `workspace create`, `tab list`, `tab create`, `tab get`, `tab focus`, `tab rename`, `tab close`, `pane list`, `pane get`, `pane split`, `pane wait-output`, and `agent wait` print json on success.
 - `pane read` prints text, not json.
 - `pane read --format ansi` or `pane read --ansi` returns a rendered ANSI snapshot for TUI feedback loops.
-- `pane read --source recent-unwrapped` is useful when you want to inspect the same unwrapped transcript that `wait output --source recent` matches against.
+- `pane read --source recent-unwrapped` is useful when you want to inspect the same unwrapped transcript that `pane wait-output --source recent` matches against.
 - `pane send-text`, `pane send-keys`, and `pane run` print nothing on success.
 - parse ids from `workspace create`, `tab create`, and `pane split` responses when you need new ids. `workspace create` returns `result.workspace`, `result.tab`, and `result.root_pane`. `tab create` returns `result.tab` and `result.root_pane`. for `pane split`, the new pane id is at `result.pane.pane_id`.
-- use `pane read` for current output that already exists. use `wait output` for future output you expect next.
+- use `pane read` for current output that already exists. use `pane wait-output` for future output you expect next.
 - `--no-focus` on split, tab create, and workspace create keeps your current terminal context focused.
 - without `--label`, workspace create keeps cwd-based naming and tab create keeps numbered naming.
 - `--label` on tab create and workspace create applies the custom name immediately.

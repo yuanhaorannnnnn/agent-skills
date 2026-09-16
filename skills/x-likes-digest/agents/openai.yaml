@@ -1,0 +1,4 @@
+interface:
+  display_name: "X Likes Digest"
+  short_description: "每周把新增的 X 点赞整理成一封偏娱乐的 HTML 周报邮件"
+  default_prompt: "处理一下本周新增的 X 点赞，生成并发送周报。"
