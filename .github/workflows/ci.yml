@@ -29,6 +29,9 @@ jobs:
           npm ci
           python3 -m pip install --upgrade pip pyyaml
 
+      - name: Install into runtime dirs
+        run: node scripts/install.mjs install
+
       - name: Doctor (manifest, skill dirs, runtime links)
         run: node scripts/install.mjs doctor
 
