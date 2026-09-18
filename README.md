@@ -1,6 +1,6 @@
 # agent-skills
 
-`agent-skills` 是一个面向编码 agent 的可复用 skill 仓库，用统一 manifest 管理开发、调试、研究、文档、自动化与交付工作流。仓库当前包含 20 个已启用 skill；`manifest.yaml` 是名称、启用状态、类别、调用方式和依赖关系的事实来源，并与 20 个 `skills/*/SKILL.md` 目录一一对应。
+`agent-skills` 是一个面向编码 agent 的可复用 skill 仓库，用统一 manifest 管理开发、调试、研究、文档、自动化与交付工作流。仓库当前包含 18 个已启用 skill；`manifest.yaml` 是名称、启用状态、类别、调用方式和依赖关系的事实来源，并与 18 个 `skills/*/SKILL.md` 目录一一对应。
 
 项目重点是让维护者能够审阅、测试和分发同一组工作流，而不是把 skill 绑定到单个 agent 产品。当前安装器支持 Agents 通用目录与 Claude Code，通过符号链接保留单一源码。
 
@@ -64,13 +64,11 @@ python3 -m unittest discover -s skills/passdown/tests -p 'test_*.py'
 | `execute` | workflow | model | orchestrator |
 | `go-nogo` | meta | model | discipline |
 | `herdr` | automation | model | adapter |
-| `herdr-carla-tune` | automation | user | orchestrator |
 | `neutralize` | debugging | model | discipline |
 | `passdown` | workflow | user | adapter |
 | `repair` | workflow | user | orchestrator |
 | `sanitize` | workflow | user | orchestrator |
 | `software-study` | learning | user | orchestrator |
-| `tadsim-dynamics-bench` | automation | user | orchestrator |
 | `tasking` | workflow | user | orchestrator |
 | `traceback` | review | model | discipline |
 | `x-likes-digest` | automation | user | adapter |

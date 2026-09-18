@@ -1,9 +1,9 @@
 ---
-name: engineering-doc-writing
+name: paperwork
 description: "起草技术文档，或进行会改变文档结构、论证、证据、结论或读者理解的重写与审阅时，围绕读者任务、信息关系、证据强度和工程判断组织内容，并识别低信息量的生成式填充。适用于设计、说明、调研、评估、操作、复盘和技术参考；仅做不改变技术含义的拼写语法校对、格式调整、术语替换、局部句子编辑或忠实翻译时不触发。"
 ---
 
-# Engineering Doc Writing
+# Paperwork
 
 ## 目标
 

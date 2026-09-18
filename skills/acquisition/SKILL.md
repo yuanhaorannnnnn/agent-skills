@@ -330,7 +330,7 @@ claim | evidence ref/位置 | evidence type | 条件或不确定性
 
 ## Query 写作门禁
 
-生成或实质重写 query 时，默认加载 `engineering-doc-writing`，在写入前按其失效机制完成一次清理。该步骤属于 Acquisition 的默认 query 管线；用户不需要额外触发。只生成 raw archive 时跳过。
+生成或实质重写 query 时，默认加载 `paperwork`，在写入前按其失效机制完成一次清理。该步骤属于 Acquisition 的默认 query 管线；用户不需要额外触发。只生成 raw archive 时跳过。
 
 把 query 视为面向未来自己的技术说明或评价，而不是对原材料的形式化摘要：
 
@@ -340,7 +340,7 @@ claim | evidence ref/位置 | evidence type | 条件或不确定性
 4. 区分原文主张、source-reported 结果、本机验证、推断和个人判断；不能把其中一类改写成另一类。
 5. 重写后执行双向检查：从正文回到来源，确认主张有证据；从 evidence pass 回到正文，确认关键原子信息没有在摘要和重组中消失。删除任一句话，如果不改变理解、判断、证据强度或后续行动，则继续删除或合并。
 
-`engineering-doc-writing` 只负责组织与表达，不替代本 skill 的 raw 来源链、frontmatter、wikilink、index/log 和 catalog 门禁。
+`paperwork` 只负责组织与表达，不替代本 skill 的 raw 来源链、frontmatter、wikilink、index/log 和 catalog 门禁。
 
 ## 笔记输出格式
 

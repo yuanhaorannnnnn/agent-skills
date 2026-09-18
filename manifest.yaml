@@ -21,40 +21,26 @@ skills:
   invocation: user
   role: adapter
   calls:
-  - engineering-doc-writing
-- name: herdr-carla-tune
-  enabled: true
-  category: automation
-  invocation: user
-  role: orchestrator
-  calls:
-  - herdr
+  - paperwork
 - name: herdr
   enabled: true
   category: automation
   invocation: model
   role: adapter
   calls: []
-- name: tadsim-dynamics-bench
-  enabled: true
-  category: automation
-  invocation: user
-  role: orchestrator
-  calls:
-  - herdr
 - name: go-nogo
   enabled: true
   category: meta
   invocation: model
   role: discipline
   calls: []
-- name: software-study
+- name: chart
   enabled: true
   category: learning
   invocation: user
   role: orchestrator
   calls:
-  - engineering-doc-writing
+  - paperwork
 - name: sanitize
   enabled: true
   category: workflow
@@ -66,8 +52,9 @@ skills:
   category: workflow
   invocation: model
   role: renderer
-  calls: []
-- name: engineering-doc-writing
+  calls:
+  - breach
+- name: paperwork
   enabled: true
   category: writing
   invocation: model
@@ -99,7 +86,7 @@ skills:
   invocation: model
   role: renderer
   calls:
-  - engineering-doc-writing
+  - paperwork
 - name: traceback
   enabled: true
   category: review

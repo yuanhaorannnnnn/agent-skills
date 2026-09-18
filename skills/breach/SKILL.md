@@ -44,7 +44,7 @@ Choose one mode:
 
 In General page mode, `lieflat-charts` may render a chart module inside the
 page. Breach still owns page integration and chart placement;
-`engineering-doc-writing` owns the surrounding narrative.
+`paperwork` owns the surrounding narrative.
 
 Use it only when all are true:
 
@@ -67,7 +67,7 @@ another renderer:
 ### Writing discipline
 
 Before drafting or materially restructuring technical narrative in either mode,
-invoke `engineering-doc-writing`. It owns the content model, reader task,
+invoke `paperwork`. It owns the content model, reader task,
 information relationships, evidence calibration, and prose quality; Breach owns
 HTML structure, visual tokens, rendering, and provenance. Follow that skill's
 required calibration-corpus step before writing.
@@ -99,13 +99,30 @@ Two constraints, always applied:
    and spatial patterns.
 
 **Style — from DESIGN.md or awesome-design-md**:
-1. If `DESIGN.md` exists in the project root, use its tokens directly — skip
-   the awesome-design-md lookup.
+1. If `DESIGN.md` exists in the target artifact's project root, use its tokens
+   directly — skip the awesome-design-md lookup. Do not borrow another
+   project's DESIGN.md unless the user or caller explicitly selects it.
 2. If not, read `~/.agents/repos/awesome-design-md/README.md`, choose 1-2
    matching DESIGN.md files, then read them.
 3. Use only those DESIGN.md sources for `colors`, `typography`, `spacing`,
    radius, shadows, and component tone. html-effectiveness is layout-only.
 4. Never write a DESIGN.md file. This lookup is read-only.
+
+**Content mode — when the selected DESIGN.md defines `content-modes`**:
+1. Choose the mode from the artifact's reader task and evidence type, not from
+   its filename or a keyword alone. For Field Notes Wiki, use `wiki-note` for
+   routine notes, `research-explainer` for technical learning pages and design
+   explanations, `release-or-concept-feature` for an explicitly editorial
+   feature, and `status-or-benchmark` for measurements and acceptance reports.
+2. Apply that mode's treatment only within the requested HTML artifact. A
+   matching mode does not invoke breach, create a hero illustration, rewrite
+   approved prose, or restyle other deliverables.
+3. If the page contains both an editorial opening and evidence-heavy sections,
+   the hero may use the editorial layer; charts, tables, code, screenshots, and
+   status colors remain analytical. User/caller brand constraints override the
+   project default.
+4. Record the selected mode in the provenance comment as `content_mode`; the
+   visible footer still needs only layout and style.
 
 **Style gate**:
 
@@ -117,6 +134,7 @@ layout_source: /absolute/path/to/html-effectiveness/example.html
 style_sources:
 - /absolute/path/to/DESIGN.md
 tokens_used: colors, typography, spacing
+content_mode: selected mode, if the DESIGN.md defines content-modes
 ```
 
 If `style_sources` is empty, stop. `Style: Anthropic` without a DESIGN.md path
@@ -130,10 +148,11 @@ Every page must include a clean visible footer plus an HTML comment with exact p
 <!-- BREACH_PROVENANCE
 layout_name="11-status-report"
 layout_source="/abs/example.html"
-style_name="Notion"
+style_name="Field Notes Wiki"
 style_source="/abs/DESIGN.md"
+content_mode="research-explainer"
 -->
-<footer>Layout: 11-status-report | Style: Notion</footer>
+<footer>Layout: 11-status-report | Style: Field Notes Wiki</footer>
 ```
 
 Do not show absolute paths in the visible footer. Exact paths live only in

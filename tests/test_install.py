@@ -42,7 +42,7 @@ class InstallScriptTests(unittest.TestCase):
                 self.assertTrue((runtime / "codify").is_symlink())
                 self.assertTrue((runtime / "neutralize").is_symlink())
                 self.assertTrue((runtime / "execute").is_symlink())
-                self.assertTrue((runtime / "herdr-carla-tune").is_symlink())
+                self.assertTrue((runtime / "herdr").is_symlink())
                 self.assertFalse((runtime / "SweepHer").exists())
                 self.assertTrue((runtime / ".scripts").is_symlink())
 

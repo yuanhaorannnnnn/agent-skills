@@ -43,8 +43,8 @@ Auto-detect runtime, default to current cwd.
 ### Fresh-conversation rollover handoff
 
 Start a fresh conversation in the same workspace, then invoke passdown with the
-source runtime and focus. Rollover is the caller's conversation-lifecycle
-action; passdown only performs the handoff.
+source runtime and focus. Passdown performs the handoff; same-runtime rollover
+may archive the source under the contract below.
 
 ```text
 /passdown --former codex --focus "<current topic>"
@@ -57,6 +57,29 @@ python3 <skill-dir>/scripts/extract_handoff.py \
 
 The default 8000-token budget requires no new argument. Use
 `--max-tokens 4000` for a more aggressive handoff.
+
+### Same-runtime rollover archival
+
+Archiving the source conversation is an optional lifecycle action, not part of
+extraction. Never archive merely because the extractor ran.
+
+Archive only when all of these hold:
+
+- source and successor use the same runtime (Codex→Codex, Claude→Claude, Pi→Pi, DSH→DSH);
+- the user asked for rollover cleanup, or a standing rollover policy authorizes it;
+- the successor exists and its first handoff response is valid: completed, non-empty, and not `systemError` or `needs-attention`;
+- the source is idle and is neither the current conversation nor a registered Herdr agent;
+- the runtime exposes a conversation-archive operation.
+
+If any condition is unknown or fails, leave the source untouched and report the
+source session id plus the blocker. If the conditions hold but authorization is
+missing, ask first; never archive silently. Archival must be reversible: if the
+successor later fails, restore the source conversation.
+
+Codex: archive through the runtime thread lifecycle (`Thread/archive` via
+app-server RPC, or `set_thread_archived` in MCP tooling). The handoff automation
+around `session_handoff_scan.py` owns scan/dedup state. Never edit, move, or
+delete session JSONL.
 
 ### Cross-directory handoff
 
@@ -119,7 +142,9 @@ python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --
 
 ## Non-Negotiable Constraints
 
-- **Read-only on source side.** Never write to another agent's session storage.
+- **Read-only on source side.** Never write to or delete another agent's session
+  storage. Conversation archival, when the contract above permits it, is a
+  runtime lifecycle operation, not a session-file edit.
 - **Artifacts by reference.** In cross-directory handoff, artifacts remain owned by the source workspace. Use absolute paths. Do not copy `.planning`, `.proposal`, `.research`, `.agent-state`, build outputs, logs, images, tarballs, or reports unless the user explicitly asks for a portable bundle.
 - **Filter aggressively.** Keep only user messages and assistant core replies. Drop tool call arguments, tool results, system/developer prompts, guardian/judge subflows, token logs, and raw system dumps.
 - **Respect token budget.** Enforce the extractor's hard token budget. Prefer recent turns, initial context, focus hits, explicit decisions, and next steps.
@@ -219,7 +244,14 @@ Extracted turns: `<N>`
 ## Current Next Step
 ```
 
-### Step 6: Canon promotion
+### Step 6: Same-runtime archival (optional)
+
+After presenting the handoff, if this was a same-runtime rollover and the
+archival contract above permits it, archive the source conversation and report
+the archived source session id plus the successor id. Otherwise leave the source
+untouched and state why.
+
+### Step 7: Canon promotion
 
 If the handoff establishes durable context, create or update a Canon update card under:
 
@@ -237,4 +269,4 @@ Promote stable facts into Canon task/project/decision/pattern/incident pages onl
 - **Pi**: Sessions are keyed by working directory. If multiple sessions exist, focus score ranks them before recency.
 - **DSH**: Sessions are zstd-compressed (`session.jsonl.zstd` under `~/.dsh/sessions/<slug>/<session-id>/`) and keyed by working directory + session id. User turns come from `user/message` events with `source.kind == "user"`; plugin/instruction injections are dropped, as are `reasoning` content blocks.
 - **Claude Code slug**: Project directory slug replaces both `/` and `_` with `-`.
-- **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi, DSH→DSH are valid. The source session JSONL may still be live; read only.
+- **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi, DSH→DSH are valid. The source session JSONL may still be live; read only. Archive it only after a verified successor and only through the runtime's conversation lifecycle.

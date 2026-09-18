@@ -1,5 +1,5 @@
 ---
-name: software-study
+name: chart
 description: |
   深入学习一个软件、仓库、开发工具、平台或产品，建立可持续更新的 Study Hub，
   用官方文档、源码实现和本机运行三类证据回答"它是什么、怎么工作、问题在哪"。
@@ -21,7 +21,7 @@ metadata:
 | 对象 | 使用 | 产物 |
 |---|---|---|
 | 文章、论文、课程、知识库、资料合集 | `acquisition` | raw + query + collection Hub |
-| 软件、仓库、开发工具、平台、产品 | `software-study` | Study Hub + 来源/版本清单 + 架构模型 + 源码证据 + 实践证据 |
+| 软件、仓库、开发工具、平台、产品 | `chart` | Study Hub + 来源/版本清单 + 架构模型 + 源码证据 + 实践证据 |
 
 判断依据不是"输入是不是很多网页"，而是学习目标：网页是内容主体，还是软件的其中一层证据。
 
@@ -72,7 +72,7 @@ queries/YYYYMMDD-<software>-study-hub.md               # 主 Hub
 raw/collections/YYYYMMDD-<software>-study-sources.json # 来源/版本清单
 raw/articles/...                                        # 官方页面归档
 queries/YYYYMMDD-<software>-<topic>.md                  # 按需专题
-.research/<software-study>/                             # 实践证据（命令、结果、截图）
+.research/<chart>/                                     # 实践证据（命令、结果、截图）
 ```
 
 Hub 最小结构：

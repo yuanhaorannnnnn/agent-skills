@@ -91,6 +91,12 @@ conops owns content scope, evidence, acceptance criteria, and review decisions.
 If the user requests an OpenAI Template or native document, complete this content
 contract first, then use the requested template only for final rendering.
 
+### 可选 HTML 评审页
+
+Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评审页、可视化方案页等衍生物时，在完成并校验 Markdown 后调用 `breach` 的 General page mode。主题或 `content-mode` 匹配本身不新增 HTML。
+
+向 Breach 传递已核准正文、目标项目、输出路径与内容模式：技术方案默认 `research-explainer`；主要交付为状态/验收数据时用 `status-or-benchmark`；用户明确要求专题式封面时才用 `release-or-concept-feature`。Breach 负责目标项目的 `DESIGN.md`、布局、渲染和 provenance；Conops 仍负责事实、范围与验收。视觉隐喻不得替代架构图或测试证据。目标项目没有 `DESIGN.md` 时，沿用 Breach 的参考设计选择流程，不默认引用 Wiki 规范。
+
 ### 保存位置
 
 设计方案文档保存到**当前工作仓库的** `.proposal/` 目录（与 `.planning/`、`.research/` 平级）。路径相对于研发所在的仓库，不是 agent 平台仓库。
