@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          python3 -m pip install --upgrade pip pyyaml
+
+      - name: Doctor (manifest, skill dirs, runtime links)
+        run: node scripts/install.mjs doctor
+
+      - name: Repository contract tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Skill tests (acquisition)
+        run: python3 -m unittest discover -s skills/acquisition/tests -p 'test_*.py'
+
+      - name: Skill tests (passdown)
+        run: python3 -m unittest discover -s skills/passdown/tests -p 'test_*.py'

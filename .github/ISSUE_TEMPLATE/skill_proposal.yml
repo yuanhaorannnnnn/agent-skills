@@ -1,0 +1,41 @@
+name: Skill proposal
+description: Propose a new skill or a change to an existing trigger boundary
+labels: [skill]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Proposed skill name
+      placeholder: lowercase-hyphenated
+    validations:
+      required: true
+  - type: input
+    id: category
+    attributes:
+      label: Proposed category
+      placeholder: workflow / debugging / writing / design / learning / automation / meta
+    validations:
+      required: true
+  - type: dropdown
+    id: invocation
+    attributes:
+      label: Invocation
+      options:
+        - model (agent decides)
+        - user (explicit command)
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Which recurring failure does this prevent?
+      description: A skill earns its place by preventing a repeated mistake, not by describing a topic.
+    validations:
+      required: true
+  - type: textarea
+    id: overlap
+    attributes:
+      label: Overlap with existing skills
+      description: Name the closest existing skill and say why extending it is not enough.
+    validations:
+      required: true

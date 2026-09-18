@@ -1,0 +1,42 @@
+name: Bug report
+description: Installer, doctor, contract test, or skill behavior is wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste secrets, tokens, customer data, or private transcripts.
+        Security issues go through SECURITY.md, not this form.
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      description: Which agent runtime is affected?
+      placeholder: Claude Code / Codex / other
+    validations:
+      required: true
+  - type: input
+    id: skill
+    attributes:
+      label: Skill or command
+      placeholder: install.mjs doctor / skills/neutralize / repo-level
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+      description: Paste command output with secrets redacted.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      placeholder: git rev-parse --short HEAD
