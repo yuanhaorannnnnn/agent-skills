@@ -1,29 +1,46 @@
 # agent-skills
 
-`agent-skills` 是一个面向编码 agent 的可复用 skill 仓库，用统一 manifest 管理开发、调试、研究、文档、自动化与交付工作流。仓库当前包含 18 个已启用 skill；`manifest.yaml` 是名称、启用状态、类别、调用方式和依赖关系的事实来源，并与 18 个 `skills/*/SKILL.md` 目录一一对应。
+**面向 coding agent 的可安装 skill 仓库：一次安装，Claude Code 与 Codex 同时可用。**
 
-项目重点是让维护者能够审阅、测试和分发同一组工作流，而不是把 skill 绑定到单个 agent 产品。当前安装器支持 Agents 通用目录与 Claude Code，通过符号链接保留单一源码。
+[![CI](https://github.com/yuanhaorannnnnn/agent-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/yuanhaorannnnnn/agent-skills/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
+[![skills.sh](https://skills.sh/b/yuanhaorannnnnn/agent-skills)](https://skills.sh/yuanhaorannnnnn/agent-skills)
 
-## 核心特性
+![agent-skills](assets/social-preview.png)
 
-- **声明式注册表**：`manifest.yaml` 记录每个 skill 的 `enabled`、`category`、`invocation`、`role` 和 `calls`。
-- **可组合工作流**：覆盖需求执行、缺陷修复、review、研究、文档生成、自动化调优与任务收尾。
-- **本地分发**：安装器将启用的 skill 链接到 `~/.agents/skills` 和 `~/.claude/skills`，不会改动其他来源的符号链接。
-- **可验证契约**：doctor、metadata/contract tests 和各 skill gate 检查目录、引用、调用边界及工作流状态。
-- **安全边界**：高风险工作流把确认、验证和外部状态变更写成显式 gate，而不是默认自动执行。
+`manifest.yaml` 是名称、启用状态、类别、调用方式和依赖关系的事实来源，与 `skills/*/SKILL.md` 目录一一对应。安装器把启用中的 skill 符号链接到通用 Agents 目录与 Claude Code 目录，源码只有一份。
 
-## 安装
+> Not a prompt dump. Every skill declares its trigger boundary, its gates and its artifacts; the repository ships contract tests plus a `doctor` that fails when the manifest, the skill directories and the installed links disagree.
 
-要求 Node.js 18+；运行 Python 测试时还需要 Python 3 和 PyYAML。
+## 为什么不是一个提示词合集
+
+- **声明式注册表**：`manifest.yaml` 记录每个 skill 的 `enabled`、`category`、`invocation`、`role` 和 `calls`，`doctor` 校验调用关系是否合法。
+- **可验证契约**：仓库级测试检查 skill 目录、引用、调用边界与工作流状态；CI 在每次 push 与 PR 上执行 `doctor` 加三个测试套件。
+- **agent 无关**：安装器只做符号链接，不绑定单一产品，也不覆盖其他来源的链接。
+- **gate 优先**：高风险工作流把确认、验证、外部状态变更写成显式 gate，而不是默认自动执行。
+
+## 快速开始
+
+**方式一：标准 skills CLI**（推荐，无需 clone）
+
+```bash
+npx skills add yuanhaorannnnnn/agent-skills                                   # 安装全部
+npx skills add yuanhaorannnnnn/agent-skills --list                            # 先看清单
+npx skills add yuanhaorannnnnn/agent-skills -s neutralize -a codex            # 装单个
+```
+
+**方式二：clone 本地安装**（需要 Node.js 18+）
 
 ```bash
 git clone https://github.com/yuanhaorannnnnn/agent-skills.git ~/.agents/repos/agent-skills
 cd ~/.agents/repos/agent-skills
 npm ci
-bash scripts/install.sh
+node scripts/install.mjs install
+node scripts/install.mjs doctor
 ```
 
-安装会为所有已启用 skill 和共享 `.scripts` 创建符号链接：
+安装会为所有启用中的 skill 和共享 `.scripts` 创建符号链接：
 
 ```text
 ~/.agents/skills/
@@ -33,16 +50,53 @@ bash scripts/install.sh
 后续更新：
 
 ```bash
-node scripts/install.mjs update
+node scripts/install.mjs update    # git pull --ff-only 后重新安装
 ```
 
-该命令执行 `git pull --ff-only` 后重新安装。若工作树包含本地修改，请先自行处理，避免更新失败。
+## 工作流闭环
 
-## 使用与验证
+```text
+理解             学习             执行             校验             收尾
+┌────────────┐   ┌────────────┐   ┌────────────┐   ┌────────────┐   ┌────────────┐
+│passdown    │   │chart       │   │execute     │   │traceback   │   │sanitize    │
+│接手上下文  │   │学习调研    │   │委托执行    │   │交付对齐    │   │提交收尾    │
+└────────────┘   └────────────┘   └────────────┘   └────────────┘   └────────────┘
+
+出问题：neutralize 定位根因 → repair 缺陷闭环 → traceback 回归对齐
+有收获：codify 沉淀 guardrail → after-action 故障复盘
+```
+
+skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `repair`，出事故走 `after-action`。
+
+## Skill 目录
+
+| Skill | Category | Invocation | Role | 做什么 |
+|---|---|---|---|---|
+| `acquisition` | media | user | adapter | 视频/文章/PDF 摄入知识库 |
+| `after-action` | workflow | model | renderer | 故障复盘记录 |
+| `breach` | design | model | renderer | 单页 HTML 交付页 |
+| `chart` | learning | user | orchestrator | 软件/仓库 Study Hub |
+| `codify` | workflow | model | discipline | 沉淀可复用 guardrail |
+| `conops` | workflow | model | renderer | 技术开发设计方案 |
+| `cover` | design | user | renderer | 设计规范（DESIGN.md） |
+| `execute` | workflow | model | orchestrator | 执行任务并留可恢复记录 |
+| `go-nogo` | meta | model | discipline | 判断该不该做、该不该建 skill |
+| `herdr` | automation | model | adapter | 控制 Herdr pane |
+| `neutralize` | debugging | model | discipline | 根因定位与邻近扫描 |
+| `paperwork` | writing | model | discipline | 技术文档起草与重写 |
+| `passdown` | workflow | user | adapter | 跨 agent 会话交接 |
+| `repair` | workflow | user | orchestrator | 云效缺陷单全流程修复 |
+| `sanitize` | workflow | user | orchestrator | 收尾提交 / 完整技术报告 |
+| `tasking` | workflow | user | orchestrator | 需求开发四阶段指挥 |
+| `traceback` | review | model | discipline | 设计-实现-测试三方对齐 |
+| `x-likes-digest` | automation | user | adapter | X 点赞周报 |
+
+新增、移除或禁用 skill 时，先更新 `manifest.yaml`，再同步本表，并运行完整验证。
+
+## 验证
 
 ```bash
 node scripts/install.mjs list       # 按类别列出已启用 skill
-node scripts/install.mjs install    # 刷新两个 runtime 的符号链接
 node scripts/install.mjs doctor     # 检查 manifest、skill 文件和已安装链接
 
 python3 -m unittest discover -s tests -p 'test_*.py'
@@ -50,30 +104,7 @@ python3 -m unittest discover -s skills/acquisition/tests -p 'test_*.py'
 python3 -m unittest discover -s skills/passdown/tests -p 'test_*.py'
 ```
 
-## Skill 目录
-
-| Skill | Category | Invocation | Role |
-|---|---|---|---|
-| `acquisition` | media | user | adapter |
-| `after-action` | workflow | model | renderer |
-| `breach` | design | model | renderer |
-| `codify` | workflow | model | discipline |
-| `conops` | workflow | model | renderer |
-| `cover` | design | user | renderer |
-| `engineering-doc-writing` | writing | model | discipline |
-| `execute` | workflow | model | orchestrator |
-| `go-nogo` | meta | model | discipline |
-| `herdr` | automation | model | adapter |
-| `neutralize` | debugging | model | discipline |
-| `passdown` | workflow | user | adapter |
-| `repair` | workflow | user | orchestrator |
-| `sanitize` | workflow | user | orchestrator |
-| `software-study` | learning | user | orchestrator |
-| `tasking` | workflow | user | orchestrator |
-| `traceback` | review | model | discipline |
-| `x-likes-digest` | automation | user | adapter |
-
-新增、移除或禁用 skill 时，先更新 `manifest.yaml`，再同步本表，并运行完整验证。
+CI 在每次 push 与 PR 上执行同一组命令，徽章状态就是真实结果。
 
 ## 目录结构
 
@@ -98,7 +129,7 @@ tests/                  # 仓库级契约与安装测试
 
 ## 成熟度边界
 
-该仓库仍在快速迭代，尚未发布稳定 release；skill 名称、调用契约和安装范围可能变化。当前没有可核验的外部采用量或兼容性承诺。
+该仓库仍在快速迭代，尚未发布稳定 release；skill 名称、调用契约和安装范围可能变化，当前没有可核验的外部采用量或兼容性承诺。仓库内容以中文为主，英文使用者可先读各 `SKILL.md` 的 `description` 字段判断触发边界。
 
 ## License
 
