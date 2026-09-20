@@ -11,9 +11,19 @@ English | [中文](README.zh-CN.md)
 
 ![agent-skills](assets/social-preview.png)
 
-Not a prompt dump. Every skill declares its trigger boundary, its gates and its artifacts, and the repository ships contract tests plus a `doctor` that fails when the manifest, the skill directories and the installed links disagree.
+For people building repeatable agent workflows: coding-agent users who want a task to leave evidence, reviewers who need an explicit verification step, and maintainers who do not want a growing folder of unscoped prompts.
+
+Not a prompt dump. Every skill declares its trigger boundary, gates and artifacts. The repository ships contract tests plus a `doctor` that fails when the manifest, skill directories and installed links disagree.
 
 `manifest.yaml` is the source of truth for each skill's `enabled` flag, category, invocation mode, role and dependencies, and it maps one-to-one onto `skills/*/SKILL.md`. The installer symlinks the enabled set into the generic Agents directory and the Claude Code directory, so the source stays single.
+
+## Install and verify in 30 seconds
+
+```bash
+npx skills add yuanhaorannnnnn/agent-skills -s neutralize -a codex
+```
+
+This installs one skill through the standard `skills` CLI. Use the clone-based path below when you want to inspect the repository itself or run its local `doctor` check.
 
 ## Why this is not another prompt collection
 
@@ -54,6 +64,18 @@ Updating later:
 ```bash
 node scripts/install.mjs update    # git pull --ff-only, then reinstall
 ```
+
+## A concrete workflow
+
+Suppose a coding-agent change fails in CI. Start with `neutralize` to record the reproduction and root-cause evidence, use `traceback` to check the approved plan against the implementation and executed tests, then use `sanitize` to scope the resulting commit and closeout record. Each stage has a declared boundary: `neutralize` diagnoses and fixes the defect; `traceback` does not replace tests; `sanitize` does not publish unrelated work.
+
+Minimal local check after installation:
+
+```bash
+node scripts/install.mjs doctor
+```
+
+`doctor` exits non-zero when the enabled manifest entries, source skill directories or installed links disagree. That is the smallest reproducible check that the installed skill set is internally consistent.
 
 ## The workflow it encodes
 
