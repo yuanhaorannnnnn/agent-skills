@@ -8,6 +8,7 @@ skills:
   invocation: model
   role: discipline
   calls: []
+  handoffs: []
 - name: neutralize
   enabled: true
   category: debugging
@@ -15,6 +16,7 @@ skills:
   role: discipline
   calls:
   - codify
+  handoffs: []
 - name: acquisition
   enabled: true
   category: media
@@ -22,18 +24,22 @@ skills:
   role: adapter
   calls:
   - paperwork
+  handoffs:
+  - chart
 - name: herdr
   enabled: true
   category: automation
   invocation: model
   role: adapter
   calls: []
+  handoffs: []
 - name: go-nogo
   enabled: true
   category: meta
   invocation: model
   role: discipline
   calls: []
+  handoffs: []
 - name: chart
   enabled: true
   category: learning
@@ -41,12 +47,14 @@ skills:
   role: orchestrator
   calls:
   - paperwork
+  handoffs: []
 - name: sanitize
   enabled: true
   category: workflow
   invocation: user
   role: orchestrator
   calls: []
+  handoffs: []
 - name: conops
   enabled: true
   category: workflow
@@ -54,24 +62,28 @@ skills:
   role: renderer
   calls:
   - breach
+  handoffs: []
 - name: paperwork
   enabled: true
   category: writing
   invocation: model
   role: discipline
   calls: []
+  handoffs: []
 - name: passdown
   enabled: true
   category: workflow
   invocation: user
   role: adapter
   calls: []
+  handoffs: []
 - name: cover
   enabled: true
   category: design
   invocation: user
   role: renderer
   calls: []
+  handoffs: []
 - name: after-action
   enabled: true
   category: workflow
@@ -80,6 +92,7 @@ skills:
   calls:
   - breach
   - codify
+  handoffs: []
 - name: breach
   enabled: true
   category: design
@@ -87,12 +100,14 @@ skills:
   role: renderer
   calls:
   - paperwork
+  handoffs: []
 - name: traceback
   enabled: true
   category: review
   invocation: model
   role: discipline
   calls: []
+  handoffs: []
 - name: tasking
   enabled: true
   category: workflow
@@ -102,6 +117,7 @@ skills:
   - conops
   - execute
   - traceback
+  handoffs: []
 - name: repair
   enabled: true
   category: workflow
@@ -112,18 +128,21 @@ skills:
   - neutralize
   - codify
   - after-action
+  handoffs: []
 - name: execute
   enabled: true
   category: workflow
   invocation: model
   role: orchestrator
   calls: []
+  handoffs: []
 - name: x-likes-digest
   enabled: true
   category: automation
   invocation: user
   role: adapter
   calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user
@@ -135,3 +154,5 @@ metadata_schema:
   - adapter
   calls: existing skill names only; user-invoked skills may call only model-invoked
     skills
+  handoffs: ownership transfer to a separate independent skill execution; targets
+    must be user-invoked orchestrators or adapters

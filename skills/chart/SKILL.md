@@ -18,6 +18,8 @@ metadata:
 
 ## 与 acquisition 的边界
 
+若由 `acquisition` 判断为“软件/仓库/开发工具/平台/产品 + 系统学习”并自动交接，`chart` 是后续独立入口。接收 packet（`subject`、`intent`、`source_url/path`、`origin`、`clipping archive path if created`、`raw/query status`）后，必须先独立执行自己的 source identity，再按本页流程建立 Study Hub；不恢复或继承 Acquisition owner/state，也不把 handoff 当作 `calls`。仍可按 Step 2 独立复用 Acquisition 的脚本。
+
 | 对象 | 使用 | 产物 |
 |---|---|---|
 | 文章、论文、课程、知识库、资料合集 | `acquisition` | raw + query + collection Hub |

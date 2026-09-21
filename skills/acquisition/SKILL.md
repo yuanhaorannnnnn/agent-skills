@@ -39,6 +39,16 @@ python <skill-dir>/scripts/source_identity.py \
 
 ## 自动路由
 
+### 统一 subject + intent 判定
+
+在直接输入进入下表路由前，先判断“用户要学什么”而不是只看输入格式：
+
+- subject 属于 repository、software、developer tool、platform 或 product，且 intent 是系统学习（架构、源码、版本、运行、诊断、二开、维护或学习路线）→ **停止 Acquisition 内容管线**，自动启动独立 `$chart` 执行。handoff packet 必须携带 `subject`、`intent`、`source_url/path`、`origin`、`clipping archive path if created`、`raw/query status`；这是 ownership transfer，不是 `calls`。
+- 资料、书、PDF、文章、视频等内容本身是学习对象 → 继续 Acquisition；软件相关的单篇材料若用户只要求归档/摘要，也继续 Acquisition。
+- subject 或 intent 不清 → 询问二选一：“按内容归档并蒸馏（`acquisition`），还是按软件/产品建立 Study Hub（`$chart`）？”在答案明确前不启动任何管线。
+
+同一判定适用于直接 URL、本地文件和 Clippings。Clippings 必须先完成 identity/archive，再 classifier；命中软件系统学习后携带 packet handoff。直接输入先分类再 handoff，不创建 acquisition raw/query，由 `chart` 自行处理。
+
 根据输入自动选择管线：
 
 ```
@@ -61,7 +71,8 @@ python <skill-dir>/scripts/source_identity.py \
   ├─ PDF URL / 本地 .pdf → PDF 管线
   │     下载/读取 → pymupdf 提取文本 → 保存 raw/papers/ → 蒸馏 → queries/
   │
-  ├─ 本地 .md / Clippings/*.md → 直接读文件 → 归档 raw/clippings/ → 蒸馏 → queries/
+  ├─ Clippings/*.md → Clippings-first 路由（见 Step A2）
+  ├─ 其他本地 .md → 直接读文件 → 归档 raw/clippings/ → 蒸馏 → queries/
   │
   └─ 本地 .mp4 / .wav → 音频提取 → FunASR 转录 → 蒸馏 → queries/
 ```
@@ -238,20 +249,37 @@ print(data)
 > 返回格式为 Markdown，含标题层级、图片链接、表格。质量高于 trafilatura 的纯文本提取。
 > 抓取完成后保存为 `raw/articles/<slug>.md`，后续蒸馏流程不变。
 
-### Step A2: 本地 Clippings
+### Step A2: Clippings-first 路由
 
-**处理前先归档。** Clippings/ 是 Obsidian Clipper 的临时收件箱，不是持久存储。
+`Clippings/` 是浏览器材料的统一临时收件箱，不是持久存储。对每个 Clipping，先读 YAML
+frontmatter 的 `source` / `source_url`、标题、正文和本地附件；先执行 Step 0 的 `--file`
+身份检查，**再复制到 `raw/clippings/<file>.md`** 作为永久 provenance snapshot。不要删除原始
+Clippings 文件；其清理由独立 closeout gate 决定。
 
-1. 读取 `Clippings/<file>.md`，从 YAML frontmatter 获取 title/source/author/date
-2. **复制到 `raw/clippings/<file>.md`** —— 永久归档
-3. 后续蒸馏基于归档副本，原始 Clippings 文件在处理完成后可删除
+归档后按 `source_url` 和内容完整度路由，不把浏览器剪藏误当作原始媒体或 PDF：
+
+归档完成后、选择下表管线前，复用“统一 subject + intent 判定”。若 clipping 指向软件、仓库、开发工具、平台或产品且意图是系统学习，停止本次 Acquisition，自动将 archive path 与 packet 交给独立 `$chart` 执行；`chart` 必须先独立执行自己的 source identity，不继承 Acquisition owner/state。若只是归档该软件相关的单篇材料，仍按下表继续 Acquisition。无法判断时先询问上述二选一。
+
+| Clipping 中的来源/内容 | 后续管线 |
+|------|------|
+| YouTube、Bilibili、小红书、X/Twitter 视频或本地音视频 | 继续视频管线：视频/音频/转录留在既有 `raw/assets/`、`raw/transcripts/`；Clipping archive 仅保留浏览器发现和上下文。 |
+| PDF URL 或可访问的本地 PDF | 继续 PDF 管线，保留原 PDF 与提取文本至 `raw/papers/`；Clipping archive 不是 PDF 的替代品。 |
+| `mp.weixin.qq.com/mp/appmsgalbum` | 继续专辑 discovery；用户要摄入时仍须指定 `--limit N`，不得从 Clipping 的摘要推断批量范围。 |
+| 有足够正文的普通文章、登录后页面或动态页 | 以 `raw/clippings/` archive 为正文来源，直接执行 Step A3。不要为了复制一份已捕获正文而重新抓取受限页面。 |
+| 只有片段、正文不足，但有普通文章/微信文章 URL | 以 Clipping archive 留底，再走一次 Step A1（微信只在 direct gate 失败后走一次 WeChat fallback）。 |
+| 缺少 `source_url` | 仅当归档正文足以蒸馏时走 Step A3；否则停止并报告缺少可路由来源，不猜测 URL 或内容类型。 |
+
+一个 Clipping 若触发专用管线，最终 query 的 `sources:` 和 `## 来源` 必须同时保留
+`raw/clippings/` snapshot 与该管线产生的原始 artifact；普通文章 query 只引用其实际采用的
+archive。跨入口去重仍以 canonical URL 和内容 hash 为准，不能因 Clipping 已归档跳过 Step 0。
 
 ```bash
 mkdir -p /media/yhr/2T/files/wiki/raw/clippings
 cp "/media/yhr/2T/files/wiki/Clippings/<file>.md" "/media/yhr/2T/files/wiki/raw/clippings/<file>.md"
 ```
 
-笔记的 `sources:` 和 `## 来源` 段引用 `raw/clippings/<file>.md`，不引用 `Clippings/`。
+普通文章的笔记 `sources:` 和 `## 来源` 段引用 `raw/clippings/<file>.md`，不引用
+`Clippings/`。专用管线的来源链按上表追加其原始 artifact。
 
 ### Step A3: 蒸馏 → 结构化笔记（默认）
 

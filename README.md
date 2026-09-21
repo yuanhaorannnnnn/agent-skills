@@ -15,7 +15,7 @@ For people building repeatable agent workflows: coding-agent users who want a ta
 
 Not a prompt dump. Every skill declares its trigger boundary, gates and artifacts. The repository ships contract tests plus a `doctor` that fails when the manifest, skill directories and installed links disagree.
 
-`manifest.yaml` is the source of truth for each skill's `enabled` flag, category, invocation mode, role and dependencies, and it maps one-to-one onto `skills/*/SKILL.md`. The installer symlinks the enabled set into the generic Agents directory and the Claude Code directory, so the source stays single.
+`manifest.yaml` is the source of truth for each skill's `enabled` flag, category, invocation mode, role, `calls` dependencies and `handoffs` ownership transfers, and it maps one-to-one onto `skills/*/SKILL.md`. A handoff starts a separate independent skill execution; it is not a call and cannot create user-to-user nesting. The installer symlinks the enabled set into the generic Agents directory and the Claude Code directory, so the source stays single.
 
 ## Install and verify in 30 seconds
 
@@ -27,7 +27,7 @@ This installs one skill through the standard `skills` CLI. Use the clone-based p
 
 ## Why this is not another prompt collection
 
-- **Declarative registry** — `manifest.yaml` records `enabled`, `category`, `invocation`, `role` and `calls` per skill; `doctor` validates the call graph, so an orchestrator can never call a user-invoked skill by accident.
+- **Declarative registry** — `manifest.yaml` records `enabled`, `category`, `invocation`, `role`, `calls` and ownership `handoffs` per skill; `doctor` validates both graphs and keeps calls restricted to model-invoked skills while handoffs stay between independent user-invoked orchestrators/adapters.
 - **Contract tests** — repository-level tests check skill directories, references, invocation boundaries and workflow state; CI runs `doctor` plus three test suites on every push and pull request.
 - **Agent-neutral** — the installer only creates symlinks. It does not bind to one product and does not overwrite links owned by other sources.
 - **Gates before actions** — high-risk workflows encode confirmation, verification and external state changes as explicit gates instead of running by default.

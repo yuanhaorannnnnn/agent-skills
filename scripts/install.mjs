@@ -215,6 +215,29 @@ function cmdDoctor() {
         issues++;
       }
     }
+    if (!Array.isArray(skill.handoffs)) {
+      console.log(`[INVALID HANDOFFS] ${skill.name}: handoffs must be an array`);
+      issues++;
+    } else {
+      for (const targetName of skill.handoffs) {
+        const target = skillByName.get(targetName);
+        if (!target) {
+          console.log(`[UNKNOWN HANDOFF] ${skill.name} -> ${targetName}`);
+          issues++;
+        } else if (targetName === skill.name) {
+          console.log(`[SELF HANDOFF] ${skill.name} -> ${targetName}`);
+          issues++;
+        } else if (
+          skill.invocation !== 'user' ||
+          !new Set(['orchestrator', 'adapter']).has(skill.role) ||
+          target.invocation !== 'user' ||
+          !new Set(['orchestrator', 'adapter']).has(target.role)
+        ) {
+          console.log(`[UNSAFE HANDOFF] ${skill.name} -> ${targetName}: caller and target must be user-invoked orchestrator/adapter skills`);
+          issues++;
+        }
+      }
+    }
   }
 
   for (const name of manifestNames) {
