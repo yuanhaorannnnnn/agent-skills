@@ -23,8 +23,10 @@ use only the capabilities actually exposed in the current tool list:
 - `mcp__herdr_control__list_panes` — list current panes and obtain fresh pane ids.
 - `mcp__herdr_control__read_pane` — read an existing pane.
 - `mcp__herdr_control__prompt_agent` — prompt an existing agent when the user authorized that write action.
+- `mcp__herdr_control__pane_send_text`, `pane_send_keys`, `pane_run` — type, key, or run a user-authorized command in an existing pane.
+- `mcp__herdr_control__pane_wait_output`, `pane_split`, `pane_close` — wait for output or manage a pane; closing requires explicit authorization for the exact pane.
 
-pane ids are ephemeral. call `list_agents` or `list_panes` immediately before every `read_pane` or `prompt_agent`; never reuse an id from an earlier turn. for `prompt_agent`, verify the selected pane still belongs to the intended agent and report the resulting state.
+pane ids are ephemeral. call `list_agents` or `list_panes` immediately before every pane operation; never reuse an id from an earlier turn. for writes, verify the selected pane still belongs to the intended target and report the resulting state.
 
 if the requested operation is not exposed by the Bridge, say which capability is missing and stop. do not fall back to `herdr` CLI. in particular, do not imply that workspace, tab, split, run, close, or wait operations exist unless matching MCP tools are present.
 
