@@ -22,3 +22,12 @@ For example, a week's digest might contain an **Images** section with two posts,
 - Credentials remain managed by the configured OAuth tooling; tokens and secrets are never printed.
 
 The first run establishes an incremental baseline before any later digest can represent new Likes. See [`SKILL.md`](SKILL.md) for the baseline, state, and delivery details.
+
+## Rendered comparison
+
+The raw Likes API payload is compared with the generated weekly Gmail digest.
+The comparison is a local, reproducible HTML render:
+
+![Rendered comparison](examples/before-after.png)
+
+Inspect the [HTML source](examples/before-after.html) to reproduce the PNG.
