@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Breach rendered comparison</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 1200px; background: #0f141c; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { padding: 44px 56px 56px; }
+    .intro { max-width: 1120px; margin: 0 auto 28px; }
+    .eyebrow { margin: 0 0 8px; color: #94a3b8; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-family: ui-monospace, monospace; }
+    h1 { margin: 0; font-size: 28px; letter-spacing: -.02em; color: #f8fafc; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 1120px; margin: 0 auto; }
+    .version { min-height: 680px; padding: 32px; border-radius: 8px; }
+    .version.before { background: #ffffff; color: #000000; font-family: "Times New Roman", Times, serif; border: 1px solid #cbd5e1; }
+    .version.after { background: #1e293b; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; border: 1px solid #334155; box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5); }
+    
+    /* Before: raw default styling */
+    .before .label { display: inline-block; margin-bottom: 24px; font-family: sans-serif; font-size: 11px; background: #e2e8f0; color: #475569; padding: 4px 8px; font-weight: bold; }
+    .before h2 { margin: 0 0 8px; font-size: 24px; }
+    .before .status-line { margin: 0 0 16px; font-size: 14px; }
+    .before .summary { margin: 0 0 20px; font-size: 15px; line-height: 1.4; }
+    .before .card { border: 1px solid #000; padding: 12px; margin: 0 0 20px; }
+    .before .card-title { font-weight: bold; margin: 0 0 8px; }
+    .before .card p { margin: 0; font-size: 14px; line-height: 1.4; }
+    .before .block { background: #f1f5f9; border: 1px solid #94a3b8; padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin: 0 0 20px; }
+    .before .footer { margin-top: 24px; font-size: 11px; color: #64748b; }
+
+    /* After: Breach polished development artifact styling */
+    .after .label { display: inline-block; margin-bottom: 24px; font-family: ui-monospace, monospace; font-size: 11px; background: #0284c7; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .after h2 { margin: 0 0 10px; font-size: 22px; font-weight: 600; color: #f8fafc; letter-spacing: -.01em; }
+    .after .status-line { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; font-family: ui-monospace, monospace; font-size: 12px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.25); }
+    .after .summary { margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #94a3b8; }
+    .after .card { background: #0f172a; border: 1px solid #334155; border-left: 3px solid #38bdf8; border-radius: 6px; padding: 16px; margin: 0 0 20px; }
+    .after .card-title { font-family: ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #38bdf8; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
+    .after .card p { margin: 0; font-size: 13px; line-height: 1.6; color: #cbd5e1; }
+    .after .block { background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #a5f3fc; line-height: 1.5; white-space: pre-wrap; margin: 0 0 20px; }
+    .after .footer { margin-top: 24px; font-family: ui-monospace, monospace; font-size: 11px; color: #64748b; border-top: 1px solid #334155; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <p class="eyebrow">breach / rendered comparison</p>
+    <h1>Raw discussion or note → structured HTML communication</h1>
+  </header>
+  <main class="compare">
+    <section class="version before" aria-label="Before: raw unstyled markup">
+      <div class="label">Before · unstyled HTML</div>
+      <h2>Incident 1042: Camera Pipeline Seam</h2>
+      <div class="status-line">Severity: P1 · Status: Mitigated in 42m</div>
+      <p class="summary">Independent histogram exposure adaptation on individual cube faces caused optical seams during rapid lighting transitions.</p>
+      <article class="card">
+        <p class="card-title">Telemetry &amp; Evidence</p>
+        <p>Metric: histogram divergence 24.3% across frame boundary.<br>Affected frames: 1420–1485 (tunnel exit sequence).<br>Root cause: per-face AEM_Histogram exposure decoupled from master curve.</p>
+      </article>
+      <pre class="block">fix = "bind_master_tonemapper"
+state = "mitigated"
+review = "approved"</pre>
+      <p class="footer">breach: layout=status-report style=neutral-dark content_mode=incident</p>
+    </section>
+    <section class="version after" aria-label="After: Breach structured single-page artifact">
+      <div class="label">After · breach artifact</div>
+      <h2>Incident 1042: Camera Pipeline Seam</h2>
+      <div class="status-line">Severity: P1 · Status: Mitigated in 42m</div>
+      <p class="summary">Independent histogram exposure adaptation on individual cube faces caused optical seams during rapid lighting transitions.</p>
+      <article class="card">
+        <p class="card-title">Telemetry &amp; Evidence</p>
+        <p>Metric: histogram divergence 24.3% across frame boundary.<br>Affected frames: 1420–1485 (tunnel exit sequence).<br>Root cause: per-face AEM_Histogram exposure decoupled from master curve.</p>
+      </article>
+      <pre class="block">fix = "bind_master_tonemapper"
+state = "mitigated"
+review = "approved"</pre>
+      <p class="footer">breach: layout=status-report style=neutral-dark content_mode=incident</p>
+    </section>
+  </main>
+</body>
+</html>
