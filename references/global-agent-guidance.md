@@ -50,3 +50,7 @@ Use `<repo>/.worktrees/<safe-branch-name>` as the canonical worktree root.
 `git worktree list` is source of truth. Claude Code must redirect `WorktreeCreate` / `WorktreeRemove` hooks to this root; Codex and other runtimes create worktrees there directly. Do not keep persistent worktrees under `.claude/worktrees/`.
 
 Worktree directories under `.worktrees/` are local scratch space — never push their branches to remote. Workflow-designated branches (e.g. `bugfix/*`, `feature/*`) created by repair/tasking may be pushed after gates pass.
+
+## GitHub Tooling
+
+Use `gh` CLI as default for GitHub operations (repo, PR, issue, CI/run status, release) across all providers and runtimes (ChatGPT, Codex, DeepSeek, Gemini, Claude Code). Do not use remote GitHub plugins, Web connectors, or MCP wrappers when local `gh` is available.
