@@ -26,6 +26,8 @@ passdown transfers context, not workspace ownership. For durable context and art
 
 Transfer the conversation and relationship map, not the implementation files. The goal is to understand what the user was doing, what decisions were made, what artifacts matter, and what the next step is.
 
+When the handoff target (交接对象) is a GPT model and the source (被交接对象) is DeepSeek or Gemini, enforce `review + passdown`: perform a read-only audit on the pending handoff content and evidence before completing the handoff.
+
 ## Modes
 
 `--former` is optional. When omitted, auto-detects sessions from all four runtimes (Codex + Pi + Claude Code + DSH) and merges by recency.
@@ -104,6 +106,17 @@ python3 <skill-dir>/scripts/extract_handoff.py --former claude,codex --dir /proj
 # Scan all runtimes across multiple directories
 python3 <skill-dir>/scripts/extract_handoff.py --dir /project/a,/project/b,/project/c --json
 ```
+
+
+### Cross-model handoff: Review + Passdown (DeepSeek/Gemini → GPT)
+
+Triggered when the successor/target is a GPT model (Codex Terra/Sol/Luna, ChatGPT) and the former/source is DeepSeek or Gemini (DSH, `deepseek-v4-flash`, Gemini CLI, Antigravity proxy).
+
+Never ingest unvetted DeepSeek/Gemini turns directly into the GPT successor context as ground truth. Run a read-only evidence review on the extracted turns, decisions, and artifacts *before* completing the handoff:
+
+1. **Evidence & causality audit**: Separate verified runtime facts (test outputs, logs, media) from static code observations and unverified model conjectures. Reject treating static/steady-state correlation as dynamic root cause.
+2. **Metric & artifact sanity**: Verify that referenced file paths, media, and scripts exist on disk; check for silent metric bugs (e.g. invalid boundary fits, missing sensitivity baselines, or unhandled warmup frames).
+3. **Disposition & vetted handoff**: Flag or downgrade unverified assertions. Present the Review Gate findings first, then emit the vetted handoff structure so the downstream GPT model acts only on proven conclusions.
 
 
 ### zvec-backed focused retrieval
@@ -220,6 +233,16 @@ Relevant artifacts:
 
 Do not read or inline large artifacts unless needed for the immediate next step. Prefer an index first.
 
+### Step 4b: Review Gate for DeepSeek/Gemini source (Review + Passdown)
+
+When handing off from DeepSeek or Gemini to a GPT model, do not proceed directly from the extracted transcript to execution. Perform a read-only evidence audit:
+
+- **Direct code/runtime evidence**: Check whether claimed test results or metrics actually exist on disk and were produced by verified runs (e.g. check logs, output images, exit codes).
+- **Hypothesis boundary**: Flag claims that were derived from LLM code reading rather than physical/dynamic runs (e.g. static configuration differences vs dynamic runtime causes).
+- **Metric bugs & traps**: Check for uncalibrated baselines, missing warmup frames, or bad geometric fits in source scripts.
+
+Record findings under `## Review Gate Findings`. Downgrade any unverified causal claim to an open hypothesis before formatting the final handoff.
+
 ### Step 5: Format handoff
 
 For short sessions (<15 turns), include the full filtered transcript. For long sessions, include first 2 turns, last 3 turns, focus-relevant decisions, and a compact summary.
@@ -238,6 +261,8 @@ Extracted turns: `<N>`
 [... transcript or compressed transcript ...]
 
 ## Key Decisions
+
+## Review Gate Findings (when Review + Passdown applies)
 
 ## Artifact Map
 
@@ -270,3 +295,4 @@ Promote stable facts into Canon task/project/decision/pattern/incident pages onl
 - **DSH**: Sessions are zstd-compressed (`session.jsonl.zstd` under `~/.dsh/sessions/<slug>/<session-id>/`) and keyed by working directory + session id. User turns come from `user/message` events with `source.kind == "user"`; plugin/instruction injections are dropped, as are `reasoning` content blocks.
 - **Claude Code slug**: Project directory slug replaces both `/` and `_` with `-`.
 - **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi, DSH→DSH are valid. The source session JSONL may still be live; read only. Archive it only after a verified successor and only through the runtime's conversation lifecycle.
+- **DeepSeek/Gemini → GPT handoff (`review+passdown`)**: Non-GPT models have a higher incidence of mistaking static code observations for verified root causes, omitting sensitivity baselines, or advancing unverified hypotheses as facts. When a GPT model takes over a DeepSeek or Gemini session, it must run `review+passdown`: audit the source evidence, check real files/metrics on disk, downgrade unverified claims, and only then proceed.

@@ -59,6 +59,15 @@ For a cross-directory handoff, artifacts remain owned by the source workspace;
 report absolute paths rather than silently copying plans, logs, reports, or
 build outputs.
 
+## Cross-model handoff (Review + Passdown)
+
+When a GPT model (Codex Terra/Sol/Luna, ChatGPT) takes over a session from
+DeepSeek or Gemini (DSH, `deepseek-v4-flash`, Gemini CLI), `passdown` enters
+`review+passdown`. The incoming GPT agent performs a read-only evidence audit
+on the pending handoff content (validating real on-disk artifacts, checking
+metric sanity, and separating verified facts from static code conjectures)
+before finalizing the handoff.
+
 ## Recovery boundaries
 
 Passdown can recover filtered conversation turns and visible references to
