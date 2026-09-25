@@ -29,7 +29,7 @@ description: |
 
 ## 触发边界
 
-以下中文表达应触发普通执行：执行、开始做、开动、落实、实施、修改、改一下、修复、处理这个任务、帮我做、按这个方案做。出现“委托、交给其他模型、低级模型执行、让 Terra/Luna 做”时选择 `--delegate`。
+以下中文表达应触发普通执行：执行、开始做、开动、落实、实施、修改、改一下、修复、处理这个任务、帮我做、按这个方案做。出现“委托、交给其他模型、指定模型执行、让 Terra/Luna 做”时选择 `--delegate`。
 
 不用于纯问答、概念解释、只读诊断/review、单纯调研或用户明确说“先不动手”。已知 demand/bug ID 继续由 `tasking`/`repair` 持有生命周期；它们可调用本 skill，但 execute 不接管其状态、分支或 task identity。
 
@@ -73,6 +73,10 @@ reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择
 
 仅主/main agent 可在形成契约后自动选择：任务可独立拆分、下游能获得完整 scope/验收条件、委托收益超过交接成本且主 agent 可复核时，解析为 `delegate`；否则解析为 `direct`。小改动、强上下文依赖、频繁用户交互、不可独立验收的任务保持 direct。
 
+需要委托时，executor 从当前 active provider 实际暴露、可调用的子代理模型池中选择；不要仅因某模型被认为“低级”而委托。active provider 为 `gpt` 时，候选范围限定为运行时可用的 GPT-6 模型，并排除 Astra（`gpt-6-astra`）。此限制同样适用于委托时显式指定的 `--executor` 和 `--designer`：模型不可用或超出范围时，不得静默替换为其他 provider 或 Astra。其他 provider 只使用其运行时实际暴露的模型，不推断跨 provider fallback。
+
+若没有符合当前 provider/model 范围的委托模型，`auto` 解析为 `direct`；显式 `--delegate` 或不合范围的显式模型指定记录 blocker，不以内联执行或越界模型替代委托。
+
 下游 agent 的 `auto` 必须解析为 `direct`，不得再次组队。默认最大 delegation depth 是 1；已在 depth 1 的 agent 不得使用 `--delegate`。主 agent 保留任务 owner、复核责任和 Canon 写回责任。
 
 #### `--direct`：强制当前 agent
@@ -81,7 +85,7 @@ reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择
 
 #### `--delegate`：强制轻量委托
 
-主 agent 使用 runtime 的子代理能力传递执行契约；runtime 不支持时记录 blocker 并明确报告，不能把 inline 执行伪装成委托。Astra 适合高风险架构，Sol 适合常规设计与拆解，Terra 适合跨文件实现，Luna 适合边界清楚的机械修改和简单测试；以 runtime 可用模型和用户指定为准。
+主 agent 使用 runtime 的子代理能力传递执行契约；runtime 不支持时记录 blocker 并明确报告，不能把 inline 执行伪装成委托。按任务需求和当前 provider 的可用模型选择 executor；当 active provider 为 `gpt` 时只从 GPT-6 模型中选择并排除 Astra，不再按“向低级模型委托”排序。显式模型必须符合该 provider/model 范围。
 
 在 `## Delegation` 记录 executor、scope、status、evidence（以及可选 designer）。主 agent 复核下游 diff、测试和完成条件后才可标记完成。
 
