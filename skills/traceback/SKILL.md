@@ -1,17 +1,7 @@
 ---
 name: traceback
 description: |
-  Evidence-backed three-way delivery alignment gate: approved design/fix plan/
-  acceptance contract → implementation → mapped and executed tests. Produces a
-  machine-readable alignment record, deterministic Markdown view, and gate result.
-
-  Use when an explicit design document, fix plan, acceptance checklist, or public
-  contract exists and the user/workflow asks whether delivery is complete:
-  "delivery check", "delivery align", "检查交付一致性", "对齐检查", "gap scan",
-  "追溯检查", "三阶段对齐", "design-implementation gap",
-  "are we missing anything from the spec", "方案和代码一致吗".
-  Run after implementation validation and Review Gate, before sanitize/Turnover.
-  Do not trigger for stack traces, runtime exceptions, or generic line coverage.
+  Check delivery against an approved design, fix plan, acceptance list, or public contract: source → implementation → mapped, executed tests. Trigger on "检查交付一致性", "对齐检查", "gap scan", "delivery check", or "方案和代码一致吗". Runs after validation and Review Gate, before closeout; not for runtime stack traces or line coverage.
 ---
 
 # traceback — Delivery Alignment Gate

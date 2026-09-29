@@ -1,15 +1,7 @@
 ---
 name: passdown
 description: |
-  Transfer context from another coding agent session into the current session.
-  Auto-detects runtime (Codex/Pi/Claude Code/DSH). Defaults to current directory —
-  no parameters needed for same-repo handoff. Multi-runtime sessions merged by
-  recency with focus filtering and deduplication.
-
-  Trigger on: "agent handoff", "handoff", "接手上下文", "agent交接",
-  "上下文切换", "attach session", "继续上一个agent的对话",
-  "上次在这个目录做了什么". Also use after starting a fresh conversation
-  to continue a focused thread without resuming the full old transcript.
+  Transfer context from a previous coding-agent session into the current one. Trigger on "handoff", "接手上下文", "agent交接", "继续上一个agent的对话", or a fresh conversation continuing focused work. Auto-detects runtime and defaults to the current directory; advanced selection loads only when needed.
 ---
 
 # Agent Handoff
@@ -28,135 +20,25 @@ Transfer the conversation and relationship map, not the implementation files. Th
 
 When the handoff target (交接对象) is a GPT model and the source (被交接对象) is DeepSeek or Gemini, enforce `review + passdown`: perform a read-only audit on the pending handoff content and evidence before completing the handoff.
 
-## Modes
+## Minimal entry
 
-`--former` is optional. When omitted, auto-detects sessions from all four runtimes (Codex + Pi + Claude Code + DSH) and merges by recency.
-
-`--dir` defaults to current working directory when not specified.
-
-### Same-directory handoff（最简）
+For same-directory handoff, run:
 
 ```bash
 python3 <skill-dir>/scripts/extract_handoff.py --focus "<topic>" --json
 ```
 
-Auto-detect runtime, default to current cwd.
-
-### Fresh-conversation rollover handoff
-
-Start a fresh conversation in the same workspace, then invoke passdown with the
-source runtime and focus. Passdown performs the handoff; same-runtime rollover
-may archive the source under the contract below.
-
-```text
-/passdown --former codex --focus "<current topic>"
-```
-
-```bash
-python3 <skill-dir>/scripts/extract_handoff.py \
-  --former codex --focus "<current topic>" --json
-```
-
-The default 8000-token budget requires no new argument. Use
-`--max-tokens 4000` for a more aggressive handoff.
-
-### Same-runtime rollover archival
-
-Archiving the source conversation is an optional lifecycle action, not part of
-extraction. Never archive merely because the extractor ran.
-
-Archive only when all of these hold:
-
-- source and successor use the same runtime (Codex→Codex, Claude→Claude, Pi→Pi, DSH→DSH);
-- the user asked for rollover cleanup, or a standing rollover policy authorizes it;
-- the successor exists and its first handoff response is valid: completed, non-empty, and not `systemError` or `needs-attention`;
-- the source is idle and is neither the current conversation nor a registered Herdr agent;
-- the runtime exposes a conversation-archive operation.
-
-If any condition is unknown or fails, leave the source untouched and report the
-source session id plus the blocker. If the conditions hold but authorization is
-missing, ask first; never archive silently. Archival must be reversible: if the
-successor later fails, restore the source conversation.
-
-Codex: archive through the runtime thread lifecycle (`Thread/archive` via
-app-server RPC, or `set_thread_archived` in MCP tooling). The handoff automation
-around `session_handoff_scan.py` owns scan/dedup state. Never edit, move, or
-delete session JSONL.
-
-### Cross-directory handoff
-
-```bash
-python3 <skill-dir>/scripts/extract_handoff.py --dir /absolute/source/workspace --focus "<topic>" --json
-```
-
-Auto-detect runtime in given directory.
-
-### Specific runtime(s)
-
-```bash
-python3 <skill-dir>/scripts/extract_handoff.py --former claude --dir /absolute/workspace --focus "<topic>" --json
-```
-
-### Multi-runtime / multi-directory
-
-```bash
-# Scan both Claude Code and Codex sessions across two workspaces
-python3 <skill-dir>/scripts/extract_handoff.py --former claude,codex --dir /project/a --dir /project/b --json
-
-# Scan all runtimes across multiple directories
-python3 <skill-dir>/scripts/extract_handoff.py --dir /project/a,/project/b,/project/c --json
-```
-
-
-### Cross-model handoff: Review + Passdown (DeepSeek/Gemini → GPT)
-
-Triggered when the successor/target is a GPT model (Codex Terra/Sol/Luna, ChatGPT) and the former/source is DeepSeek or Gemini (DSH, `deepseek-v4-flash`, Gemini CLI, Antigravity proxy).
-
-Never ingest unvetted DeepSeek/Gemini turns directly into the GPT successor context as ground truth. Run a read-only evidence review on the extracted turns, decisions, and artifacts *before* completing the handoff:
-
-1. **Evidence & causality audit**: Separate verified runtime facts (test outputs, logs, media) from static code observations and unverified model conjectures. Reject treating static/steady-state correlation as dynamic root cause.
-2. **Metric & artifact sanity**: Verify that referenced file paths, media, and scripts exist on disk; check for silent metric bugs (e.g. invalid boundary fits, missing sensitivity baselines, or unhandled warmup frames).
-3. **Disposition & vetted handoff**: Flag or downgrade unverified assertions. Present the Review Gate findings first, then emit the vetted handoff structure so the downstream GPT model acts only on proven conclusions.
-
-
-### zvec-backed focused retrieval
-
-zvec is integrated as a candidate retriever only. It changes how matching session files are found; it does not change parsing, compression, handoff format, or the original JSONL source of truth.
-
-```bash
-# Build/rebuild the local zvec index for the current workspace
-python3 <skill-dir>/scripts/zvec_index.py --dir "$PWD" --rebuild
-
-# Query through passdown. auto uses zvec for focused queries when available,
-# then falls back to the legacy keyword/mtime retriever.
-python3 <skill-dir>/scripts/extract_handoff.py --dir "$PWD" --focus "<topic>" --retriever auto --json
-
-# Force zvec. Fails if the index is missing or has no candidate.
-python3 <skill-dir>/scripts/extract_handoff.py --dir "$PWD" --focus "<topic>" --retriever zvec --json
-```
-
-Index location defaults to `~/.agents/passdown-zvec-index`. Override with `PASSDOWN_ZVEC_PATH=/path/to/index`.
-
-### Direct session file
-
-```bash
-python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --former claude --json
-```
-
-## Parameters
-
-- `--former <codex|pi|claude|dsh,...>` — optional, comma-separated. Auto-detect from all four runtimes if omitted. Multi-runtime matches sorted by mtime desc.
-- `--dir <path>` — optional, repeatable. Accepts multiple paths via `--dir /a --dir /b` or `--dir /a,/b`. Defaults to current working directory.
-- `--file <path>` — direct session JSONL path; bypass discovery.
-- `--session <id>` — select one source session by UUID or filename stem.
-- `--focus "<topic>"` — find ALL matching sessions across runtimes. Extracts and deduplicates turns from every session with a non-zero focus score.
-- `--max-tokens <n>` — hard cap for returned turns. Defaults to 8000 estimated tokens.
-- `--retriever <auto|keyword|zvec>` — candidate retrieval mode. `auto` uses zvec for focused queries when an index exists, then falls back to keyword/mtime; `zvec` is strict; `keyword` preserves legacy behavior.
+When the source directory/runtime/session is specified, for fresh-conversation
+rollover, for optional archival, or for DeepSeek/Gemini → GPT handoff, read
+[mode routing and review contract](references/modes.md) before acting.
+The latter requires read-only Review + Passdown, not transcript extraction alone.
+Read [runtime quirks](references/runtime-quirks.md) only when discovery or parsing
+needs runtime-specific handling.
 
 ## Non-Negotiable Constraints
 
 - **Read-only on source side.** Never write to or delete another agent's session
-  storage. Conversation archival, when the contract above permits it, is a
+  storage. Conversation archival, when the mode routing contract permits it, is a
   runtime lifecycle operation, not a session-file edit.
 - **Artifacts by reference.** In cross-directory handoff, artifacts remain owned by the source workspace. Use absolute paths. Do not copy `.planning`, `.proposal`, `.research`, `.agent-state`, build outputs, logs, images, tarballs, or reports unless the user explicitly asks for a portable bundle.
 - **Filter aggressively.** Keep only user messages and assistant core replies. Drop tool call arguments, tool results, system/developer prompts, guardian/judge subflows, token logs, and raw system dumps.
@@ -272,7 +154,7 @@ Extracted turns: `<N>`
 ### Step 6: Same-runtime archival (optional)
 
 After presenting the handoff, if this was a same-runtime rollover and the
-archival contract above permits it, archive the source conversation and report
+archival contract in `references/modes.md` permits it, archive the source conversation and report
 the archived source session id plus the successor id. Otherwise leave the source
 untouched and state why.
 
@@ -285,14 +167,3 @@ If the handoff establishes durable context, create or update a Canon update card
 ```
 
 Promote stable facts into Canon task/project/decision/pattern/incident pages only when the durable target is clear. If not clear, keep the update card as the ingest bridge.
-
-## Agent-Specific Quirks
-
-- **Fresh conversation**: use passdown from the new conversation; do not `resume` or `fork` the old transcript when reducing conversation context.
-- **Codex guardian-wrapped sessions**: The real conversation is often in `>>> TRANSCRIPT` blocks inside `user_message` / `input_text`, not assistant `output_text`.
-- **Codex sessions are per-rollout**: Multiple JSONL files may exist per day. Use cwd first, then focus score, then recency.
-- **Pi**: Sessions are keyed by working directory. If multiple sessions exist, focus score ranks them before recency.
-- **DSH**: Sessions are zstd-compressed (`session.jsonl.zstd` under `~/.dsh/sessions/<slug>/<session-id>/`) and keyed by working directory + session id. User turns come from `user/message` events with `source.kind == "user"`; plugin/instruction injections are dropped, as are `reasoning` content blocks.
-- **Claude Code slug**: Project directory slug replaces both `/` and `_` with `-`.
-- **Same-runtime handoff**: Claude→Claude, Codex→Codex, Pi→Pi, DSH→DSH are valid. The source session JSONL may still be live; read only. Archive it only after a verified successor and only through the runtime's conversation lifecycle.
-- **DeepSeek/Gemini → GPT handoff (`review+passdown`)**: Non-GPT models have a higher incidence of mistaking static code observations for verified root causes, omitting sensitivity baselines, or advancing unverified hypotheses as facts. When a GPT model takes over a DeepSeek or Gemini session, it must run `review+passdown`: audit the source evidence, check real files/metrics on disk, downgrade unverified claims, and only then proceed.

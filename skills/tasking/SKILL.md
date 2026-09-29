@@ -1,18 +1,7 @@
 ---
 name: tasking
 description: |
-  需求开发全流程作战指挥系统。四阶段：Orient(情报分析→方案)、Briefing(上传知识库→评审日程)、
-  Engage(状态→开发中→execute --plan→启动/goal)、Turnover(交付物→系统测试)。
-  
-  Make sure to use this skill whenever the user:
-  - mentions a demand/requirement ID (e.g. JHBN-7712, #1234) and wants to process it
-  - says 处理需求、需求开发、写方案、方案评审、开始开发、进入开发、交付、提测
-  - asks to upload a design doc to knowledge base or schedule a review meeting for a demand
-  - wants to change a demand status to 开发中/系统测试 or post deliverable links
-  - uses /tasking or any of its modes: Orient, Briefing, Engage, Turnover
-  
-  Do NOT use for: checking personal todos, writing weekly reports, code review, creating new skills,
-  general git operations, or translating documents — even if a demand ID is mentioned in passing.
+  推进需求开发流程：Orient、Briefing、Engage、Turnover。触发于明确需求 ID 或"处理需求"、"需求开发"、"方案评审"、"开始开发"、"提测"等需求工作意图，也响应 /tasking 各 mode。仅顺带提到需求 ID、普通待办、周报或代码审阅不触发。
 ---
 
 # tasking — 需求开发作战流程

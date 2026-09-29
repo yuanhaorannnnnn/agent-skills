@@ -35,7 +35,7 @@ class SkillContractTests(unittest.TestCase):
 
     def test_acquisition_self_script_references_exist(self) -> None:
         skill_dir = SKILLS_DIR / "acquisition"
-        text = (skill_dir / "SKILL.md").read_text()
+        text = "\n".join(path.read_text() for path in skill_dir.rglob("*.md"))
         self.assertNotIn("~/.agents/skills/content-ingest", text)
         scripts = set(re.findall(r"<skill-dir>/scripts/([a-z0-9_]+\.py)", text))
         self.assertGreaterEqual(len(scripts), 3)

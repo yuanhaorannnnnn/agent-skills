@@ -16,7 +16,7 @@ Use this contract together with:
 
 ## Required Surfaces
 
-For each mode or phase, define these surfaces:
+For each mode or phase that moves durable state or hands work to another agent, define these surfaces. A local direct edit completed and verified in the current conversation does not need a Canon task or gate file:
 
 | Surface | Required question |
 |---------|-------------------|
@@ -27,7 +27,7 @@ For each mode or phase, define these surfaces:
 | Canon update | Which task/update-card/artifact refs must be written for durable state? |
 | Review/verification | Which validation, monitored validation task, traceback, or Review Gate result proves the work is safe to hand off? |
 
-If a mode does not change state, say so. If a mode cannot update Canon, record the reason in the final response and keep repo-local artifacts as temporary evidence.
+If a mode does not change durable state, say so. If durable work cannot update Canon, record the reason in the final response and keep repo-local artifacts as temporary evidence.
 
 Commands inside a skill should resolve self-owned scripts through `<skill-dir>`
 and sibling skills through `<skills-root>`. Absolute installed-runtime roots are
@@ -78,7 +78,7 @@ Infra tasks should use `report_scope: infra` and `weekly: false` unless the user
 
 ## Review Gate Contract
 
-When Review Gate applies, record the result in the Canon task page:
+When Review Gate applies to durable work, record the result in the Canon task page; local direct work reports it in the current response:
 
 ```text
 Findings: blocker/non-blocker summary
@@ -90,7 +90,7 @@ Do not proceed to commit, Closeout, Turnover, or sanitize when Review Gate is bl
 
 ## Handoff Rule
 
-A downstream agent should be able to resume from only:
+A downstream agent should be able to resume durable or handed-off work from only:
 
 1. Canon task page
 2. Gate file / state.json / goal.md / machine-readable plan (fix_plan.json or equivalent)

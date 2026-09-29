@@ -1,14 +1,7 @@
 ---
 name: cover
 description: |
-  Generate a customized DESIGN.md (design token specification) for a product
-  or project. Reads the awesome-design-md reference library (71 DESIGN.md files
-  from real products), synthesizes the best-matching references with the
-  project's own content and style intent, and produces a tailored design spec.
-
-  Trigger on: "visual design", "视觉设计", "DESIGN.md", "design spec",
-  "设计规范", "产品视觉方案", "给我一个设计规范", "match design style",
-  "参考 XX 风格做设计", "generate design tokens".
+  Create a project-specific DESIGN.md visual token spec from project intent and the awesome-design-md reference library. Trigger on "DESIGN.md", "视觉设计", "设计规范", "design spec", or "参考 XX 风格做设计". Not for a one-off mockup.
 ---
 
 # Visual Design

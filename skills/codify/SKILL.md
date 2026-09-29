@@ -1,12 +1,7 @@
 ---
 name: codify
 description: |
-  Use only when the desired output is one compact, reusable guardrail that
-  prevents a mistake from recurring. Trigger on "write this down as a rule",
-  "remember this mistake", "capture a lesson learned", or "add a guardrail for
-  next time". Do not use for a narrative of one incident or debugging journey;
-  use after-action. Do not use for an end-to-end report on a completed task; use
-  sanitize report mode.
+  Write one compact reusable guardrail to prevent a recurring mistake. Trigger on "remember this mistake", "write this down as a rule", or "add a guardrail". Incident chronology goes to after-action; a full completed-task report goes to sanitize report.
 ---
 
 # Capture Mistake Rule

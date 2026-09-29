@@ -15,7 +15,7 @@ Drop filler, articles, pleasantries, and hedging. Use fragments, short synonyms,
 
 ## Canon
 
-Durable context at `/media/yhr/2T/Canon`. Query before acting — Canon overrides repo-local `.agent-state/`.
+Durable context at `/media/yhr/2T/Canon`. Query relevant Canon pages before work that depends on project decisions, existing task state, or cross-repository context; Canon overrides repo-local `.agent-state/`. For a self-contained, reversible edit in one repository that does not change public, security, or data contracts or external state, inspect the relevant files and proceed without a Canon lookup or new task page. Promote an outcome to Canon when it changes durable decisions or requires later handoff.
 
 ## Knowledge
 

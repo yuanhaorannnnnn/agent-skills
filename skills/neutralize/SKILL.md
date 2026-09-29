@@ -1,14 +1,7 @@
 ---
 name: neutralize
 description: |
-  Use for nontrivial or recurring defects that need explicit root-cause evidence,
-  symptom reproduction, adjacent-pattern scanning, and a machine-readable fix
-  gate. Strong triggers: repeated regression, build/runtime failure, supplied
-  logs or stack traces, cross-module breakage, "find the root cause", or "check
-  for similar issues nearby". Focus on root cause, apply the smallest safe fix,
-  then scan nearby code for the same pattern. Do not auto-trigger for an obvious,
-  localized routine fix that ordinary implementation plus focused validation can
-  resolve safely.
+  Diagnose and fix nontrivial or recurring defects with reproduction, root-cause evidence, nearby-pattern scan, and a machine-readable gate. Trigger on repeated regression, build/runtime failure, logs or stack traces, "find the root cause", or "check for similar issues nearby". Obvious localized fixes use ordinary implementation.
 ---
 
 # Fix Issue

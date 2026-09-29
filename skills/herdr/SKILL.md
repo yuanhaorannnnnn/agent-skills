@@ -5,6 +5,10 @@ description: "Inspect or control Herdr. In a Herdr-managed pane (HERDR_ENV=1), u
 
 # herdr — agent skill
 
+## Minimal entry
+
+First choose the runtime path below. For a basic status check, discover the workspace, tab, and pane IDs, then read the target pane. Read only the operation section needed for the user request; recipes and agent coordination are optional.
+
 ## runtime routing
 
 choose exactly one control path before doing anything:

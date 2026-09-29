@@ -1,18 +1,7 @@
 ---
 name: repair
 description: |
-  云效缺陷单修复流程 skill。用于处理已经由共享 Phase 0 拉取到
-  `/media/yhr/2T/yunxiao/bugs/<bug-id>/` 的缺陷单，四阶段：Intake
-  读取缺陷单、切输入分支、结合代码分析、生成 root-cause.md、fix_plan.json 和 breach
-  对齐页、将状态改为 修复中；Fix 按修复方案和 neutralize 工作流修复，按条件
-  触发 codify 和 after-action；Closeout 改为 集成测试中；Clear 合入主分支打包关闭。
-
-  Make sure to use this skill when the user says 处理缺陷、修复缺陷单、
-  bug 单、云效缺陷、进入修复中、提交回归验证、缺陷误报、缺陷转需求，
-  or invokes `/repair Intake`, `/repair Fix`, `/repair Closeout`, `/repair Clear`.
-
-  Do NOT use for general code debugging without a Yunxiao bug id; use neutralize
-  for ordinary bugfix/debug requests. repair never changes bug assignee/owner.
+  处理已由 Phase 0 拉取的云效缺陷单，按 Intake、Fix、Closeout、Clear 四阶段推进。触发于"处理缺陷"、"修复缺陷单"、"云效缺陷"、缺陷 ID 加"处理/修复/提测"，或 /repair 各 mode；不用于普通调试（用 neutralize）。不改变缺陷负责人。
 ---
 
 # repair — 云效缺陷修复流程

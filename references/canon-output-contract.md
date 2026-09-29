@@ -56,15 +56,15 @@ Schema and workflow references:
 
 ## Required Behavior
 
-When a skill finishes meaningful work, ask:
+When a skill finishes work that changes durable knowledge or requires later handoff, ask:
 
 1. Which Canon project page does this update?
-2. Which Canon task does this update or create?
+2. Which existing Canon task does this update, or does this need a new durable task?
 3. Which decision, pattern, workflow, or incident is supported?
 4. Which artifact proves the result?
 5. Which pages need backlinks?
 
-If the answer is non-empty, create or update a Canon update card under:
+Self-contained, reversible single-repository edits that finish in the current conversation need no new task page or update card. Otherwise, if a durable answer is non-empty, create or update a Canon update card under:
 
 ```text
 /media/yhr/2T/Canon/raw/update-cards/

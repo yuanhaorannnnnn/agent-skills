@@ -38,7 +38,7 @@ If no design doc, fix plan, acceptance checklist, or public contract exists, tra
 
 Collect only the evidence needed for review:
 
-- Canon task page path.
+- Canon task page path when the work has one; for local direct work use the user request and current diff.
 - Current branch and base branch.
 - `git diff --stat` and focused diff for changed files.
 - Relevant design/fix plan/test evidence paths.
@@ -93,10 +93,12 @@ Non-blocking findings can be recorded as follow-ups if they do not affect the cu
 
 ## Canon Output
 
-Write review results to the task page:
+For durable work, write review results to the task page:
 
 - `## Findings`: concise findings and disposition.
 - `## Evidence`: review runtime, exact command (`/codex:review`, `/codex:adversarial-review`, or `/review`), result/job id or summary, linked update card, validation evidence. If fallback was used, record `Codex review: not used` and the reason.
 - `## Timeline`: material state change such as `review_passed`, `review_blocked`, or `review_skipped`.
+
+For local direct work, report the verdict, findings, and validation in the current response.
 
 If the review blocks delivery, do not proceed to sanitize, Closeout, or Turnover until blockers are fixed or explicitly waived by the user.

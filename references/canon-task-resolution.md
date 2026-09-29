@@ -104,9 +104,9 @@ Update on every save:
 
 ## Common Implementations
 
-### Workflow skills — write task pages
+### Workflow skills — write task pages when durable state is needed
 
-`sanitize`, all `execute` modes, `tasking`, and `repair` resolve the task page and apply the action-layer merge rules for their sections. Every Execute mode also records its routing mode, resolved route, reason, models, scope, status/evidence, and delegation depth in `## Routing`; `execute --goal` adds a runtime brief; `execute --plan` additionally owns the Plan/Findings/Progress structure. Ad-hoc work updates the resolved Canon task page directly using the same contract.
+`sanitize`, `tasking`, `repair`, and durable `execute` paths resolve the task page and apply the action-layer merge rules for their sections. Durable Execute paths record routing mode, resolved route, reason, models, scope, status/evidence, and delegation depth in `## Routing`; `execute --goal` adds a runtime brief; `execute --plan` additionally owns the Plan/Findings/Progress structure. Self-contained, reversible single-repository local direct edits need no new task page. Ad-hoc work with an existing task updates that page using the same contract.
 
 ### passdown — attaches hot context
 

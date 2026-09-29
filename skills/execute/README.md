@@ -1,6 +1,6 @@
 # execute
 
-`execute` is the general entry point for carrying out a concrete task. It records a resumable Canon task and an explicit execution route, then leaves implementation and verification evidence for review.
+`execute` is the general entry point for carrying out a concrete task. Durable work records a resumable Canon task and an explicit execution route; local direct edits can finish in the current conversation.
 
 ## Choose a route
 
@@ -19,7 +19,7 @@ Execution itself does not imply a commit, push, branch change, deployment, messa
 
 ## What the flow records
 
-Before implementation or delegation, resolve or create a Canon task and record a compact execution contract:
+Before delegation, cross-repository work, external state changes, or work needing later handoff, resolve or create a Canon task and record a compact execution contract. A self-contained, reversible single-repository direct edit needs no new task:
 
 1. Goal, non-goals, scoped files, dirty baseline, success conditions, and validation commands.
 2. A `## Routing` record with `routing_mode`, `resolved_route`, reason, owner, delegation depth, models, scope, status, and evidence.
@@ -29,9 +29,9 @@ For `--goal` or `--plan`, the runtime brief and goal path are also recorded as a
 
 ## Validate and hand off for review
 
-Run the execution gate for the selected route and persistence mode. After code or configuration changes, use the [review gate](../../references/review-gate.md) to inspect the task page, current diff, and executed checks. Do not mark the task complete while a blocker remains.
+Run the execution gate for durable routes; local direct skips the task-file gate. After code or configuration changes, use the [review gate](../../references/review-gate.md) to inspect the current diff and executed checks, plus the task page when one exists. Do not mark the task complete while a blocker remains.
 
-The final handoff should identify the `task_path`, persistence mode, routing mode, resolved route, executor or delegation status, and validation evidence. The [output contract](../../references/skill-output-contract.md) and [Canon output contract](../../references/canon-output-contract.md) define the required shape.
+The final response for local direct work identifies the change and validation. A durable handoff identifies the `task_path`, persistence mode, routing mode, resolved route, executor or delegation status, and validation evidence. The [output contract](../../references/skill-output-contract.md) and [Canon output contract](../../references/canon-output-contract.md) define the required shape.
 
 ## Boundaries with Yunxiao workflows
 

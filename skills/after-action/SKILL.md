@@ -1,14 +1,7 @@
 ---
 name: after-action
 description: |
-  Use only after a concrete defect, failure, or difficult technical problem has
-  been resolved and the useful output is its incident-specific troubleshooting
-  story: symptom, diagnosis, failed attempts, root cause, final fix, and whether
-  it is truly resolved. Trigger on "故障复盘", "debug 复盘", "怎么修好的",
-  "fix log", "写一份修复记录", "post-mortem", or "记录一下这个 bug 的解决过程".
-  Do not use when the user only wants one reusable guardrail; use codify. Do not
-  use for a formal end-to-end report on an entire completed task; use sanitize
-  report mode.
+  Write an incident-specific fix log after a concrete defect is resolved: symptom, diagnosis, failed attempts, root cause, fix, and verified outcome. Trigger on "故障复盘", "怎么修好的", "fix log", or "post-mortem". One reusable rule goes to codify; a full task report goes to sanitize report.
 ---
 
 # Post-Mortem

@@ -1,19 +1,7 @@
 ---
 name: breach
 description: |
-  Generate fast single-page HTML artifacts for daily development communication:
-  status pages, HTML slide-like pages, flowcharts, PR writeups, incident pages,
-  and structured discussion digests. Use the discussion-digest mode for email
-  threads, GitHub issues/PRs, chat logs, and forum discussions when the user asks
-  "梳理这个讨论", "这条线程结论是什么", "理一下参与人立场",
-  "digest this thread", or "summarize this email chain". Use the general page
-  mode for "quick HTML page", "快速 HTML 页面", "做个 HTML status page",
-  "画一个 HTML flowchart", "做个 HTML slide page", "生成报告页面",
-  "visualize this as a page", or "把这个做成 HTML". When the task already
-  calls for a general page, support an optional ELI5 content profile for
-  explicit requests such as "ELI5", "像给小孩解释", or "给新手讲". Not for
-  native documents, native slide decks, spreadsheets, or full product visual
-  design.
+  Create a fast single-page HTML status page, diagram, slide-like page, PR/incident writeup, or digest of an email, issue, or chat thread. Trigger on "快速 HTML 页面", "画一个 HTML flowchart", "梳理这个讨论", or "digest this thread". Not for native docs, decks, sheets, or full websites.
 ---
 
 # Quick Page
@@ -40,24 +28,20 @@ Choose one mode:
 - **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
 
-## Optional Chart Renderer
+## Minimal entry
 
-In General page mode, `lieflat-charts` may render a chart module inside the
-page. Breach still owns page integration and chart placement;
-`paperwork` owns the surrounding narrative.
+Choose one artifact mode and read only its route:
 
-Use it only when all are true:
+- HTML status page, diagram, slide-like page, PR/incident page →
+  [General page](references/general-page.md) for layout, project DESIGN.md tokens,
+  optional chart gate, and provenance.
+- Multi-party email, issue, PR, chat, or forum discussion digest →
+  [Discussion digest](references/discussion-digest-mode.md) for schema and
+  deterministic renderer.
 
-- the input contains real quantitative data or an honest relationship graph;
-- a chart carries an independent conclusion better than prose, cards, or a table;
-- the visual encoding does not require invented scores, weights, or benchmarks;
-- the artifact's use is compatible with the renderer's license.
-
-Keep this route small: normally 1–3 charts, each with a distinct conclusion.
-Do not chart decorative KPIs, qualitative comparisons, or every available
-column. If `lieflat-charts` is unavailable, continue with native HTML/CSS/SVG;
-do not install a dependency implicitly. Preserve both Breach page provenance
-and the chart template/license provenance.
+For either mode, apply the writing discipline below before authoring new
+technical narrative. A supplied approved text rendered faithfully needs no
+re-authoring.
 
 ## Content Routing
 
@@ -88,76 +72,6 @@ Breach permission to invent or strengthen facts.
   is requested, answer inline; use `visualize` only when a visual materially
   improves understanding.
 
-## General Page Mode
-
-Two constraints, always applied:
-
-**Layout — from html-effectiveness**:
-1. Read `/media/yhr/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`.
-2. Match the user's request to the closest page type.
-3. Read the corresponding HTML example for its grid, component arrangement,
-   and spatial patterns.
-
-**Style — from DESIGN.md or awesome-design-md**:
-1. If `DESIGN.md` exists in the target artifact's project root, use its tokens
-   directly — skip the awesome-design-md lookup. Do not borrow another
-   project's DESIGN.md unless the user or caller explicitly selects it.
-2. If not, read `~/.agents/repos/awesome-design-md/README.md`, choose 1-2
-   matching DESIGN.md files, then read them.
-3. Use only those DESIGN.md sources for `colors`, `typography`, `spacing`,
-   radius, shadows, and component tone. html-effectiveness is layout-only.
-4. Never write a DESIGN.md file. This lookup is read-only.
-
-**Content mode — when the selected DESIGN.md defines `content-modes`**:
-1. Choose the mode from the artifact's reader task and evidence type, not from
-   its filename or a keyword alone. For Field Notes Wiki, use `wiki-note` for
-   routine notes, `research-explainer` for technical learning pages and design
-   explanations, `release-or-concept-feature` for an explicitly editorial
-   feature, and `status-or-benchmark` for measurements and acceptance reports.
-2. Apply that mode's treatment only within the requested HTML artifact. A
-   matching mode does not invoke breach, create a hero illustration, rewrite
-   approved prose, or restyle other deliverables.
-3. If the page contains both an editorial opening and evidence-heavy sections,
-   the hero may use the editorial layer; charts, tables, code, screenshots, and
-   status colors remain analytical. User/caller brand constraints override the
-   project default.
-4. Record the selected mode in the provenance comment as `content_mode`; the
-   visible footer still needs only layout and style.
-
-**Style gate**:
-
-Before writing HTML, identify exact sources:
-
-```text
-layout_name: html-effectiveness catalog/page type name
-layout_source: /absolute/path/to/html-effectiveness/example.html
-style_sources:
-- /absolute/path/to/DESIGN.md
-tokens_used: colors, typography, spacing
-content_mode: selected mode, if the DESIGN.md defines content-modes
-```
-
-If `style_sources` is empty, stop. `Style: Anthropic` without a DESIGN.md path
-is invalid.
-
-**Provenance footer**:
-
-Every page must include a clean visible footer plus an HTML comment with exact paths:
-
-```html
-<!-- BREACH_PROVENANCE
-layout_name="11-status-report"
-layout_source="/abs/example.html"
-style_name="Field Notes Wiki"
-style_source="/abs/DESIGN.md"
-content_mode="research-explainer"
--->
-<footer>Layout: 11-status-report | Style: Field Notes Wiki</footer>
-```
-
-Do not show absolute paths in the visible footer. Exact paths live only in
-`BREACH_PROVENANCE`.
-
 ## Output Location
 
 HTML artifacts write to the **current repo working directory**, NOT to the
@@ -171,23 +85,6 @@ source material directory. Default output paths by context:
 When invoked by another skill (e.g., repair), the caller provides the output
 path; breach accepts it and writes there. Never write HTML into
 `/media/yhr/2T/yunxiao/` or other Phase 0 scraped data directories.
-
-## Discussion Digest Mode
-
-Use this mode for multi-party threads where the useful output is who argued what, how positions changed, what was decided, and what remains open.
-
-1. Acquire the source with the connected GitHub/Gmail capability, a user-provided transcript, or the available web fetcher.
-2. Read `references/discussion-digest-schema.md` before analysis.
-3. Produce schema-compliant JSON. Keep the timeline at 30 entries or fewer, mark at most 8 key events, include at least one decision record, and keep `unresolved` non-empty.
-4. Write the auditable intermediate artifact to `raw/discussions/<slug>.json` unless the caller specifies another path.
-5. Render deterministically:
-
-```bash
-python3 <skill-dir>/scripts/render_discussion.py \
-  raw/discussions/<slug>.json -o queries/<slug>.html
-```
-
-The bundled `assets/discussion-digest.html` owns layout and style for this mode. The renderer adds breach provenance. Do not rewrite the HTML by hand unless the template itself needs repair.
 
 ## Canon 输出边界
 

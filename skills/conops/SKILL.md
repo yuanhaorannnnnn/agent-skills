@@ -1,17 +1,7 @@
 ---
 name: conops
 description: |
-  基于 conversation 对话记录、planning 文档和代码变更，生成面向产品、测试、
-  开发同事的技术开发设计方案文档（Markdown）。
-
-  触发词："生成开发方案"、"写设计评审文档"、"生成技术方案"、"write design doc"、
-  "dev design"、"把这个 feature 的方案整理出来"、"写一个 XX 的技术方案"。
-
-  注意：这不是需求文档或 PRD，而是技术实现方案，重点回答"怎么做"和"为什么这么做"。
-
-  即使用户没有说"开发方案"这四个字，只要场景是"开发前的技术方案编写"——
-  比如用户说"整理一下 XX 传感器的设计"、"把 XX feature 的架构写出来"、
-  "写个文档给评审会看"——都应该触发此 skill。
+  从对话、planning 和代码起草开发前技术设计，说明架构、取舍与验证。触发于"生成开发方案"、"写设计评审文档"、"技术方案"、"write design doc"，或明确要求整理 feature 架构供评审。不用于需求文档或 PRD。
 ---
 
 # Dev Design
@@ -127,23 +117,9 @@ Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评
 
 ---
 
-## 模拟评审（grill-me，可选）
+## 模拟评审（可选）
 
-文档生成后、交给人评审之前，可选触发一次模拟评审：
-
-```
-Interview me relentlessly about every aspect of this plan until we reach
-a shared understanding. Walk down each branch of the decision tree,
-resolving dependencies between decisions one-by-one. For each question,
-provide your recommended answer. Ask one question at a time.
-If a question can be answered by exploring the codebase, explore instead.
-```
-
-**触发方式**：用户说"先自我评审一下"、"模拟评审"、"grill this plan"。
-**输出**：逐条挑战 + agent 推荐回答 + 用户确认/覆盖。修改后的内容回写到方案文档。
-**跳过条件**：用户明确说"不用评审，直接发"。
-
----
+仅用户要求模拟评审时读取 [grill-me 流程](references/grill-me.md)。
 
 ## 写作原则
 
