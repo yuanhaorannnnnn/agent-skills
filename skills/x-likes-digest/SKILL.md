@@ -19,7 +19,8 @@ description: 读取 X/Twitter 账号新增的 Likes，按当周实际内容生�
 ## 依赖
 
 - `xurl` app `x-bookmark-ingest`，当前 OAuth 已具备 `like.read`。
-- 只读探测：`npx -y @xdevplatform/xurl --app x-bookmark-ingest /2/users/me`
+- 本机固定入口：`~/.local/bin/xurl`（官方 release v1.3.4，安装时校验 SHA-256）；定时运行不调用 `npx` 下载。
+- 只读探测：`~/.local/bin/xurl --app x-bookmark-ingest -u haoran_yuan /2/users/me`；每次请求最多等待 45 秒，probe 成功后才继续 build。
 - MCP 的 X 工具没有“读取自己 likes”的接口，必须用 xurl REST；不要用 `get_posts_liking_users` 代替。
 - Gmail 发送：
   `gmail_send_email({to:"me", subject, payload:{mime_type:"text/html", charset:"UTF-8", body:{content:html}}, response_fields:["id","thread_id"]})`

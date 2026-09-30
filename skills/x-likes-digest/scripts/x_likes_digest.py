@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 APP = "x-bookmark-ingest"
-XURL = ["npx", "-y", "@xdevplatform/xurl", "--app", APP]
+XURL = [str(Path.home() / ".local" / "bin" / "xurl"), "--app", APP, "-u", "haoran_yuan"]
 TZ = timezone(timedelta(hours=8))
 
 STATE_DIR = Path.home() / ".codex" / "automations" / "x-likes"
@@ -51,7 +51,7 @@ def now_iso() -> str:
 
 def run_xurl(path: str) -> dict:
     proc = subprocess.run(
-        XURL + [path], capture_output=True, text=True, timeout=180
+        XURL + [path], capture_output=True, text=True, timeout=45
     )
     if proc.returncode != 0:
         try:
