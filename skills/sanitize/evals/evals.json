@@ -1,40 +1,22 @@
 {
-  "skill_name": "Sanitize",
+  "skill_name": "sanitize",
   "evals": [
     {
       "id": 1,
-      "prompt": "开发完成了，帮我收尾",
-      "expected_output": "执行 git status -> 识别相关文件 -> 生成 commit message -> commit + push -> 更新 Canon task/update-card",
+      "prompt": "生成完整任务技术报告，直接回复，不写外部文件。最终改动仅为增加 level 筛选，默认全部；云同步方案已否决。证据：仅静态 diff review 通过，runtime 测试未执行。",
+      "expected_output": "进入 report 语义而非收尾；报告最终保留功能，明确 runtime 未执行；不声称全部测试通过，不 commit/push。",
       "files": []
     },
     {
       "id": 2,
-      "prompt": "wrap up",
-      "expected_output": "同 eval-1，但触发词是英文",
+      "prompt": "提交并保存当前进度，但这只是隔离演练：不要真的 commit/push，只给出拟暂存范围与下一步。git status 有 M app.py（本任务修复）、M colleague.py（同事未完成）、?? .env（凭据）。未提供 diff。",
+      "expected_output": "仅拟纳入 app.py，复核 diff 后再暂存；不纳入 colleague.py 或 .env；不输出实际已提交/推送，不使用 git add .。",
       "files": []
     },
     {
       "id": 3,
-      "prompt": "提交并保存当前进度",
-      "expected_output": "只提交当前任务相关文件，生成 commit message，push，更新 Canon task/update-card",
-      "files": []
-    },
-    {
-      "id": 4,
-      "prompt": "我们刚完成了这个仓库的 agent system 重构。帮我生成一个完整任务技术报告。",
-      "expected_output": "进入 report mode；从 Canon task、commits 和 validation evidence 生成 6 段式 Markdown 报告；运行 report_gate；记录 Canon artifact。不得自动 commit 或 push。",
-      "files": []
-    },
-    {
-      "id": 5,
-      "prompt": "生成一个 HTML 幻灯片汇报。",
-      "expected_output": "不进入 Sanitize report mode；HTML 页面路由到 Breach，native presentation 路由到对应 OpenAI Template。",
-      "files": []
-    },
-    {
-      "id": 6,
-      "prompt": "记录一下这个 bug 是怎么修好的。",
-      "expected_output": "不进入 Sanitize report mode；路由到 AfterAction。",
+      "prompt": "记录持续三天的构建故障怎么修好的：失败尝试是清缓存；根因是 ABI 不兼容；重新构建插件后回归通过。直接回复，不写文件。",
+      "expected_output": "路由到 after-action 故障复盘语义，保留失败尝试、根因、验证边界；不把它当作提交收尾，不补造命令或日志。",
       "files": []
     }
   ]
