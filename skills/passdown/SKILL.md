@@ -54,8 +54,8 @@ If user gives another directory, use it as the source workspace even if the curr
 Examples:
 
 ```text
-/passdown --former claude --dir /media/yhr/2T/CarlaUE5 --focus "JHBN-7679"
-/passdown --former codex --dir /home/yhr/.agents/repos/agent-skills --focus "Canon migration"
+/passdown --former claude --dir /path/to/CarlaUE5 --focus "JHBN-7679"
+/passdown --former codex --dir /path/to/agent-skills --focus "Canon migration"
 ```
 
 ### Step 2: Run extractor

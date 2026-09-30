@@ -103,7 +103,7 @@ Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评
 
 例如开发 CarlaUE5 的 ToF 传感器时，输出：
 ```
-/media/yhr/2T/CarlaUE5/.proposal/tof/ToF Camera Sensor 方案评审文档.md
+<repo-root>/.proposal/tof/ToF Camera Sensor 方案评审文档.md
 ```
 
 ### Canon 输出边界
