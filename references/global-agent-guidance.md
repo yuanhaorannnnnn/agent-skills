@@ -21,6 +21,10 @@ Durable context at `/media/yhr/2T/Canon`. Query relevant Canon pages before work
 
 Reference-only knowledge base at `/media/yhr/2T/files/wiki` — articles, concepts, paper notes, ingested media.
 
+## Global Prompts
+
+当用户明确输入 `&<名称>` 作为 prompt 调用时，读取 `~/.agents/prompts/<名称>.md`（`~` 按当前用户的 home 目录解析），将正文作为本次任务的附加指令，作用对象取当前对话上下文。仅接受单个文件名，不接受路径；文件不存在时说明缺失，不猜测正文。
+
 ## Skill Paths
 
 In skill instructions, `<skill-dir>` means the directory containing the loaded
