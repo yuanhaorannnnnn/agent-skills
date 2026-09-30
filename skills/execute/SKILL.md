@@ -41,7 +41,7 @@ description: |
 - `## Tasks`、`## Progress`、`## Artifacts`
 - frontmatter 的 `workflows: [execute]`、`report_scope`、`weekly`、日期
 
-持久路径只写足以恢复任务的摘要；`--goal`/`--plan` 才创建 `.proposal` 文件。完成后更新任务状态、checklist、验证证据和时间线。
+持久路径只写足以恢复任务的摘要；`--goal`/`--plan` 才创建项目规则指定的 goal 文件。完成后更新任务状态、checklist、验证证据和时间线。
 
 ### 2. 形成执行契约与路由记录
 
@@ -89,7 +89,7 @@ reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择
 
 #### `--goal` / `--plan`：持久化维度
 
-`--goal` 创建 `<repo-root>/.proposal/<task-slug>/goal.md`，包含目标、任务清单、关键约束、接口影响、Observable Target、Module Boundary，并把绝对路径写入 Canon artifacts。用 `/goal <absolute-goal-md-path>`（Pi 使用 `/loop custom <path>`）启动；无法注入命令时返回准确 handoff，不以内联执行伪装已启动。
+`--goal` 先读取目标仓库 AGENTS.md 和文档布局规则。项目明确规定材料归仓路径时优先遵循，例如 CARLA 的 `Docs/guides/documentation.md` 指定 `<repo-root>/Docs/tasks/<task-slug>/goal.md`；没有项目规定时使用 `<repo-root>/.proposal/<task-slug>/goal.md`。创建该文件，包含目标、任务清单、关键约束、接口影响、Observable Target、Module Boundary，并把绝对路径写入 Canon artifacts。用 `/goal <absolute-goal-md-path>`（Pi 使用 `/loop custom <path>`）启动；无法注入命令时返回准确 handoff，不以内联执行伪装已启动。
 
 `--plan` 先读取 `references/plan-template.md`，合并更新 Canon 的 `## Plan`、`## Findings`、`## Progress`，再创建并启动 `goal.md`。已有 section 按 task-resolution merge contract 更新，不覆盖历史。
 

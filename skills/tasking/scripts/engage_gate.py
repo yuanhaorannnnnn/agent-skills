@@ -8,6 +8,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from project_artifacts import task_dir
+
 REQ_ROOT = Path("/media/yhr/2T/yunxiao/requirements")
 
 
@@ -65,7 +68,7 @@ def check_traceback(repo, demand_id):
         / "scripts"
         / "traceback_gate.py"
     )
-    alignment_dir = repo / ".planning" / demand_id
+    alignment_dir = task_dir(repo, demand_id, runtime=True)
     if not gate_script.is_file():
         return False, "traceback: gate script missing FAIL"
     result = subprocess.run(
@@ -161,7 +164,7 @@ def main():
         for name, (ok, message) in checks:
             print(f"  [{name}] {message}")
 
-    proposal = repo / ".proposal" / args.demand_id
+    proposal = task_dir(repo, args.demand_id)
     gate_path = proposal / "engage_gate.json"
     gate = {
         "verdict": verdict,

@@ -107,7 +107,7 @@ not contain task content.
 
 ## Gotchas
 
-- Do not treat runtime scratchpads (`.proposal`, `.planning`, `.agent-state`) as durable source of truth. They are execution buffers; Canon owns long-term state.
+- Do not treat runtime scratchpads (`.proposal`, `.planning`, `.agent-state`) as durable source of truth. They are execution buffers; Canon owns cross-project context. Project rules may instead define tracked documents (such as CARLA `Docs/`) as the project source of truth; preserve those documents and index decisions/artifact references in Canon.
 - Do not mutate external systems by display name when the API requires IDs. Resolve Yunxiao status/user IDs first.
 - Do not claim a phase advanced unless its gate file and Canon evidence both reflect the transition.
 - Do not run Review Gate after sanitize/Closeout as a formality. It must run before irreversible handoff or commit.

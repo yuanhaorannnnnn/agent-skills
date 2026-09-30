@@ -8,6 +8,9 @@ Usage:
 import json, os, sys, subprocess, urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from project_artifacts import task_dir
+
 BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
 
 OUTCOME_STATUS_MAP = {
@@ -147,7 +150,7 @@ def main():
             print(f"  [{n}] {msg}")
 
     # Write to Intake's gate file (same location), or in absence, to proposal dir
-    prop = repo / ".proposal" / "repair" / args.bug_id
+    prop = task_dir(repo, args.bug_id, "repair")
     gate_path = prop / "closeout_gate.json"
     gate_path.parent.mkdir(parents=True, exist_ok=True)
     gate = {"verdict": verdict, "bug_id": args.bug_id, "checks": {n: {"ok": ok, "msg": msg} for n, (ok, msg) in checks}}

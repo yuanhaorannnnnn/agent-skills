@@ -5,7 +5,7 @@
 **第一步：读 gate。在操作知识库或日历之前。**
 
 ```bash
-cat .proposal/<demand-id>/orient_gate.json
+cat <artifact-dir>/orient_gate.json
 ```
 
 | gate verdict | 行为 |

@@ -5,7 +5,7 @@
 **第一步：读 gate。在发评论或改状态之前。**
 
 ```bash
-cat .proposal/<demand-id>/engage_gate.json
+cat <artifact-dir>/engage_gate.json
 ```
 
 | gate verdict | 行为 |

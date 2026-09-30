@@ -9,7 +9,7 @@ repo-local .agent-state / .planning / .research / .proposal = runtime execution 
 /media/yhr/2T/Canon = durable cross-project memory graph
 ```
 
-Do not delete local runtime scratchpads. Demote them from long-term source of truth and promote durable facts into Canon.
+Follow project document ownership and layout rules first. Tracked project documents (for example CARLA `Docs/`) remain the project source of truth; Canon records cross-project context, decisions and artifact references without replacing them. For projects retaining runtime scratchpads, do not delete them; promote durable facts into Canon. Explicitly authorized migrations may retire old directories.
 
 ## Durable vs Runtime
 

@@ -58,7 +58,7 @@ Canon 提供 durable context（历史经验、长期决策），代码是 curren
 
 写入两份文件：
 
-**1. `root-cause.md`**（人读，深度分析）— `<repo_root>/.proposal/repair/<bug-id>/root-cause.md`。
+**1. `root-cause.md`**（人读，深度分析）— `<artifact-dir>/root-cause.md`。
 
 刨到本质原因，不可再深入。不写修复步骤——修复是 Fix 阶段的目标。
 
@@ -96,7 +96,7 @@ Canon 提供 durable context（历史经验、长期决策），代码是 curren
 
 ### Step 6: 生成 Breach 对齐页
 
-调用 Breach 生成 `.proposal/repair/<bug-id>/index.html`。页面类型按 `12-incident-report.html` 的单页报告结构组织：
+调用 Breach 生成 `<artifact-dir>/index.html`。页面类型按 `12-incident-report.html` 的单页报告结构组织：
 
 - 缺陷摘要
 - 影响范围
@@ -111,7 +111,7 @@ Breach 页面是快速对齐材料，不替代 `root-cause.md`。
 **双重落盘**：生成后复制到 LAN 分享目录：
 
 ```bash
-cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
+cp <artifact-dir>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
 ```
 
 ### Step 7: 评论区 + 云效状态
@@ -152,8 +152,8 @@ cp <repo_root>/.proposal/repair/<bug-id>/index.html /media/yhr/2T/carla_images/d
   "status": "修复中",
   "base_branch": "<branch>",
   "fix_branch": "<branch-or-bugfix>",
-  "root_cause_path": "<repo_root>/.proposal/repair/<bug-id>/root-cause.md",
-  "proposal_page_path": "<repo_root>/.proposal/repair/<bug-id>/index.html",
+  "root_cause_path": "<artifact-dir>/root-cause.md",
+  "proposal_page_path": "<artifact-dir>/index.html",
   "share_url": "http://172.16.19.158:8080/doc/<bug-id>.html",
   "canon_task_path": "/media/yhr/2T/Canon/tasks/<bug-id>.md",
   "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md"

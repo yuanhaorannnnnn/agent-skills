@@ -8,6 +8,9 @@ Usage:
 import json, os, sys, subprocess, urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from project_artifacts import task_dir
+
 BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
 
 
@@ -125,7 +128,7 @@ def main():
         for n, (ok, msg) in checks:
             print(f"  [{n}] {msg}")
 
-    prop = repo / ".proposal" / "repair" / args.bug_id
+    prop = task_dir(repo, args.bug_id, "repair")
     gate_path = prop / "clear_gate.json"
     gate_path.parent.mkdir(parents=True, exist_ok=True)
     gate = {"verdict": verdict, "bug_id": args.bug_id,

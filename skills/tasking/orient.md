@@ -66,7 +66,7 @@
 用户确认情报摘要后，调用 CONOPS 生成技术方案：
 
 1. 将情报摘要 + state.json 中的需求元数据传递给 CONOPS
-2. CONOPS 输出到 `.proposal/<demand-id>/<demand-id>-design.md`
+2. CONOPS 输出到 `<artifact-dir>/<demand-id>-design.md`
 3. 更新 `state.json`:
    - `phase`: `new` → `plan`
    - `design_doc_path`: 方案文件绝对路径（例如 `.proposal/dingtalk-codeup-workflow/<demand-id>-design.md`）
@@ -74,7 +74,7 @@
 
 ### Canon promotion
 
-- **方案 artifact**: `.proposal/<demand-id>/<demand-id>-design.md` — repo-local 方案文档
+- **方案 artifact**: `<artifact-dir>/<demand-id>-design.md` — repo-local 方案文档
 - 创建或更新 Canon task page：`/media/yhr/2T/Canon/tasks/<demand-id>.md`，记录需求摘要、base/feature branch、方案 artifact、待确认问题和下一阶段 `Briefing`。
 - 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-orient.md`，链接 `design_doc_path`、需求目录和代码分析证据。
 

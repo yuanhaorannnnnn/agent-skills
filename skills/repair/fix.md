@@ -5,7 +5,7 @@
 **第一步：读 gate。在碰任何代码之前。**
 
 ```bash
-cat .proposal/repair/<bug-id>/intake_gate.json
+cat <artifact-dir>/intake_gate.json
 ```
 
 | gate verdict | 行为 |
@@ -37,7 +37,7 @@ gate 通过后继续以下预检：
 
 基于 `root-cause.md` 的深度分析，生成 `goal.md` — 广度行动计划。
 
-写入 `<repo_root>/.proposal/repair/<bug-id>/goal.md`：
+写入 `<artifact-dir>/goal.md`：
 
 ```markdown
 # <bug-id> 修复目标
@@ -120,7 +120,7 @@ gate 通过后继续以下预检：
 9. 对齐 Intake 和 Fix 产物与实际：
    - 更新 `root-cause.md`：如果修复过程中发现根因假设有偏差，修正为实际根因。
    - 更新 `goal.md`：标记已完成和跳过的项。
-   - 更新 Breach 页面（`.proposal/repair/<bug-id>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
+   - 更新 Breach 页面（`<artifact-dir>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
    - 如果 Intake 假设被否决（如 FOV 减半→实际是 FaceScale），必须在更新中标注"已否决的原假设"。
    - 更新后同步 LAN 分享目录：`cp .../index.html /media/yhr/2T/carla_images/doc/<bug-id>.html`
 
@@ -188,7 +188,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 ```json
 {
   "phase": "intake -> fixing -> fixed",
-  "goal_path": "<repo_root>/.proposal/repair/<bug-id>/goal.md",
+  "goal_path": "<artifact-dir>/goal.md",
   "fix_summary": "...",
   "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
   "self_check_script_paths": ["PythonAPI/examples/test_<bug-id>_<sensor>.py", "PythonAPI/examples/<bug-id>_<sensor>.py"],

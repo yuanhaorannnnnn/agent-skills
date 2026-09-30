@@ -89,28 +89,18 @@ Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评
 
 ### 保存位置
 
-设计方案文档保存到**当前工作仓库的** `.proposal/` 目录（与 `.planning/`、`.research/` 平级）。路径相对于研发所在的仓库，不是 agent 平台仓库。
+设计方案保存到当前研发仓库。先读取该仓库 AGENTS.md 和文档布局规则；明确的项目规则优先于本技能默认路径。
 
-**有 demand/bug ID 时**（从 Canon task page 或用户参数获取）：
-```
-<cwd>/.proposal/<demand-id>/<Feature> 方案评审文档.md
-```
+- CARLA：按 `Docs/guides/documentation.md` 保存到 `<repo-root>/Docs/tasks/<task-or-demand-slug>/design.md`，与同一任务的研究、执行和验证材料聚合。
+- 没有项目布局规定：保存到 `<repo-root>/.proposal/<task-or-demand-slug>/<Feature> 方案评审文档.md`。
 
-**无 ID 时**（按任务标题 kebab-slug）：
-```
-<cwd>/.proposal/<task-slug>/<Feature> 方案评审文档.md
-```
-
-例如开发 CarlaUE5 的 ToF 传感器时，输出：
-```
-<repo-root>/.proposal/tof/ToF Camera Sensor 方案评审文档.md
-```
+已有任务文档时更新对应文件，保留归属与创建来源。路径属于研发仓库，不属于 agent 平台仓库。
 
 ### Canon 输出边界
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- `.proposal/` 中的方案文档是评审 artifact，仍保存在当前工作仓库。
+- 按项目规则解析位置的方案文档是评审 artifact，仍保存在当前工作仓库。
 - 方案中的长期事实进入 Canon：需求/任务状态、方案决策、接口约束、风险、评审结论、后续任务。
 - 生成方案后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-conops-<topic>.md`，把方案文档作为 absolute-path artifact ref。
 - 若由 `tasking Orient` 调用，优先更新 `/media/yhr/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。

@@ -71,8 +71,9 @@ section decision-oriented:
 6. End with acceptance criteria, risks, code navigation, current status, and a
    checkbox decision record.
 
-Save the Markdown artifact in the current development repository's `.proposal/`
-directory. Do not silently promote it to a different repository or treat a
+Save the Markdown artifact according to the development repository's AGENTS.md
+and documentation layout. CARLA uses `Docs/tasks/<slug>/design.md`; repositories
+without a documented layout retain the `.proposal/<slug>/` default. Do not silently promote it to a different repository or treat a
 prepared document as an approved decision. The shared output boundary is
 documented in [`canon-output-contract.md`](../../references/canon-output-contract.md).
 

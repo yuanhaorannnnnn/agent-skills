@@ -5,7 +5,7 @@
 **第一步：读 closeout gate。在碰任何代码之前。**
 
 ```bash
-cat .proposal/repair/<bug-id>/closeout_gate.json
+cat <artifact-dir>/closeout_gate.json
 ```
 
 | gate verdict | 行为 |

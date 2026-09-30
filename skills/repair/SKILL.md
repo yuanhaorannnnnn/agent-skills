@@ -24,13 +24,13 @@ description: |
 - **缺陷目录**: `/media/yhr/2T/yunxiao/bugs/<bug-id>/` — Phase 0 原始材料和
   `state.json` 的存放位置。`detail.md`、附件和其他 raw 输入只读；`state.json`
   仅允许按下方 mode 字段表 scoped write
-- **产物目录**: `.proposal/repair/<bug-id>/` — 所有 Intake 生成的产物（`root-cause.md`、`fix_plan.json`、breach HTML）写入当前 repo 的此路径
+- **产物目录**: `<artifact-dir>/` — 所有 Intake 生成的产物（`root-cause.md`、`fix_plan.json`、breach HTML）写入当前 repo 的此路径
 - **Phase 0**: 与需求开发共用同一个 yunxiao 定时任务；只抓取、下载、创建本地文件、发通知，不改云效状态
 - **输入状态**: Phase 0 当前样本已生成 `state.json`、`detail.md`，图片/日志附件可平铺在缺陷目录
 - **状态集合**: `待处理`、`重新打开`、`修复中`、`开发挂起`、`集成测试中`、`回归验证`、`转需求`、`关闭`
 - **负责人规则**: 全流程不修改负责人；只读负责人字段，只修改评论区和缺陷状态
 - **分支规则**: `--base <branch>` 从 base 创建 `bugfix/<bug-id>`；dirty worktree 停止，不自动 stash
-- **breach 页面**: 每次 Intake 必生成 `.proposal/repair/<bug-id>/index.html`
+- **breach 页面**: 每次 Intake 必生成 `<artifact-dir>/index.html`
 - **缺字段策略**: 先用现有 `state.json`；Intake 能从云效实时补查就写回，补不到关键字段再问用户
 
 
@@ -70,7 +70,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- `<bug_root>/state.json` 是 Phase 0/repair 阶段门控文件，`<repo_root>/.proposal/repair/<bug-id>/` 是修复方案 artifact 目录。
+- `<bug_root>/state.json` 是 Phase 0/repair 阶段门控文件，`<artifact-dir>/` 是修复方案 artifact 目录。
 - 缺陷长期状态写入 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录根因、修复分支、验证证据、交付物、云效状态和下一步。
 - `root-cause.md`、breach HTML、validation task、commit/MR、镜像 HTTP 链接、after-action/codify 产物都作为 Canon artifact refs。
 - 每个 mode 完成后创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-<mode>.md`。
@@ -86,3 +86,7 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 | `Clear` | `phase`, `status`, `merge_commit_sha`, `clear_build_artifact`, `deliverable_urls`, `comment_ids`, `canon_update_card_path`, `canon_artifact_refs` |
 
 不要覆盖自己负责范围外的字段。
+
+## 项目材料路径优先
+
+先读取目标项目文档规则。CARLA 同时具有 `.agent-artifacts-repo-owned` 与 `Docs/guides/documentation.md` 时，artifact-dir 为 `Docs/tasks/repair-<bug-id>/`，runtime-dir 为 `.local/tasks/同一任务slug/`；其他项目 artifact-dir 保留 `.proposal/repair/<bug-id>/`，runtime-dir 保留 `.planning/<id>/`。下列阶段文件中的 artifact-dir/runtime-dir 均使用此解析结果，不能直接照抄旧路径示例。阶段 gate 使用相同解析器。创建 gate JSON 或衍生附件后按项目归属规则登记 sidecar，再检查、提交；执行缓存留本地。

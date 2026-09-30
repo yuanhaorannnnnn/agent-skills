@@ -5,7 +5,7 @@
 **第一步：读 gate。在改状态或启动开发之前。**
 
 ```bash
-cat .proposal/<demand-id>/briefing_gate.json
+cat <artifact-dir>/briefing_gate.json
 ```
 
 | gate verdict | 行为 |
@@ -38,7 +38,7 @@ gate 通过后继续：
 
 调用 `Execute --plan /media/yhr/2T/Canon/tasks/<demand-id>.md`：
 - 更新 Canon task page § Plan / § Findings / § Progress
-- 生成 repo-local `goal.md`: `<repo-root>/.proposal/<demand-id>/goal.md`
+- 生成 repo-local `goal.md`: `<artifact-dir>/goal.md`
 - `goal.md` 是 `/goal` 的 runtime 输入；Canon task page 是 durable state
 - 把 Step 2 的任务列表、方案约束、observable target 和受影响 module boundary 作为输入
 
@@ -46,7 +46,7 @@ gate 通过后继续：
 
 ### Step 4: 校验 Execute 输出
 
-读取 Execute 生成的 `<repo-root>/.proposal/<demand-id>/goal.md`，确认它包含 Step 2 的任务列表、方案关键约束、接口定义、observable target 和 module boundary。缺项时退回 Execute 补齐，不由 Tasking 重写第二份目标。
+读取 Execute 生成的 `<artifact-dir>/goal.md`，确认它包含 Step 2 的任务列表、方案关键约束、接口定义、observable target 和 module boundary。缺项时退回 Execute 补齐，不由 Tasking 重写第二份目标。
 
 校验通过后，将 `goal.md` 路径写入 `state.json.goal_path`，将 Canon task page 路径写入 `state.json.canon_task_path`。
 
@@ -74,9 +74,9 @@ gate 通过后继续：
 
 | Runtime | Command |
 |---------|---------|
-| Codex | `/goal <repo-root>/.proposal/<demand-id>/goal.md` |
-| Claude Code | `/goal <repo-root>/.proposal/<demand-id>/goal.md` |
-| Pi | `/loop custom <repo-root>/.proposal/<demand-id>/goal.md` |
+| Codex | `/goal <artifact-dir>/goal.md` |
+| Claude Code | `/goal <artifact-dir>/goal.md` |
+| Pi | `/loop custom <artifact-dir>/goal.md` |
 
 `/goal` 和 `/loop custom` 都是 agent runtime 的 slash commands，不是 shell commands。对应 runtime 必须真实触发命令；不要把“当前 agent 继续手动执行”伪装成已启动。
 
@@ -98,7 +98,7 @@ gate 通过后继续：
 Traceback 完成后运行机器 gate：
 
     python3 <skills-root>/Traceback/scripts/traceback_gate.py \
-      --dir .planning/<demand-id> --repo <repo-root> --json
+      --dir <runtime-dir> --repo <repo-root> --json
 
 'pass' 或有 Canon skip reason 的 'skipped' 才能进入 Engage gate。随后停止——需手动编译验证，通过后手动运行 Sanitize 收尾。
 
@@ -113,7 +113,7 @@ Traceback 完成后运行机器 gate：
 ```json
 {
   "phase": "review → dev",
-  "goal_path": "<repo-root>/.proposal/<demand-id>/goal.md",
+  "goal_path": "<artifact-dir>/goal.md",
   "canon_task_path": "/media/yhr/2T/Canon/tasks/<demand-id>.md"
 }
 ```

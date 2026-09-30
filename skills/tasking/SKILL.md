@@ -71,8 +71,12 @@ Each mode must leave a clear phase gate in `state.json`, a Canon task/update-car
 
 读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- `state.json`、`.planning/<demand-id>/`、`.proposal/<demand-id>/` 是阶段门控和执行缓存，不是长期 source of truth。
+- `state.json`、`<runtime-dir>/`、`<artifact-dir>/` 是阶段门控和执行缓存，不是长期 source of truth。
 - 每个需求应在 Canon 中有持久任务页：`/media/yhr/2T/Canon/tasks/<demand-id>.md`，记录当前阶段、关键决策、负责人流转、交付物和下一步。
 - 方案文档、知识库 URL、评审日程、`goal.md`、交付物 URL 都作为 Canon artifact refs 记录，默认只引用绝对路径或 URL，不复制文件。
 - 每个 mode 完成后，如果产生了新事实，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-<mode>.md`，再把稳定事实合并到 task/project/workflow 页面。
 - 如果 Canon 暂不可用，先完成 Yunxiao/state.json 的阶段动作，并在最终回复中明确 Canon promotion 未完成。
+
+## 项目材料路径优先
+
+先读取目标项目文档规则。CARLA 同时具有 `.agent-artifacts-repo-owned` 与 `Docs/guides/documentation.md` 时，artifact-dir 为 `Docs/tasks/<demand-id>/`，runtime-dir 为 `.local/tasks/同一任务slug/`；其他项目 artifact-dir 保留 `.proposal/<demand-id>/`，runtime-dir 保留 `.planning/<id>/`。下列阶段文件中的 artifact-dir/runtime-dir 均使用此解析结果，不能直接照抄旧路径示例。阶段 gate 使用相同解析器。创建 gate JSON 或衍生附件后按项目归属规则登记 sidecar，再检查、提交；执行缓存留本地。

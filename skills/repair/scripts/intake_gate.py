@@ -2,6 +2,9 @@
 import json, os, sys, subprocess
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from project_artifacts import task_dir
+
 BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
 
 def run(cmd, **kw):
@@ -80,7 +83,7 @@ def main():
 
     bug_dir = BUG_ROOT / args.bug_id
     repo = Path(args.repo)
-    prop = repo / ".proposal" / "repair" / args.bug_id
+    prop = task_dir(repo, args.bug_id, "repair")
 
     sp = bug_dir / "state.json"
     try:

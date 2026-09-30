@@ -4,6 +4,9 @@
 import json, os, sys, subprocess
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from project_artifacts import task_dir
+
 REQ_ROOT = Path("/media/yhr/2T/yunxiao/requirements")
 
 def run(cmd, **kw):
@@ -91,7 +94,7 @@ def main():
         for n, (ok, msg) in checks:
             print(f"  [{n}] {msg}")
 
-    prop = repo / ".proposal" / args.demand_id
+    prop = task_dir(repo, args.demand_id)
     gate_path = prop / "orient_gate.json"
     gate_path.parent.mkdir(parents=True, exist_ok=True)
     gate = {"verdict": verdict, "demand_id": args.demand_id, "checks": {n: {"ok": ok, "msg": msg} for n, (ok, msg) in checks}}
