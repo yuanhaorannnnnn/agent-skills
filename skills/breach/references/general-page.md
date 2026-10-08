@@ -20,6 +20,36 @@ do not install a dependency implicitly. Preserve both Breach page provenance
 and the chart template/license provenance.
 
 
+## Optional Interactive Illustration
+
+In General page mode, `hairline-create` may supply an SVG line illustration
+for an empty state, a feature card, or one concrete concept metaphor. Use it
+when the object and pointer response clarify that state or idea; omit it when
+prose, a table, or a diagram already communicates the point. This route does
+not apply to the deterministic Discussion digest mode.
+
+Breach owns page layout, narrative, labels and actions. Hairline owns the
+figure, its engine and its checks. Invoke the installed upstream skill and
+follow its build, validator and visual checks; keep its kernel and bench
+unchanged. Generate in the caller's artifact directory. The managed upstream
+source and pinned revision live in agent-platform's
+`migration/upstream-manifest.yaml`; do not copy that skill into agent-skills.
+
+Keep the validated standalone HTML as the source artifact. When useful inside
+the page, embed it in an isolated iframe with a descriptive `title` (`srcdoc`
+for a single-file deliverable, a relative sibling path for a file bundle).
+Keep the business heading and action in the parent page. Check the final embed
+at its actual width and theme: the plate must match its background, and the
+rest pose must communicate without pointer input. For PDF or email output,
+use an inspected static rest image plus the same heading/action and a link to
+the interactive artifact; preserve accessible text outside the image.
+
+Do not use Hairline for measured charts, workflow topology, status truth, or
+business controls. If unavailable, continue with native HTML/CSS/SVG; do not
+install implicitly. Record the figure source, revision and validation evidence
+in page provenance. Passing the text validator alone is not visual acceptance.
+
+
 ## General Page Mode
 
 Two constraints, always applied:
