@@ -29,7 +29,22 @@ first day of each month at 03:00. Report recipient: the connected Gmail owner
 (resolved by the automation, not stored in this public repository).
 
 Run `python3 -B scripts/run_monthly_harness_eval.py` for the fixed-model suite,
-blind judge and report. It never sends mail; the automation handles Gmail and
+blind judge and report. Before eval starts it snapshots aggregate telemetry for
+`breach`, `acquisition`, `execute`, and `sanitize` from the previous calendar
+month in Asia/Shanghai into `telemetry-summary.json`, then includes it in
+`report.md` even when eval initialization fails. The window is [month start,
+next month start); timestamps without timezone are excluded and counted as
+unassignable. Missing/unreadable logs mean unmeasured, not zero usage.
+
+The monthly email includes event outcomes, actual routes, entry/decision/step
+counts, explicit expectation mismatches and route-observed/event coverage.
+Keep simulated eval scores separate from real-use counters. Old events remain
+unobserved; no explicit expectation means unknown, never a successful match.
+Only aggregate validated metadata; do not send raw events, user text, or source
+content. Telemetry failure does not erase the eval result. Do not refresh the
+saved monthly snapshot during reruns or reinterpret absent records as no use.
+
+The runner never sends mail; the automation handles Gmail and
 failed/discrepant-case reruns. Run `codify`, `go-nogo`, `conops`, `sanitize`, and `execute` using the existing
 runner and each skill's `evals/evals.json`. The suite currently has 17 cases.
 Store each report under `.eval/monthly/<Asia-Shanghai-timestamp>/<skill>.json`;

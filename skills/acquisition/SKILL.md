@@ -271,3 +271,23 @@ raw/ 是图书馆——永久留存，不因是否写了笔记而增删。query/
 - 旧内容 wiki `/media/yhr/2T/files/wiki` 仍是文章、视频、PDF、剪藏的内容库和 raw archive；不要把这些 raw assets 复制到 Canon。
 - 当摄入内容影响本地项目、流程、决策、事故或可复用模式时，创建 `/media/yhr/2T/Canon/raw/update-cards/<date>-acquisition-<slug>.md`，把 wiki 笔记和 raw 路径作为 artifact refs。
 - Canon 只保存跨项目长期结论、关联和 artifact refs；`queries/`、`raw/`、`concepts/` 继续由旧内容 wiki 管理。
+
+## Routing telemetry
+
+Emit one final local event following
+[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+Routes: `article`, `wechat-article`, `wechat-album`, `video`, `pdf`, `clippings`,
+`local-markdown`, `chart-handoff`, `deduplicated`, `unresolved`.
+Record actual `identity`, `delivery`, and `fetch` decisions using its closed
+vocabulary. Chart ownership transfer → `chart-handoff`; complete raw + query
+reuse → `deduplicated`, outcome `skipped`. Ambiguous intent → `unresolved`,
+outcome `blocked`; do not claim a pipeline ran.
+For mixed-source batches, omit a batch-level route and emit one event per
+independent source invocation; never duplicate those with a batch outcome event.
+
+Record `identity`, `archive`, `paperwork`, `query`, `index-log`, `catalog`,
+`handoff` step states from actual work. Raw-only → query/writing/index/catalog
+steps `skipped`; failed catalog → `catalog=error` and outcome `error` even if
+raw/query succeeded. A fallback selected but not run remains `pending`.
+Explicit user/caller intent alone supplies `expected-route`; no source URL or
+text enters routing fields. Link existing raw/query/check artifacts.

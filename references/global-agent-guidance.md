@@ -36,7 +36,8 @@ from the actual loaded skill path. Do not replace them with runtime-specific
 
 When a skill materially passes, blocks, skips, or errors, emit one local event
 using `<skills-root>/.scripts/skill_telemetry.py`. Record only skill/runtime/
-trigger/outcome/duration and artifact or gate references. Never record prompts,
+trigger/outcome/duration, artifact or gate references, and the closed-vocabulary
+routing metadata defined in `references/skill-telemetry.md` when applicable. Never record prompts,
 responses, transcript content, tool arguments, tokens, credentials, or arbitrary
 error text. Telemetry failure is a warning and never changes the task outcome.
 

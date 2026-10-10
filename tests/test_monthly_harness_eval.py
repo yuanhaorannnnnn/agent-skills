@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import sys
 import tempfile
 import unittest
@@ -40,7 +42,7 @@ class MonthlyEvalTests(unittest.TestCase):
             names = ['scripts/run_skill_ab_eval.py', 'scripts/run_monthly_harness_eval.py',
                      'tests/test_skill_ab_eval.py', 'tests/test_monthly_harness_eval.py',
                      'references/model-skill-ab-eval.md', 'skills/execute/SKILL.md',
-                     'skills/execute/evals/evals.json']
+                     'skills/execute/evals/evals.json', *monthly.TELEMETRY_SOURCES]
             for name in names:
                 p = root / name
                 p.parent.mkdir(parents=True, exist_ok=True)
@@ -91,6 +93,58 @@ class MonthlyEvalTests(unittest.TestCase):
                     grading = monthly.grade(directory)
                 self.assertIsNone(grading['scores'])
                 self.assertEqual(grading['error'], 'judge_output_invalid')
+
+    def test_telemetry_uses_previous_shanghai_month_and_no_private_content(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'events.jsonl'
+            def event(timestamp, **extra):
+                return {'skill': 'breach', 'outcome': 'pass', 'timestamp': timestamp, **extra}
+            events = [
+                event('2026-08-31T15:59:59+00:00'),  # before September in Shanghai
+                event('2026-08-31T16:00:00+00:00', route='general-page',
+                      expected_route='discussion-digest', steps={'render': 'pending'}, prompt='PRIVATE'),
+                event('2026-09-30T15:59:59+00:00'),  # legacy event, within September
+                event('2026-09-30T16:00:00+00:00'),  # October start: excluded
+                event('2026-09-01T00:00:00'),  # no timezone: excluded with warning
+                event('invalid'),
+            ]
+            path.write_text('\n'.join(json.dumps(row) for row in events) + '\npartial')
+            summary = monthly.collect_telemetry(datetime(2026, 10, 1, 3, tzinfo=ZoneInfo('Asia/Shanghai')), path)
+            self.assertEqual(summary['period'], '2026-09')
+            data = summary['skills']['breach']
+            self.assertEqual(data['outcomes'], {'breach:pass': 2})
+            self.assertEqual(data['routes']['breach:unobserved'], 1)
+            self.assertEqual(data['unknown_expectations'], 1)
+            self.assertEqual(data['mismatches'], {'breach:discussion-digest->general-page': 1})
+            self.assertEqual(data['invalid_timestamps'], 2)
+            self.assertEqual(data['invalid_lines'], 1)
+            self.assertNotIn('PRIVATE', json.dumps(summary))
+            self.assertNotIn('partial', json.dumps(summary))
+            self.assertEqual(summary['skills']['execute']['outcomes'], {})
+            report = '\n'.join(monthly.telemetry_lines(summary))
+            self.assertIn('| breach | 2 | 2 / 0 / 0 / 0 | 1/2 | 1 | 1 |', report)
+            self.assertIn('步骤状态', report)
+
+    def test_missing_telemetry_is_unmeasured_and_year_rollover_is_correct(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = monthly.collect_telemetry(datetime(2027, 1, 1, tzinfo=ZoneInfo('Asia/Shanghai')),
+                                               Path(tmp) / 'missing')
+            self.assertEqual(summary['period'], '2026-12')
+            self.assertEqual(summary['status'], 'missing')
+            self.assertIn('未测', '\n'.join(monthly.telemetry_lines(summary)))
+
+    def test_eval_failure_report_still_includes_saved_telemetry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            log = directory / 'events.jsonl'
+            log.write_text('')
+            summary = monthly.collect_telemetry(datetime(2026, 10, 1, tzinfo=ZoneInfo('Asia/Shanghai')), log)
+            (directory / 'telemetry-summary.json').write_text(json.dumps(summary))
+            monthly.write_report(directory, {'scores': None})
+            report = (directory / 'report.md').read_text()
+            self.assertIn('Judge 未产生有效结果', report)
+            self.assertIn('Skill 使用遥测 — 2026-09', report)
+            self.assertIn('| sanitize | 0 |', report)
 
 
 

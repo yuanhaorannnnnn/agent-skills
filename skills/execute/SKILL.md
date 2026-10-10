@@ -115,3 +115,17 @@ python3 <skill-dir>/scripts/execution_gate.py --mode plan --route auto --task <c
 ## 输出契约
 
 遵守 `<skills-root>/references/skill-output-contract.md` 与 `<skills-root>/references/canon-output-contract.md`。Local direct 返回改动和验证结果；持久路径返回 `task_path`、持久化模式、`routing_mode`、`resolved_route`、执行者/委托状态、验证结果；只有 goal/plan 模式返回 `goal_path`。
+
+## Routing telemetry
+
+Emit one final local event following
+[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+Use actual executor `route=direct|delegate|unresolved`,
+`requested=auto|direct|delegate`, `persistence=local|task|goal|plan`.
+Explicit direct/delegate supplies `expected-route`; automatic choice leaves it
+unset. Unsupported explicit delegation → `route=unresolved`, outcome `blocked`,
+expected `delegate`; do not label inline work as delegation.
+Record actual step states for `implementation`, `delegation`, `validation`,
+`review`, `execution-gate`. Local direct → execution-gate `skipped`;
+selected but undispatched delegation → `pending`. Pass requires verification,
+including review of returned work. Attach task/gate refs when available.

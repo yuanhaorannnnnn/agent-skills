@@ -9,15 +9,69 @@ import random
 import shutil
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from run_skill_ab_eval import run_arm
+from skill_telemetry import DEFAULT_PATH, report_events
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = "gpt-6.1-sol"
 SKILLS = ("codify", "go-nogo", "conops", "sanitize", "execute")
+TELEMETRY_SKILLS = ("breach", "acquisition", "execute", "sanitize")
+TELEMETRY_SOURCES = ["scripts/skill_telemetry.py", "references/skill-telemetry.md",
+                     "skills/breach/SKILL.md", "skills/acquisition/SKILL.md"]
+
+
+def collect_telemetry(now: datetime, path: Path) -> dict:
+    local = now.astimezone(ZoneInfo("Asia/Shanghai"))
+    end = local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    start = (end - timedelta(days=1)).replace(day=1)
+    summary = {"period": start.strftime("%Y-%m"), "timezone": "Asia/Shanghai",
+               "start_inclusive": start.isoformat(), "end_exclusive": end.isoformat(),
+               "status": "available", "skills": {}}
+    try:
+        if not path.exists():
+            summary["status"] = "missing"
+            return summary
+        for skill in TELEMETRY_SKILLS:
+            summary["skills"][skill] = report_events(path, skill, start, end)
+    except (OSError, UnicodeError):
+        summary["status"] = "unavailable"
+        summary["skills"] = {}
+    return summary
+
+
+def telemetry_lines(summary: dict) -> list[str]:
+    lines = ["", f"## Skill 使用遥测 — {summary['period']}", "",
+             "统计窗口：上个自然月，Asia/Shanghai，起点包含、终点不包含。", ""]
+    if summary["status"] != "available":
+        return lines + ["遥测日志缺失或不可读；使用次数与路由状态未测。"]
+    lines += ["| Skill | 事件 | pass / blocked / skipped / error | 路由可见/事件 | 明确预期 | 不匹配 |",
+              "|---|---:|---|---:|---:|---:|"]
+    details = []
+    for skill, data in summary["skills"].items():
+        total = sum(data["outcomes"].values())
+        unobserved = data["routes"].get(f"{skill}:unobserved", 0)
+        outcomes = " / ".join(str(data["outcomes"].get(f"{skill}:{state}", 0))
+                              for state in ("pass", "blocked", "skipped", "error"))
+        lines.append(f"| {skill} | {total} | {outcomes} | {total-unobserved}/{total} | "
+                     f"{total-data['unknown_expectations']} | {sum(data['mismatches'].values())} |")
+        for label, key in (("路由", "routes"), ("入口", "entries"), ("选择", "decisions"),
+                           ("步骤状态", "steps"), ("预期偏差", "mismatches")):
+            if data[key]:
+                # Vocabularies are validated by report_events; no task/source text.
+                details.append(f"\n{skill} {label}：" + "；".join(f"{k} × {v}" for k, v in sorted(data[key].items())))
+    lines += details
+    invalid = max((data["invalid_lines"] for data in summary["skills"].values()), default=0)
+    timestamps = sum(data["invalid_timestamps"] for data in summary["skills"].values())
+    lines += ["", f"无法解析的日志行：{invalid}；四个 skill 中缺失/无时区/非法时间戳：{timestamps}（无法归属月份）。",
+              "事件数只覆盖已写入记录；0 事件表示未观察到记录。路由可见率以本月事件为分母，完整调用覆盖率未测。",
+              "旧记录缺路由保持 unobserved；无明确预期不算匹配成功。步骤由 agent 报告，需产物/gate 核实。",
+              "Harness 模拟评测与真实使用遥测分开解读；不据此自动修改或删除 skill。"]
+    return lines
+
 
 
 def grade(directory: Path) -> dict:
@@ -118,6 +172,9 @@ def write_report(directory: Path, grading: dict) -> None:
                 lines.append(f"- {row['id']} / {arm}: {score['verdict']} — {score['reason']}")
     else:
         lines.append("Judge 未产生有效结果；行为评分待人工复核。")
+    telemetry_path = directory / "telemetry-summary.json"
+    if telemetry_path.exists():
+        lines += telemetry_lines(json.loads(telemetry_path.read_text()))
     lines += ["", "局限：模拟任务；CLI 成功不等于行为通过。真实人工介入、返工、价格成本未测。",
               "耗时与可用 token usage 见原始 JSON。失败和争议需人工复核；不得自动改规则。",
               "当前 oracle 更新后不与旧分数直接比较。", "", f"证据目录：{directory}"]
@@ -125,9 +182,13 @@ def write_report(directory: Path, grading: dict) -> None:
 
 
 def main() -> int:
-    directory = ROOT / ".eval/monthly" / datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y%m%d-%H%M%S-%f")
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    directory = ROOT / ".eval/monthly" / now.strftime("%Y%m%d-%H%M%S-%f")
     directory.mkdir(parents=True)
     print(directory, flush=True)
+    # Snapshot prior-month counters before any eval arms run; never copy raw events.
+    telemetry = collect_telemetry(now, Path(os.environ.get("SKILL_TELEMETRY_PATH", DEFAULT_PATH)))
+    (directory / "telemetry-summary.json").write_text(json.dumps(telemetry, ensure_ascii=False, indent=2))
     manifest = {"model": MODEL, "reasoning_effort": "medium", "runs": {}}
     manifest_path = directory / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2))
@@ -137,7 +198,7 @@ def main() -> int:
         manifest["cli_version"] = subprocess.check_output(["codex", "--version"], text=True).strip()
         scoped = ["scripts/run_skill_ab_eval.py", "scripts/run_monthly_harness_eval.py",
                   "tests/test_skill_ab_eval.py", "tests/test_monthly_harness_eval.py",
-                  "references/model-skill-ab-eval.md"] + [p for s in SKILLS for p in
+                  "references/model-skill-ab-eval.md", *TELEMETRY_SOURCES] + [p for s in SKILLS for p in
                   (f"skills/{s}/evals/evals.json", f"skills/{s}/SKILL.md")]
         manifest["source_sha256"] = {}
         for name in scoped:

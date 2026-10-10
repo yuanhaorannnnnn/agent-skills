@@ -101,3 +101,15 @@ For Closeout mode, read [the scoped Git and Canon steps](references/closeout-ste
 - **task page 不存在**：按 `references/canon-task-resolution.md` 创建新 task page。
 - **Canon 不可用**：继续 git 收尾，并明确 Canon promotion 未完成。
 - **未配置 git user**：提示用户配置 `git config user.name/email`。
+
+## Routing telemetry
+
+Emit one final local event following
+[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+Use `route=closeout|report|both|unresolved`; set `expected-route` only from clear
+user/caller intent. Record `publish=none|commit|push` for the highest **completed**
+Git action, never the planned action. Report-only must have `publish=none`.
+Record `report`, `report-gate`, `review`, `commit`, `push`, `canon` step states;
+non-applicable steps are `skipped`, planned work is `pending`, failed work is
+`error` or `blocked`. No publishable changes is `skipped`, not a new commit.
+Attach report/task/gate references; no commit message or report text in telemetry.

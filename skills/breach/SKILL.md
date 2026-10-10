@@ -101,3 +101,29 @@ path; breach accepts it and writes there. Never write HTML into
   layout patterns and DESIGN.md tokens as constraints.
 - **Codex / Pi**: generate HTML directly, using the example's layout patterns
   and the DESIGN.md tokens.
+
+## Routing telemetry
+
+At entry, retain the trigger category and entry form. After the final local
+verdict, emit **one** event following
+[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+Use `route=general-page|discussion-digest|native-handoff|inline-answer|unresolved`.
+A route is the branch actually entered, even if it later fails. Record
+`content-profile=default|eli5`, `prose=author|faithful`, and the selected style
+source category. For General page, also record chart/Hairline decisions after
+resolving availability and integration; for digest, use `style=digest-template`
+and `charts=omit`, `hairline=omit`.
+
+Record actual step states for `paperwork`, `layout`, `style`, `render`, `charts`,
+`hairline`, `visual-check`. `pass` requires the relevant completed work or check;
+selection alone is `pending`. Faithful prose → `paperwork=skipped`; digest →
+`layout=skipped` (generic lookup), `style=pass` only after the template is read.
+Modules omitted by decision → `skipped`; unavailable requested modules with a
+working native fallback → module `skipped`, rendered fallback verified separately.
+Stop before rendering → `render=pending`, never `pass`.
+
+Only set `expected-route` when user/caller intent unambiguously requires that
+branch. Never infer expectation from your own selected route. Attach generated
+HTML/JSON and available check references via `artifact`/`gate`. Native/inline
+handoff emits `skipped` for Breach artifact production, with the actual route.
+Telemetry failure remains a warning; nested skills emit their own events.
