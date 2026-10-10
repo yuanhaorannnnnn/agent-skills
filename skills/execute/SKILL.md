@@ -21,7 +21,7 @@ description: |
 
 - `<task-page-path>`：复用明确的 Canon task page。
 - `--designer <model>`：仅与 `--delegate` 一起使用，让指定模型先产出执行 brief。
-- `--executor <model>`：指定执行模型；未指定时按任务和 runtime 可用模型选择。
+- `--executor <model>`：指定执行模型或系列；仍须满足下述最新版本及异模型约束。
 
 ## 触发边界
 
@@ -57,7 +57,7 @@ description: |
 - router_owner: main Execute router
 - delegation_depth: 0 | 1
 - downstream_auto_delegate: forbidden
-- models: <current model and any designer/executor>
+- models: <运行时确认的主模型及designer/executor实际model ID>
 - scope: <delegated or local scope>
 - status: <active | blocked | returned | verified>
 - evidence: <brief, diff, test, or handoff reference>
@@ -71,11 +71,25 @@ reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择
 
 仅主/main agent 可在形成契约后自动选择：任务可独立拆分、下游能获得完整 scope/验收条件、委托收益超过交接成本且主 agent 可复核时，解析为 `delegate`；否则解析为 `direct`。小改动、强上下文依赖、频繁用户交互、不可独立验收的任务保持 direct。
 
-需要委托时，executor 从当前 active provider 实际暴露、可调用的子代理模型池中选择；不要仅因某模型被认为“低级”而委托。active provider 为 `gpt` 时，候选范围限定为运行时可用的 GPT-6 模型，并排除 Astra（`gpt-6-astra`）。此限制同样适用于委托时显式指定的 `--executor` 和 `--designer`：模型不可用或超出范围时，不得静默替换为其他 provider 或 Astra。其他 provider 只使用其运行时实际暴露的模型，不推断跨 provider fallback。
+需要委托时，按下述“委托模型选择规约”选择 executor；不要仅因模型被认为“低级”而委托。
 
-若没有符合当前 provider/model 范围的委托模型，`auto` 解析为 `direct`；显式 `--delegate` 或不合范围的显式模型指定记录 blocker，不以内联执行或越界模型替代委托。
+没有满足全部规约的候选时，`auto` 解析为 `direct`；显式 `--delegate` 或不合规的显式模型指定记录 blocker，不以内联执行、旧版本、同模型或跨 provider 替代委托。
 
 下游 agent 的 `auto` 必须解析为 `direct`，不得再次组队。默认最大 delegation depth 是 1；已在 depth 1 的 agent 不得使用 `--delegate`。主 agent 保留任务 owner、复核责任和 Canon 写回责任。
+
+#### 委托模型选择规约
+
+以下规则适用于 `auto` 选择的委托及显式 `--delegate`，同时约束 `--executor` 和 `--designer`：
+
+1. **确认实际模型池与主模型**：只使用当前 active provider 实际暴露、可调用的模型；从运行时元数据确认主模型的实际 model ID 和别名映射。不能从默认配置、模型自述或旧记录猜测。
+2. **每个系列只保留最新版**：Sol、Luna 等同一系列，永远只选当前模型池中的最新可调用版本。先归并系列并选最新版，再做主模型排除；不得为避开主模型而退回同系列旧版。新旧关系优先采用运行时说明；版本号可比较时按数值比较，不按字符串排序。无法确认最新版本的系列不进入候选池，不硬编码“最新版”ID。
+3. **排除同模型**：被委托的实际 model ID 不得与主模型相同。别名、reasoning effort 或 service tier 不同，都不算不同模型。主模型身份无法确认时，不派发委托。
+4. **保留 provider 范围**：active provider 为 `gpt` 时，只允许 GPT-6 系列（含其小版本），排除整个 Astra 系列；其他 provider 只用其实际暴露的模型。不使用跨 provider fallback。最新版不合范围时，排除该系列，不回退旧版。
+5. **核对显式选择**：系列名解析为该系列最新版；显式版本也必须是最新、可调用、合范围且不同于主模型。不合规时说明原因，不静默升级、降级或替换用户指定模型。
+
+例如运行时同时提供 `gpt-6.1-sol`、`gpt-6-sol`，Sol候选只保留前者；若主模型也是 `gpt-6.1-sol`，整个Sol候选被排除，不能改委托旧版Sol。可选其他系列的最新版；没有合格模型时，按上面的 `auto` / `--delegate` 阻塞规则处理。示例版本不是固定配置。
+
+在 Routing 的 `models` 与 `evidence` 记录主模型、选中模型的实际ID及模型池/最新版判断依据；派发前重新核对，不能只记录“Sol”或“继承主模型”。
 
 #### `--direct`：强制当前 agent
 
@@ -83,7 +97,7 @@ reasoning effort 仅是路由信号，可影响“是否拆分”和模型选择
 
 #### `--delegate`：强制轻量委托
 
-主 agent 使用 runtime 的子代理能力传递执行契约；runtime 不支持时记录 blocker 并明确报告，不能把 inline 执行伪装成委托。按任务需求和当前 provider 的可用模型选择 executor；当 active provider 为 `gpt` 时只从 GPT-6 模型中选择并排除 Astra，不再按“向低级模型委托”排序。显式模型必须符合该 provider/model 范围。
+主 agent 使用 runtime 的子代理能力传递执行契约；runtime 不支持时记录 blocker 并明确报告，不能把 inline 执行伪装成委托。executor / designer 必须满足“委托模型选择规约”，从各系列最新版中选不同于主模型的合格候选；没有候选时保持 blocker，不以内联、同模型或旧版本兜底。
 
 在 `## Delegation` 记录 executor、scope、status、evidence（以及可选 designer）。主 agent 复核下游 diff、测试和完成条件后才可标记完成。
 
