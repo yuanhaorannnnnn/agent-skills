@@ -1,7 +1,7 @@
 ---
 name: breach
 description: |
-  Create a fast single-page HTML status page, diagram, slide-like page, PR/incident writeup, or digest of an email, issue, or chat thread. Trigger on "快速 HTML 页面", "画一个 HTML flowchart", "梳理这个讨论", or "digest this thread". Not for native docs, decks, sheets, or full websites.
+  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus a dedicated structured discussion-digest mode. Trigger on HTML artifact requests or explicit structured discussion digests ("digest this thread"); ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, or full websites.
 ---
 
 # Quick Page
@@ -10,13 +10,31 @@ Fast, single-page HTML artifacts for daily dev communication.
 
 ## Output Boundary
 
-breach owns HTML and deterministic discussion-digest rendering only.
+Breach is the general HTML presentation layer, not a mutually exclusive topic
+category alongside `conops`. Designs, test reports, and discussions can all use
+HTML. The caller owns the task's content contract and facts; `paperwork` owns
+technical writing discipline when authoring is needed.
+
+The dedicated Discussion digest mode additionally organizes an explicitly
+requested structured digest using its bundled schema, then renders deterministic
+HTML. This request can default to HTML without a separate format instruction;
+ordinary discussion reading, explanation, or text summaries do not enter this
+mode or automatically produce HTML.
+
+- Technical design, Markdown → `conops`.
+- Technical design, HTML → `conops` content + Breach General page rendering.
+- Test report, HTML → caller's report content + Breach General page rendering;
+  HTML alone does not invoke `conops`.
 
 - Native document, presentation, or spreadsheet requested → use the requested
   OpenAI Template or native artifact capability.
 - HTML page, HTML slide-like page, or discussion digest requested → use breach.
 - Another workflow may define content and evidence first, then call breach only
-  for HTML presentation.
+  for HTML presentation. Approved prose need not be a persisted Markdown file.
+- For `conops` output `html` or `both`, use General page mode and preserve its
+  14-section content contract. `html` requires no Markdown artifact; `both`
+  derives HTML from the Markdown maintenance source. Conops validates the final
+  HTML with its own quality gate; Breach rendering and visual checks still apply.
 
 ## Core Rule
 

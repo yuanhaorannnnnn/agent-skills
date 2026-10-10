@@ -1,12 +1,18 @@
 # conops: review-ready technical design documents
 
 `conops` turns an agreed problem, its constraints, and available implementation
-evidence into a Markdown design document for product, development, and test
+evidence into a design document (`md | html | both`, default `md`) for product, development, and test
 review. It answers **how the change works and why that choice is acceptable**;
 it is a technical design document, not a PRD or a feature announcement.
 
 The complete execution contract is [`SKILL.md`](SKILL.md). This README is a
 short guide to the reasoning shape and the handoff boundary.
+
+`conops` owns the technical-design content workflow; `breach` owns general HTML
+presentation. They compose by responsibility rather than split content topics.
+Invoke `conops` only when the task calls for a technical design, regardless of
+`md | html | both`. A test report or discussion does not invoke `conops` merely
+because it is presented as HTML.
 
 ## The design spine
 
@@ -71,7 +77,7 @@ section decision-oriented:
 6. End with acceptance criteria, risks, code navigation, current status, and a
    checkbox decision record.
 
-Save the Markdown artifact according to the development repository's AGENTS.md
+Save the selected artifact according to the development repository's AGENTS.md
 and documentation layout. CARLA uses `Docs/tasks/<slug>/design.md`; repositories
 without a documented layout retain the `.proposal/<slug>/` default. Do not silently promote it to a different repository or treat a
 prepared document as an approved decision. The shared output boundary is
@@ -89,7 +95,7 @@ constraints only when that domain applies, from
 Run the bundled quality gate against the finished document:
 
 ```bash
-python3 skills/conops/scripts/quality_gate.py <path-to-design-doc.md>
+python3 skills/conops/scripts/quality_gate.py <path-to-design-doc.md-or-index.html>
 ```
 
 The gate checks structure, prohibited wording, scope balance, and common
@@ -100,11 +106,23 @@ be executed.
 ## Boundary with `breach`
 
 `conops` owns facts, scope, architecture, acceptance criteria, and review
-decisions. Its default output is Markdown. Only after that content is complete
-and checked should a caller request an HTML review page.
+decisions. Output format is a delivery choice:
 
-At that point, hand the approved Markdown, target project, output path, and
-content mode to [`breach`](../breach/README.md). `breach` owns layout, visual
-integration, rendering, and provenance; it must not rewrite the approved
-technical conclusion or make static HTML stand in for runtime evidence. If no
-HTML artifact is requested, stop at the Markdown design document.
+- `md` (default): save, check, and deliver Markdown.
+- `html`: approve the content contract, then call `breach` General page mode;
+  check and deliver HTML directly. No Markdown file or extra Markdown delivery
+  is required. A natural-language HTML-only request selects this mode.
+- `both`: Markdown is the maintenance source; HTML derives from the same
+  approved prose. Check both artifacts and regenerate HTML after prose changes.
+
+Hand approved prose, target project, output path, and content mode to
+[`breach`](../breach/README.md). `breach` owns layout, visual integration,
+rendering, and provenance; it must not rewrite the approved technical conclusion
+or make static HTML stand in for runtime evidence.
+
+HTML retains all 14 sections as `h1`–`h6` headings and uses scope subheadings
+with `ul`/`ol` lists. The gate reads static HTML text, headings, and list items;
+it ignores head metadata, scripts, styles, and comments, and does not execute
+JavaScript or compute CSS visibility. Breach visual checks remain required.
+Use the same task directory for both formats (`index.html` by default for HTML),
+subject to explicit project or caller paths.

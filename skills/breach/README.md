@@ -7,6 +7,17 @@ structured digest of a multi-party discussion.
 `SKILL.md` is the agent-facing execution contract. This README is a short guide
 to choosing the route and checking the resulting artifact.
 
+Breach is the general HTML presentation layer; designs, test reports, and
+discussions can all use it. The caller owns the content contract and facts;
+`paperwork` governs technical writing when authoring is needed. `conops` is a
+technical-design content workflow, so it composes with Breach rather than
+competes for content topics:
+
+- Technical design, Markdown → `conops`.
+- Technical design, HTML → `conops` content + Breach General page rendering.
+- Test report, HTML → caller's report content + Breach General page rendering;
+  the format alone does not invoke `conops`.
+
 ## Choose the route
 
 ### General page
@@ -40,9 +51,12 @@ visible footer. Absolute paths belong in the comment, not in the visible UI.
 
 ### Discussion digest
 
-Choose this route for an email thread, GitHub issue or PR, chat log, forum
-discussion, or similar request to explain who argued what, how positions
-changed, what was decided, and what remains open.
+Choose this route for an explicitly requested structured digest of an email
+thread, GitHub issue or PR, chat log, or forum discussion: who argued what, how
+positions changed, what was decided, and what remains open. This dedicated mode
+organizes content using the bundled schema and can default to HTML without a
+separate format request. Ordinary reading, explanation, or text summaries do
+not automatically enter it or produce HTML.
 
 ```text
 source discussion
@@ -70,7 +84,13 @@ for the deterministic command-line renderer.
 
 The caller or an upstream workflow owns source acquisition, factual analysis,
 and evidence quality. `breach` owns HTML structure, visual integration, and
-provenance. It must not turn an inference into a fact, strengthen an approved
+provenance. Approved content can arrive directly without a Markdown file.
+For `conops`, use General page mode: `html` delivers HTML alone; `both` derives
+HTML from the Markdown maintenance source. Preserve all 14 sections and scope
+lists so Conops can check the final HTML directly with its quality gate. Breach
+rendering and visual checks still apply.
+
+It must not turn an inference into a fact, strengthen an approved
 conclusion, or claim that static rendering proves runtime behavior.
 
 For technical narrative, use the content-writing workflow before rendering.

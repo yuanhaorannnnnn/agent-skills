@@ -1,12 +1,16 @@
 ---
 name: conops
 description: |
-  从对话、planning 和代码起草开发前技术设计，说明架构、取舍与验证。触发于"生成开发方案"、"写设计评审文档"、"技术方案"、"write design doc"，或明确要求整理 feature 架构供评审。不用于需求文档或 PRD。
+  技术方案内容流程：从对话、planning 和代码起草开发前技术设计，说明架构、取舍与验证。触发于"生成开发方案"、"写设计评审文档"、"技术方案"、"write design doc"，或明确要求整理 feature 架构供评审；md/html/both 不影响触发。HTML 呈现交给 breach；不因测试报告或讨论串采用 HTML 而触发。不用于需求文档或 PRD。
 ---
 
 # Dev Design
 
 基于开发 conversation 生成结构化技术设计方案，面向产品/测试/开发评审。
+
+## 职责边界
+
+`conops` 是技术方案内容流程，`breach` 是通用 HTML 呈现层；两者按职责组合，不按内容主题互斥分类。只有任务确实要求形成技术方案时启用 `conops`，选择 `md | html | both` 不改变这一条件。测试报告、讨论串都可以用 HTML 呈现，其格式本身不调用 `conops`。
 
 ## 为什么需要这个 skill
 
@@ -81,11 +85,17 @@ conops owns content scope, evidence, acceptance criteria, and review decisions.
 If the user requests an OpenAI Template or native document, complete this content
 contract first, then use the requested template only for final rendering.
 
-### 可选 HTML 评审页
+### 输出格式：`md | html | both`
 
-Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评审页、可视化方案页等衍生物时，在完成并校验 Markdown 后调用 `breach` 的 General page mode。主题或 `content-mode` 匹配本身不新增 HTML。
+默认 `md`；按用户或调用方选择交付格式。自然语言“只要 HTML”“HTML 评审页”等未要求 Markdown 的表达选择 `html`；明确要求两种格式选择 `both`。主题或 `content-mode` 匹配本身不新增 HTML。
 
-向 Breach 传递已核准正文、目标项目、输出路径与内容模式：技术方案默认 `research-explainer`；主要交付为状态/验收数据时用 `status-or-benchmark`；用户明确要求专题式封面时才用 `release-or-concept-feature`。Breach 负责目标项目的 `DESIGN.md`、布局、渲染和 provenance；Conops 仍负责事实、范围与验收。视觉隐喻不得替代架构图或测试证据。目标项目没有 `DESIGN.md` 时，沿用 Breach 的参考设计选择流程，不默认引用 Wiki 规范。
+- `md`：完成内容契约，保存并校验 Markdown，交付 Markdown。
+- `html`：完成并核准同一内容契约，调用 `breach` 的 General page mode，直接保存并校验 HTML，交付 HTML。无需先落盘或额外交付 Markdown。
+- `both`：共享一份核准正文；Markdown 是维护源，HTML 是派生呈现。两份均校验；正文更新时重新生成 HTML，避免独立修改造成分歧。
+
+向 Breach 传递已核准正文（不要求 Markdown 文件）、目标项目、输出路径与内容模式：技术方案默认 `research-explainer`；主要交付为状态/验收数据时用 `status-or-benchmark`；用户明确要求专题式封面时才用 `release-or-concept-feature`。Breach 负责目标项目的 `DESIGN.md`、布局、渲染和 provenance；Conops 仍负责事实、范围与验收。视觉隐喻不得替代架构图或测试证据。目标项目没有 `DESIGN.md` 时，沿用 Breach 的参考设计选择流程，不默认引用 Wiki 规范。
+
+HTML 同样保留全部 14 节，以 `h1`–`h6` 标题表达章节；“本次包含”与“本次不包含”各用子标题和 `ul`/`ol` 的 `li` 条目。正文写入静态 HTML，不依赖脚本注入。渲染不得删减内容契约或绕过 Conops quality gate。
 
 ### 保存位置
 
@@ -94,7 +104,7 @@ Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评
 - CARLA：按 `Docs/guides/documentation.md` 保存到 `<repo-root>/Docs/tasks/<task-or-demand-slug>/design.md`，与同一任务的研究、执行和验证材料聚合。
 - 没有项目布局规定：保存到 `<repo-root>/.proposal/<task-or-demand-slug>/<Feature> 方案评审文档.md`。
 
-已有任务文档时更新对应文件，保留归属与创建来源。路径属于研发仓库，不属于 agent 平台仓库。
+上述路径为 Markdown 默认位置；HTML 使用同一任务目录的 `index.html`，用户或项目明确规定路径时优先。`html` 模式只创建 HTML；`both` 在同一任务目录保存两份。已有任务文档时更新所选格式的对应文件，保留归属与创建来源。路径属于研发仓库，不属于 agent 平台仓库。
 
 ### Canon 输出边界
 
@@ -187,15 +197,15 @@ Conops 默认只交付 Markdown 方案。仅当用户或调用方要求 HTML 评
 
 ## 质量检查
 
-文档完成后跑 gate —— 机械检查脚本化：
+对每份最终交付文件跑 gate；`html` 直接校验 HTML，`both` 分别校验 Markdown 与 HTML：
 
 ```bash
-python3 <skill-dir>/scripts/quality_gate.py <path/to/design_doc.md>
+python3 <skill-dir>/scripts/quality_gate.py <path/to/design_doc.md-or-index.html>
 ```
 
 blocked → 禁词命中 / 节缺失 / scope 不平衡 → 修后重跑。pass → 可以发评审。
 
-脚本检查 5 项：文件存在、禁词命中（regex）、14 节完整、本次不包含≥本次包含、建议/需要/后续字数。以下仍靠人判：
+脚本检查 5 项：文件存在、禁词命中、14 节完整、本次不包含≥本次包含、建议/需要/后续字数。HTML 检查静态正文、标题与列表，忽略 `head`、脚本、样式和注释；不执行 JavaScript 或计算 CSS 可见性。HTML 仍按 Breach 要求做视觉校验。以下仍靠人判：
 - 每段第一句能否回答"这和我的工作有什么关系"
 - 风险表中具体文件路径/参数名
 - Code Navigation 每行都有文件路径
