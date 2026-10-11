@@ -143,6 +143,13 @@ skills:
   role: adapter
   calls: []
   handoffs: []
+- name: cartographic-recon
+  enabled: true
+  category: design
+  invocation: user
+  role: orchestrator
+  calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user

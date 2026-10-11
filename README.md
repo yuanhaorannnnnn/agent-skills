@@ -103,6 +103,7 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 | `codify` | workflow | model | discipline | Distill one reusable guardrail from a mistake |
 | `conops` | workflow | model | renderer | Technical design document for review |
 | `cover` | design | user | renderer | Generate a DESIGN.md token spec |
+| `cartographic-recon` | design | user | orchestrator | Create and revise illustrated maps with geographic evidence and visual checks |
 | `execute` | workflow | model | orchestrator | Run a task and leave a resumable record |
 | `go-nogo` | meta | model | discipline | Decide whether a new skill or tool is worth building |
 | `herdr` | automation | model | adapter | Inspect and drive Herdr panes |
