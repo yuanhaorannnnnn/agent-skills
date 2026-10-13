@@ -14,6 +14,10 @@ passdown transfers context, not workspace ownership. For durable context and art
 /home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
 ```
 
+## Historical artifact recall
+
+When a user asks to recover an earlier summary or conclusion, resolve it before session search: Canon `artifacts/artifact-index.md` → linked task/update card → source artifact → relevant session → external source. The shared entry point and three evidence states are in [global-agent-guidance](../../references/global-agent-guidance.md). Search only explicit artifact roots, including hidden/ignored files (`rg --hidden --no-ignore <terms> <root>`). A matching index record or existing path is only a candidate; read the source before reporting original wording. Do not reconstruct an old list from memory. Invoke passdown only when hot session context is needed, not as a required step for ordinary historical questions.
+
 ## Core Rule
 
 Transfer the conversation and relationship map, not the implementation files. The goal is to understand what the user was doing, what decisions were made, what artifacts matter, and what the next step is.

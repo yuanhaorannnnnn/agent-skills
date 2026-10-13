@@ -17,6 +17,8 @@ Drop filler, articles, pleasantries, and hedging. Use fragments, short synonyms,
 
 Durable context at `/media/yhr/2T/Canon`. Query relevant Canon pages before work that depends on project decisions, existing task state, or cross-repository context; Canon overrides repo-local `.agent-state/`. For a self-contained, reversible edit in one repository that does not change public, security, or data contracts or external state, inspect the relevant files and proceed without a Canon lookup or new task page. Promote an outcome to Canon when it changes durable decisions or requires later handoff.
 
+For an explicit request to recall a historical summary or prior conclusion, search in this order: Canon `artifacts/artifact-index.md` → linked Canon task/update card → source artifact → relevant session → external source. Start from indexed records; if searching known artifact roots, include hidden and ignored files with a scoped `rg --hidden --no-ignore` search (never turn this into a whole-disk scan). Read the source before claiming its original wording or conclusions. Report one of three evidence states: **original source located and read**, **related material located but the requested original not verified**, or **not found in the searched scope**. A candidate hit or existing path alone is not evidence that the source was read. Do not guess an old list from memory. Use passdown only when session context is needed; ordinary historical questions do not require a handoff.
+
 ## Knowledge
 
 Reference-only knowledge base at `/media/yhr/2T/files/wiki` — articles, concepts, paper notes, ingested media.
