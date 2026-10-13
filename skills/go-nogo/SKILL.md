@@ -5,13 +5,19 @@ description: |
   当用户描述一段功能、说"我想实现..."、"能不能做..."、"这个要不要封装成 skill"、
   "需不需要创建一个 skill"、"帮我评估一下这个功能"、"这个功能用现有工具能做吗"时触发。
   也触发于用户询问某个需求的最佳实现方式，或纠结是否值得投入创建 skill 时。
-  核心目标是防止技能膨胀和重复造轮子，给出客观、可执行的建议。
+  只进行评估，不创建、修改或代拟完整 skill。核心目标是防止技能膨胀和重复造轮子，给出客观、可执行的建议。
 ---
 
 # Skill Evaluator
 
 判断一个功能值得封装成新 skill，还是用现有工具/已安装 skill 就能搞定。
 在"过度封装"和"该封不封"之间找平衡。
+
+## 执行边界
+
+本 skill 只返回评估、理由、缺失信息和替代方案。“建议创建”是评估结论，不是创建授权：不生成完整 `SKILL.md` 草案，不创建或修改 skill 文件，不自动调用 `skill-creator`。实际创建由用户另行发起，交给 `skill-creator`；本轮评估到此结束。
+
+先检查现有工具的覆盖度。源码注释生成 API 文档默认优先 TypeDoc、Javadoc、Sphinx、Doxygen 等确定性生成器；普通跨文件提取或重复生成不足以支持新 skill。只有高频流程还需要跨仓库、多语言、统一校验和发布等生成器未覆盖的编排时，才评估是否值得封装。
 
 ## 评估维度（1-5 分）
 
@@ -46,7 +52,7 @@ description: |
 
 只有语气、篇幅、普通写作方式、单条提示词或基础模型已稳定具备的能力 → 不创建。优先写入 Global Guidance、Canon domain language、现有 skill 或确定性脚本。
 
-若创建，先声明 `invocation`、`role`、`calls`。`user` skill 负责可见流程；`model` skill 提供可复用能力。避免 user-invoked orchestrator 相互嵌套；必须嵌套时，重新检查 owner 是否重复。
+若建议创建，在评估中说明拟议的 `invocation`、`role`、`calls`，不输出完整实现。`user` skill 负责可见流程；`model` skill 提供可复用能力。避免 user-invoked orchestrator 相互嵌套；必须嵌套时，重新检查 owner 是否重复。
 
 ## 输出
 

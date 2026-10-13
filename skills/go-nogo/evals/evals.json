@@ -4,19 +4,19 @@
     {
       "id": 1,
       "prompt": "我想实现一个功能，每次保存 Python 文件时自动运行 black 格式化代码",
-      "expected_output": "不建议创建 skill。这是简单的命令组合，用 Bash + git hook 或 editor 配置即可实现。",
+      "expected_output": "仅返回评估，不建议创建 skill。保存时格式化优先 editor 配置；git hook 适用于提交时检查，不应混淆触发时机。不生成完整 SKILL.md 草案，不创建或修改 skill 文件，不自动调用 skill-creator。",
       "files": []
     },
     {
       "id": 2,
       "prompt": "我想做一个 skill，能自动从 Slack 导出对话、提取 Action Items、生成待办事项列表并写入 Notion",
-      "expected_output": "建议创建 skill。涉及多平台 API 调用、数据转换、状态管理，复杂度高，如果使用频率高则值得封装。",
+      "expected_output": "仅返回评估：涉及多平台 API 调用、数据转换、状态管理，复杂度高，如果使用频率高则建议封装。建议创建不是直接创建：不生成完整 SKILL.md 草案，不创建或修改 skill 文件，不自动调用 skill-creator。信息不足时说明频率等条件，不编造。",
       "files": []
     },
     {
       "id": 3,
       "prompt": "我想做一个 skill，能把我的代码注释整理成正式的 API 文档",
-      "expected_output": "默认不创建 skill；优先使用 TypeDoc、Javadoc、Sphinx、Doxygen 等确定性文档生成器。只有需求升级为跨仓库、多语言、统一校验和发布的高频流程时才考虑编排 skill。",
+      "expected_output": "仅返回评估，默认不创建 skill；优先使用 TypeDoc、Javadoc、Sphinx、Doxygen 等确定性文档生成器。只有需求升级为跨仓库、多语言、统一校验和发布的高频流程时才考虑编排 skill。不生成完整 SKILL.md 草案，不创建或修改 skill 文件，不自动调用 skill-creator。",
       "files": []
     }
   ]

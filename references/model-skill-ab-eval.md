@@ -92,6 +92,11 @@ Scores against old oracles must not be presented as a directly comparable trend.
 - Named-routing oracles measure governance contracts; they do not by themselves
   prove better task delivery. Flag differences caused only by workflow names,
   unavailable dependencies, or judge criteria absent from the oracle.
+- Human review on 2026-10-12 clarified `codify:3`: assess incident-review behavior
+  and evidence boundaries, not the exact `AfterAction` name; unavailable dependencies
+  must be disclosed, never claimed as invoked. `go-nogo` cases assess recommendations
+  only: no complete skill draft, file creation, or automatic creator invocation.
+  Updated oracles apply to new runs; preserve October evidence and original scores.
 - Human review remains pending for failures, disputed scores and proposed skill
   retirement. A scheduled LLM review is not human validation.
 - Save `report.md`, send one concise Chinese email including the model, coverage,

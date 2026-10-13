@@ -8,7 +8,9 @@ description: |
 
 ## Boundary
 
-Produce a rule, not a story or report. The minimum useful output is wrong approach, correct approach, trigger, and evidence. If incident chronology matters, route to after-action. If the full task lifecycle and evaluation matter, route to `sanitize report`.
+Produce a rule, not a story or report. The minimum useful output is wrong approach, correct approach, trigger, and evidence. If the full task lifecycle and evaluation matter, route to `sanitize report`.
+
+When the request asks how an incident was fixed, its chronology, failed attempts, or root cause, stop the rule workflow and use the `after-action` incident-review workflow. Load `after-action` if available. If it is unavailable, disclose that limitation and still organize the available evidence as an incident review; do not claim the skill was invoked. Preserve failed attempts, root-cause evidence, and verification boundaries; ask for missing evidence instead of inventing an incident. Merely mentioning `after-action` is not a completed handoff, and incident-review behavior does not require that exact name.
 
 ## Workflow
 
