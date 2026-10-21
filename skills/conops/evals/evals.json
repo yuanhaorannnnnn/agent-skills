@@ -12,6 +12,21 @@
       "prompt": "写设计评审文档，直接回复。最终接受方案：本地 CSV 导出，用户手动触发，不引入数据库。之前讨论过云同步和定时上传，已否决。字段：timestamp,value；暂缺最大数据量。",
       "expected_output": "仅把本地手动 CSV 导出作为最终方案；云同步不能成为已接受功能；标明数据量未知和需验证的限制，不编造源文件或测试结论。",
       "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "在当前目录保存 design.md。设计本地 CSV 手动导出：字段 timestamp,value，不引入数据库，不做云同步；最大数据量未知。执行适用的本地文件检查，将原始检查输出保存到 lint-result.json。回复区分结构检查与语义评审，说明未知数据量影响哪些承诺。不要写入 Canon。",
+      "expected_output": "真实生成 design.md 和 lint-result.json；使用可用检查器并如实记录命令和结果；不得将 structure lint pass 说成设计通过；不凑章节或排除项；写明临时文件/失败恢复、数据量未知与验证计划，不能伪称已测试。",
+      "files": [],
+      "sandbox": "workspace-write",
+      "checks": [
+        {
+          "path": "design.md"
+        },
+        {
+          "path": "lint-result.json"
+        }
+      ]
     }
   ]
 }

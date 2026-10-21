@@ -65,7 +65,7 @@ names, measured values, and evidence-backed acceptance criteria.
 
 ## Suggested document flow
 
-Use the full section contract from [`SKILL.md`](SKILL.md), while keeping each
+Use the adaptable content checklist from [`SKILL.md`](SKILL.md), while keeping each
 section decision-oriented:
 
 1. State the problem and the one-sentence decision.
@@ -98,10 +98,7 @@ Run the bundled quality gate against the finished document:
 python3 skills/conops/scripts/quality_gate.py <path-to-design-doc.md-or-index.html>
 ```
 
-The gate checks structure, prohibited wording, scope balance, and common
-review-language problems. Human review still owns factual accuracy, path
-navigation, evidence strength, and whether the acceptance criteria can actually
-be executed.
+The legacy-named gate is a structure lint only: readable, nonempty, non-placeholder body. It does not require fixed headings, balance scope counts, or ban words. Its pass is not design approval. Semantic review owns factual accuracy, trade-offs, evidence strength, and executable acceptance. For empirical or calibration designs, read `references/research-admission.md` before proposing a fit.
 
 ## Boundary with `breach`
 
@@ -120,8 +117,7 @@ Hand approved prose, target project, output path, and content mode to
 rendering, and provenance; it must not rewrite the approved technical conclusion
 or make static HTML stand in for runtime evidence.
 
-HTML retains all 14 sections as `h1`–`h6` headings and uses scope subheadings
-with `ul`/`ol` lists. The gate reads static HTML text, headings, and list items;
+HTML retains the selected content, using semantic headings and lists. The lint reads static HTML text;
 it ignores head metadata, scripts, styles, and comments, and does not execute
 JavaScript or compute CSS visibility. Breach visual checks remain required.
 Use the same task directory for both formats (`index.html` by default for HTML),

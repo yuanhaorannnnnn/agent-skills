@@ -1,5 +1,4 @@
-"""Conops HTML checks and unchanged Markdown CLI/JSON contract."""
-import importlib.util
+"""Regression probes for false approval and artificial document constraints."""
 import json
 from pathlib import Path
 import subprocess
@@ -8,91 +7,44 @@ import tempfile
 import unittest
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'skills/conops/scripts/quality_gate.py'
-spec = importlib.util.spec_from_file_location('conops_quality_gate', SCRIPT)
-gate = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(gate)
-
-
-def document(html=False, includes=1, excludes=1):
-    parts = []
-    for section in gate.REQUIRED_SECTIONS:
-        parts.append(f'<h2>{section}</h2>' if html else f'## {section}\n')
-        parts.append('<p>具体约束与验收。</p>' if html else '具体约束与验收。\n')
-        if section == '方案范围':
-            for title, count in [('本次包含', includes), ('本次不包含', excludes)]:
-                if html:
-                    parts.append(f'<h3>{title}</h3><ul>' + '<li>范围条目</li>' * count + '</ul>')
-                else:
-                    parts.append(f'### {title}\n' + '- 范围条目\n' * count)
-    return ''.join(parts)
-
 
 class QualityGateTests(unittest.TestCase):
-    def run_gate(self, text, suffix):
+    def run_gate(self, text, suffix='.md'):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / ('design' + suffix)
-            path.write_text(text)
+            if text is not None:
+                path.write_text(text)
             result = subprocess.run([sys.executable, str(SCRIPT), str(path), '--json'],
                                     text=True, capture_output=True)
-            return result.returncode, json.loads(result.stdout)
+            output = json.loads(result.stdout)
+            self.assertEqual(output['check_kind'], 'structure_lint')
+            self.assertEqual(output['semantic_review'], 'required')
+            return result.returncode, output
 
-    def test_markdown_cli_json_compatibility(self):
-        self.assertEqual(self.run_gate(document(), '.md'), (0, {'verdict': 'pass', 'failed': []}))
+    def test_short_real_body_no_fixed_sections(self):
+        self.assertEqual(self.run_gate('# 筛选\n默认显示全部；解析后按 level 过滤，坏行保留既有处理。')[0], 0)
 
-    def test_markdown_empty_scope_retains_old_verdict(self):
-        self.assertEqual(self.run_gate(document(False, 0, 0), '.md'),
-                         (0, {'verdict': 'pass', 'failed': []}))
+    def test_all_placeholder_sections_block(self):
+        self.assertEqual(self.run_gate('\n'.join(f'## Section {i}\n待定。' for i in range(14)))[0], 1)
 
-    def test_html_scope_ignores_directory_anchor_text(self):
-        page = '<nav><a href="#include">本次包含</a><a href="#exclude">本次不包含</a></nav>'
-        self.assertEqual(self.run_gate(page + document(True), '.html'),
-                         (0, {'verdict': 'pass', 'failed': []}))
+    def test_empty_heading_and_metadata_block(self):
+        for text in ['', '# Design', '---\nowner: test\n---\n# Design\n<!-- body -->']:
+            with self.subTest(text=text): self.assertEqual(self.run_gate(text)[0], 1)
 
-    def test_html_prose_cannot_replace_scope_headings(self):
-        page = document(True).replace('<h3>本次包含</h3>', '<p>本次包含</p>')
-        page = page.replace('<h3>本次不包含</h3>', '<p>本次不包含</p>')
-        status, output = self.run_gate(page, '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('4.scope' in failure for failure in output['failed']))
+    def test_missing_file_is_machine_readable(self):
+        self.assertEqual(self.run_gate(None)[0], 1)
 
-    def test_html_direct_without_markdown(self):
-        page = '<html><head><title>此外</title><style>此外</style></head><body>' + document(True) + '</body></html>'
-        self.assertEqual(self.run_gate(page, '.html'), (0, {'verdict': 'pass', 'failed': []}))
+    def test_exclusions_and_words_are_not_quality_proxies(self):
+        self.assertEqual(self.run_gate('## 本次包含\n- 筛选\n- 导出\n## 本次不包含\n- 云同步\n此外，最大数据量需要实测。')[0], 0)
 
-    def test_html_missing_section_not_supplied_by_non_body_text(self):
-        page = document(True).replace('<h2>Core Logic</h2>', '')
-        page += '<script>Core Logic</script><style>Core Logic</style><!-- Core Logic --><p>Core Logic</p>'
-        status, output = self.run_gate(page, '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('3.sections' in failure for failure in output['failed']))
+    def test_open_question_does_not_block_substantive_draft(self):
+        self.assertEqual(self.run_gate('导出采用流式写入，失败保留原文件。\n## 最大数据量\n待定。')[0], 0)
 
-    def test_html_preformatted_text_cannot_replace_section_heading(self):
-        page = document(True).replace('<h2>Core Logic</h2>', '<pre><code>## Core Logic</code></pre>')
-        status, output = self.run_gate(page, '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('3.sections' in failure for failure in output['failed']))
+    def test_html_headings_scripts_and_placeholders_not_body(self):
+        text = '<head><title>Real design</title></head><h1>Design</h1><script>substance</script><style>substance</style><p>待定。</p>'
+        self.assertEqual(self.run_gate(text, '.html')[0], 1)
 
-    def test_html_inline_forbidden_text_and_entities(self):
-        status, output = self.run_gate(document(True) + '<p>此<strong>外</strong>&#12290;</p>', '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('2.forbidden' in failure for failure in output['failed']))
+    def test_html_inline_body_preserved(self):
+        self.assertEqual(self.run_gate('<h1>导出</h1><p>写入<strong>临时文件</strong>后原子替换。</p>', '.html')[0], 0)
 
-    def test_html_scope_uses_list_items(self):
-        status, output = self.run_gate(document(True, 2, 1), '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('include=2 exclude=1' in failure for failure in output['failed']))
-
-    def test_html_prose_bullets_do_not_count_as_list_items(self):
-        page = document(True, 2, 1).replace('</ul>', '</ul><p>- extra prose</p>')
-        status, output = self.run_gate(page, '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('include=2 exclude=1' in failure for failure in output['failed']))
-
-    def test_html_empty_scope_is_blocked(self):
-        status, output = self.run_gate(document(True, 0, 0), '.html')
-        self.assertEqual(status, 1)
-        self.assertTrue(any('4.scope' in failure for failure in output['failed']))
-
-
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == '__main__': unittest.main()

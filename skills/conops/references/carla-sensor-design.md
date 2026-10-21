@@ -1,7 +1,7 @@
 # CARLA Sensor Design Variant
 
 Load this reference only for CARLA sensor development proposals. It specializes
-the generic CONOPS sections without changing the 14-section top-level contract.
+the adaptable CONOPS content checklist; no fixed section count is required.
 
 ## Section 4: User-visible Behavior
 
