@@ -130,6 +130,14 @@ skills:
   - codify
   - after-action
   handoffs: []
+- name: dossier
+  enabled: true
+  category: workflow
+  invocation: user
+  role: orchestrator
+  calls:
+  - paperwork
+  handoffs: []
 - name: execute
   enabled: true
   category: workflow

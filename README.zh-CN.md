@@ -82,6 +82,7 @@ skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `
 | `conops` | workflow | model | renderer | 技术开发设计方案 |
 | `cover` | design | user | renderer | 设计规范（DESIGN.md） |
 | `cartographic-recon` | design | user | orchestrator | 地图侦察：地理核验、手绘地图与改图验收 |
+| `dossier` | workflow | user | orchestrator | 卷宗建档、只读调档与更新；来源可追溯，建档前去重 |
 | `execute` | workflow | model | orchestrator | 执行任务并留可恢复记录 |
 | `go-nogo` | meta | model | discipline | 判断该不该做、该不该建 skill |
 | `herdr` | automation | model | adapter | 控制 Herdr pane |

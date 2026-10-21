@@ -104,6 +104,7 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 | `conops` | workflow | model | renderer | Technical design document for review |
 | `cover` | design | user | renderer | Generate a DESIGN.md token spec |
 | `cartographic-recon` | design | user | orchestrator | Create and revise illustrated maps with geographic evidence and visual checks |
+| `dossier` | workflow | user | orchestrator | Build, retrieve and update source-linked dossier material packages; deduplicate before creation |
 | `execute` | workflow | model | orchestrator | Run a task and leave a resumable record |
 | `go-nogo` | meta | model | discipline | Decide whether a new skill or tool is worth building |
 | `herdr` | automation | model | adapter | Inspect and drive Herdr panes |
