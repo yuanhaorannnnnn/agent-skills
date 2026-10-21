@@ -46,7 +46,7 @@ saved monthly snapshot during reruns or reinterpret absent records as no use.
 
 The runner never sends mail; the automation handles Gmail and
 failed/discrepant-case reruns. Run `codify`, `go-nogo`, `conops`, `sanitize`, and `execute` using the existing
-runner and each skill's `evals/evals.json`. The suite currently has 17 cases.
+runner and each skill's `evals/evals.json`. Read case counts from the current eval files; Conops also includes a saved-file workflow case with artifact checks.
 Store each report under `.eval/monthly/<Asia-Shanghai-timestamp>/<skill>.json`;
 never overwrite the August historical reports. Save the repository commit,
 scoped dirty diff, case-file hashes, CLI version, requested model and effort
