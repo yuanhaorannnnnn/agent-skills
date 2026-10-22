@@ -43,7 +43,7 @@ page in 5 minutes.
 
 Choose one mode:
 
-- **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens.
+- **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens; load the General page interaction reference when the page has controls or requested motion.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
 
 ## Minimal entry

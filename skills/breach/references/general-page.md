@@ -1,5 +1,30 @@
 # Breach general page
 
+## Requested variant comparison
+
+When the user explicitly asks to compare design alternatives, see
+[Variant comparison](variant-comparison.md). Keep the content and project tokens
+constant unless those are the requested comparison axis. This optional General
+page route does not make ordinary page generation produce multiple versions,
+and does not apply to Discussion digest or Archive.
+
+## Content stress checks
+
+When the user requests content stress testing, or the page has variable-length
+content, optional fields or data-driven collections that could break its layout,
+read [Content stress checks](content-stress.md). Test an isolated preview before
+delivery, preserve real content, and report findings separately from harness
+success. This route belongs only to General page, not Discussion digest or Archive.
+
+## Interaction and motion
+
+After resolving layout and style, decide whether the reader needs controls or
+motion. For tabs, disclosures, copy feedback, dialogs, touch interactions, or
+explicitly requested animation, read [Interaction and motion](interaction-motion.md)
+before implementation. Static reading pages need no motion layer. Apply this
+reference only in General page; Discussion digest and Archive keep their own
+template contracts. Interaction rules supplement, not replace, project tokens.
+
 ## Optional Chart Renderer
 
 In General page mode, `lieflat-charts` may render a chart module inside the
