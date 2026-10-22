@@ -90,7 +90,6 @@ def grade(directory: Path) -> dict:
                 "answers": {label: {"response": case[arm]["response"],
                     "execution_ok": case[arm]["returncode"] == 0,
                     "artifact_checks": case[arm]["artifact_checks"],
-                    "command_executions": case[arm].get("command_executions", []),
                     "artifacts": case[arm].get("artifacts", {})}
                     for label, arm in mapping[key].items()},
             })
@@ -105,6 +104,7 @@ def grade(directory: Path) -> dict:
         "Return ONLY JSON: {\"cases\":[{\"id\":\"...\",\"A\":{\"verdict\":\"pass|fail|uncertain\","
         "\"reason\":\"...\"},\"B\":{\"verdict\":\"pass|fail|uncertain\",\"reason\":\"...\"}}]}. "
         "Execution failure, empty answer, or any failed artifact check means fail. "
+        "Raw command logs are withheld to avoid exposing generation-arm paths. "
         "Claimed verification is not execution evidence. If the oracle requires running a test "
         "and only an answer claims it ran, use uncertain. Give concise Chinese reasons. "
         "Do not rank writing length or fixed section counts."

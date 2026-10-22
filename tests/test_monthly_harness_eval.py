@@ -36,6 +36,31 @@ class MonthlyEvalTests(unittest.TestCase):
             monthly.write_report(directory, grading)
             self.assertIn('真实人工介入', (directory / 'report.md').read_text())
 
+    def test_blind_input_withholds_arm_paths_and_preserves_raw_logs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            arms = {arm: {'returncode': 0, 'response': 'reader-visible answer',
+                          'artifact_checks': [],
+                          'command_executions': [{'command': f'cat /tmp/skill-ab-{arm}-secret/home/.agents/skills/paperwork/SKILL.md',
+                                                  'exit_code': 0}]}
+                    for arm in ('baseline', 'skill')}
+            report = {'cases': [{'id': 1, 'prompt': 'task', 'expected_output': 'oracle', **arms}]}
+            source = directory / 'execute.json'
+            raw = json.dumps(report)
+            source.write_text(raw)
+            scores = {'cases': [{'id': 'execute:1', **{label: {'verdict': 'pass', 'reason': 'ok'}
+                                                      for label in ('A', 'B')}}]}
+            with patch.object(monthly, 'run_arm', return_value={'returncode': 0, 'response': json.dumps(scores)}) as call:
+                grading = monthly.grade(directory)
+            judge_input = (directory / 'judge-input.json').read_text()
+            for text in (judge_input, call.call_args.args[3]):
+                self.assertNotIn('skill-ab-baseline', text)
+                self.assertNotIn('skill-ab-skill', text)
+                self.assertNotIn('command_executions', text)
+            self.assertEqual(source.read_text(), raw)
+            self.assertEqual(set(grading['mapping']['execute:1'].values()), {'baseline', 'skill'})
+            self.assertEqual(json.loads(judge_input)[0]['answers']['A']['response'], 'reader-visible answer')
+
     def test_suite_preserves_scoped_source_snapshots(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

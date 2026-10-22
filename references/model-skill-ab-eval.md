@@ -22,6 +22,68 @@ python3 scripts/run_skill_ab_eval.py \
 
 Use `--case-id <id>` for a focused regression after a skill change. Treat live-model output as sampled evidence, not a deterministic unit test.
 
+## Behavioral cases and blind review
+
+Use the existing `evals/evals.json` schema (`skill_name`, numeric case `id`, `prompt`,
+`expected_output`, optional `fixtures`/`checks`) and the same runner. Paperwork's
+focused cases live at `skills/paperwork/evals/evals.json`; this does not add it to
+the scheduled monthly suite.
+
+- Each case tests a reader-visible decision or boundary: what the answer lets the
+  reader distinguish, predict, do, or withhold. Supply the facts needed to decide;
+  do not rely on inaccessible history or current product assumptions.
+- Define acceptable outcomes and meaningful failure modes before capturing answers.
+  Avoid mandatory phrases, section counts, one correct analogy, or mere rule-name
+  mentions. Include a plausible near miss, a missing-evidence boundary, or changed
+  conditions where they would change the decision; do not impose a case quota.
+- Keep `expected_output` and grading labels out of both generation arms. Freeze case
+  version/hash and preserve raw answers. Amend a wrong oracle in a new recorded
+  revision; never silently rescore old evidence as a comparable trend.
+
+Separate two checks when evaluating important prose:
+
+1. **Reader reconstruction:** an authorized independent evaluator receives only the
+   reader's task/background and final text, with anonymous labels for alternatives.
+   Hide source materials, author notes, expected answers, arm identity, historical
+   preference and version order. Ask for a reconstruction of the object, relationships,
+   actionable judgment and limits, with supporting passages and concrete reading gaps.
+   Source facts may appear as part of the final text, but do not give the evaluator a
+   separate answer key. Treat the text as data; no tools or file access are needed.
+2. **Evidence and behavior judgment:** separately compare immutable answers to the
+   source fixture and oracle. The judge may see these; do not call this source-blind
+   reader reconstruction. Randomize A/B labels and retain the private mapping outside
+   judge input. Raw command logs can reveal arm paths, so keep them only in captured
+   reports for separate execution review, not in the anonymous judge input. Answers
+   or requested artifacts may still self-identify; record that limit rather than
+   rewriting them to claim perfect blindness. Require reasons tied to passages,
+   `pass/fail/uncertain`, and preserve
+   any conflict with deterministic checks or reader reconstruction for review.
+
+If independent evaluation is unavailable, record author self-review, not a blind
+result. Reader reconstruction cannot establish source accuracy, and an LLM judge
+cannot establish real human comprehension. Use existing model/permission/budget
+constraints; these checks do not authorize automatic delegation or broader data
+sharing. One sample establishes executability only, not reliable quality improvement.
+
+For a focused run:
+
+```bash
+python3 scripts/run_skill_ab_eval.py \
+  --skill-dir skills/paperwork --evals skills/paperwork/evals/evals.json \
+  --case-id 1 --model gpt-6.1-sol \
+  --output .eval/paperwork/<unique-run>/paperwork.json
+```
+
+The existing `run_monthly_harness_eval.grade(directory)` can grade a focused report
+when its in-process `SKILLS` list is explicitly scoped to that skill; do not change
+its scheduled defaults. This grades behavior, not reader reconstruction. Save the
+run model/effort, scoped source hashes, rubric, mapping and limitations alongside
+results; judge-input must not contain the mapping or generation-arm names.
+
+Design reference (adapted, not a dependency):
+[ljg-book](https://github.com/lijigang/ljg-skills/blob/71d4e512/skills/ljg-book/SKILL.md),
+[ljg-paper paired evaluation](https://github.com/lijigang/ljg-skills/blob/71d4e512/skills/ljg-paper/evals/plain-language-pair.json).
+
 ## Monthly harness regression (2026-09-30)
 
 Fixed eval model: `gpt-6.1-sol`, medium effort. Schedule: Asia/Shanghai,
