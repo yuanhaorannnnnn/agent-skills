@@ -93,6 +93,7 @@ skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `
 | `sanitize` | workflow | user | orchestrator | 收尾提交 / 完整技术报告 |
 | `tasking` | workflow | user | orchestrator | 需求开发四阶段指挥 |
 | `traceback` | review | model | discipline | 设计-实现-测试三方对齐 |
+| `warroom` | workflow | user | orchestrator | War Room 作战会商；`--joint` 邀请外部 provider/agent，提供本地 DSH adapter |
 | `x-likes-digest` | automation | user | adapter | X 点赞周报 |
 
 新增、移除或禁用 skill 时，先更新 `manifest.yaml`，再同步本表，并运行完整验证。

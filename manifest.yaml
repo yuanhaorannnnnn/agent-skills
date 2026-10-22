@@ -159,6 +159,13 @@ skills:
   role: orchestrator
   calls: []
   handoffs: []
+- name: warroom
+  enabled: true
+  category: workflow
+  invocation: user
+  role: orchestrator
+  calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user

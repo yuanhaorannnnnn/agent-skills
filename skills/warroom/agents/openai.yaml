@@ -1,0 +1,6 @@
+interface:
+  display_name: "War Room"
+  short_description: "多模型作战会商与证据收敛，支持 --joint 邀请外部专家参与评审"
+  default_prompt: "使用 $warroom 审视当前问题与路线，组织独立研判和交叉质疑，给出证据支持的下一步。"
+policy:
+  allow_implicit_invocation: false
