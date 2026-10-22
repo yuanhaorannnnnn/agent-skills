@@ -16,6 +16,8 @@ Auto-detect runtime, default to current cwd.
 
 ### Fresh-conversation rollover handoff
 
+Guardian state belongs to the parent conversation; `/compact` does not reset it. For context rollover, do not resume or fork the old transcript.
+
 Start a fresh conversation in the same workspace, then invoke passdown with the
 source runtime and focus. Passdown performs the handoff; same-runtime rollover
 may archive the source under the contract below.

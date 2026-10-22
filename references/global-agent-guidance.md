@@ -1,63 +1,30 @@
 # Global Agent Guidance
 
-## Communication
+## 沟通
 
-Respond in Simplified Chinese. Keep technical terms, identifiers, commands, file paths, and code snippets in English.
-
-When the user writes in English, correct only serious issues that make the meaning ambiguous, invert the intended meaning, misuse a critical technical term, or make the sentence unreadable. Ignore minor issues when the meaning is clear.
-
-If correction is needed, append exactly one final line:
+用简体中文；technical terms、标识符、命令、路径和代码保留英文。省套话、冠词、客套和冗余缓和语；优先短语、短词和箭头，安全警告、不可逆操作与设计文档用完整句子。
+英文仅纠正歧义、语义颠倒、关键术语误用或无法理解的问题，忽略小错；需纠正时末尾只加一行：
 `> 💡 "your version" → "suggested version"`
 
-## Compression
+## 上下文与按需规则
 
-Drop filler, articles, pleasantries, and hedging. Use fragments, short synonyms, and arrows for causality. Technical terms, code, and file paths stay exact. Full sentences only for security warnings, irreversible actions, and design docs.
+- Canon：`/media/yhr/2T/Canon`。依赖项目决策、任务状态或跨仓库背景时先查，优先于 `.agent-state/`；单仓库、自包含、可逆且不改公开/安全/数据契约或外部状态的修改可直接做，无需查 Canon 或新建 task。改变长期决策或需交接的结果回写 Canon。
+- Wiki：`/media/yhr/2T/files/wiki`，仅作参考知识库。
+- 下列 reference 位于 `/home/yhr/.agents/repos/agent-skills/references/`，仅满足条件时读取：
+  - 找回历史总结/结论 → `canon-output-contract.md` 的 Historical recall；索引优先、原文核实，不凭记忆重建。
+  - 实证技术预研（可行性、归因、模型选择、拟合/标定）→ 选数据/观测代理、定实验或搜索参数前读 `research-admission.md`；无需 Conops，普通问答/忠实翻译摘要/归档不触发。
+  - skill 产生 pass/blocked/skipped/error → 按 `skill-telemetry.md` 发一次本地事件；只记允许的元数据，失败不改变任务结果。
+- 技能中的 `<skill-dir>` 是实际加载的 SKILL.md 所在目录，`<skills-root>` 是其父目录，不替换成猜测的 runtime 路径。
+- 上下文换会话：新建对话，用 passdown 并读其 rollover 规则；不 resume/fork 旧 transcript，`/compact` 不重置 Guardian。
 
-## Canon
+## Prompt 调用
 
-Durable context at `/media/yhr/2T/Canon`. Query relevant Canon pages before work that depends on project decisions, existing task state, or cross-repository context; Canon overrides repo-local `.agent-state/`. For a self-contained, reversible edit in one repository that does not change public, security, or data contracts or external state, inspect the relevant files and proceed without a Canon lookup or new task page. Promote an outcome to Canon when it changes durable decisions or requires later handoff.
+用户明确输入 `&<名称>` 时，读取当前用户 `~/.agents/prompts/<名称>.md`，作为当前对话的附加指令。只接受单个文件名，不接受路径；缺失就说明，不猜正文。
 
-For an explicit request to recall a historical summary or prior conclusion, search in this order: Canon `artifacts/artifact-index.md` → linked Canon task/update card → source artifact → relevant session → external source. Start from indexed records; if searching known artifact roots, include hidden and ignored files with a scoped `rg --hidden --no-ignore` search (never turn this into a whole-disk scan). Read the source before claiming its original wording or conclusions. Report one of three evidence states: **original source located and read**, **related material located but the requested original not verified**, or **not found in the searched scope**. A candidate hit or existing path alone is not evidence that the source was read. Do not guess an old list from memory. Use passdown only when session context is needed; ordinary historical questions do not require a handoff.
+## 操作约束
 
-## Knowledge
-
-Reference-only knowledge base at `/media/yhr/2T/files/wiki` — articles, concepts, paper notes, ingested media.
-
-## Global Prompts
-
-当用户明确输入 `&<名称>` 作为 prompt 调用时，读取 `~/.agents/prompts/<名称>.md`（`~` 按当前用户的 home 目录解析），将正文作为本次任务的附加指令，作用对象取当前对话上下文。仅接受单个文件名，不接受路径；文件不存在时说明缺失，不猜测正文。
-
-## Skill Paths
-
-In skill instructions, `<skill-dir>` means the directory containing the loaded
-`SKILL.md`; `<skills-root>` means its parent directory. Resolve these placeholders
-from the actual loaded skill path. Do not replace them with runtime-specific
-`~/.claude/skills` or `~/.agents/skills` assumptions.
-
-## Skill Telemetry
-
-When a skill materially passes, blocks, skips, or errors, emit one local event
-using `<skills-root>/.scripts/skill_telemetry.py`. Record only skill/runtime/
-trigger/outcome/duration, artifact or gate references, and the closed-vocabulary
-routing metadata defined in `references/skill-telemetry.md` when applicable. Never record prompts,
-responses, transcript content, tool arguments, tokens, credentials, or arbitrary
-error text. Telemetry failure is a warning and never changes the task outcome.
-
-## Approvals and Guardian
-
-- Run read-only inspection in the active sandbox first. Never pre-escalate `rg`, `sed -n`, `jq`, `wc`, `nl`, `find`, or ordinary file reads. Use `require_escalated` only after a concrete sandbox or network denial in the current turn, and cite that failure in the justification.
-- Batch headless browser validation into one final pass per artifact revision, including all required viewports and screenshots. Re-run only after a concrete visual defect or a subsequent artifact change.
-- Reduce Auto-review volume by fixing sandbox boundaries and narrow `writable_roots`. Never add broad command allow rules merely to suppress Guardian prompts.
-- Guardian is scoped to the parent conversation. `/compact` does not reset it. For context rollover, start a fresh conversation and use passdown; do not resume or fork the old transcript.
-
-## Worktree
-
-Use `<repo>/.worktrees/<safe-branch-name>` as the canonical worktree root.
-
-`git worktree list` is source of truth. Claude Code must redirect `WorktreeCreate` / `WorktreeRemove` hooks to this root; Codex and other runtimes create worktrees there directly. Do not keep persistent worktrees under `.claude/worktrees/`.
-
-Worktree directories under `.worktrees/` are local scratch space — never push their branches to remote. Workflow-designated branches (e.g. `bugfix/*`, `feature/*`) created by repair/tasking may be pushed after gates pass.
-
-## GitHub Tooling
-
-Use `gh` CLI as default for GitHub operations (repo, PR, issue, CI/run status, release) across all providers and runtimes (ChatGPT, Codex, DeepSeek, Gemini, Claude Code). Do not use remote GitHub plugins, Web connectors, or MCP wrappers when local `gh` is available.
+- 只读检查先用当前 sandbox；`rg`、`sed -n`、`jq`、`wc`、`nl`、`find` 和普通读取不预先提权。仅本轮发生具体 sandbox/网络拒绝后才可申请 `require_escalated`，理由引用该失败。
+- Auto-review 过多应修正 sandbox 边界、缩小 `writable_roots`；不得为少弹提示添加宽泛命令放行规则。
+- Headless 视觉验证：每版 artifact 合并所有 viewport/截图一次检查，仅发现具体视觉缺陷或后续改版才重跑。
+- Worktree 以 `git worktree list` 为准，统一 `<repo>/.worktrees/<safe-branch-name>`；Claude 的 WorktreeCreate/WorktreeRemove hooks 也指向这里，不长期用 `.claude/worktrees/`。本地 scratch 分支不推送；repair/tasking 指定的 `bugfix/*`、`feature/*` 等工作流分支过 gate 后可推送。
+- GitHub 操作跨 runtime/provider 默认用本机 `gh`；可用时不改走远端插件、Web connector 或 MCP wrapper。

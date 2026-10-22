@@ -87,3 +87,9 @@ mentions, supports, updates, supersedes, depends_on, produces, consumed_by, bloc
 ## Failure Mode
 
 If Canon is unavailable, keep the runtime output in the repo-local scratchpad and state clearly that Canon promotion was not done.
+
+## Historical recall
+
+用户要求找回历史总结或结论时，按 Canon `artifacts/artifact-index.md` → 关联 task/update card → 原始 artifact → 相关 session → 外部来源检索。优先索引；搜索已知 artifact 根时使用限定目录的 `rg --hidden --no-ignore`，不得扩成全盘扫描。
+
+读到原始材料后才能复述其原话或结论。回复明确区分：**原文已找到并读过** / **找到相关材料，但所求原文未核实** / **在已查范围未找到**。命中索引或路径存在只是候选，不凭记忆拼旧清单。只有需要热会话上下文才调用 passdown；普通历史问题不强制交接。

@@ -98,7 +98,7 @@ Run the bundled quality gate against the finished document:
 python3 skills/conops/scripts/quality_gate.py <path-to-design-doc.md-or-index.html>
 ```
 
-The legacy-named gate is a structure lint only: readable, nonempty, non-placeholder body. It does not require fixed headings, balance scope counts, or ban words. Its pass is not design approval. Semantic review owns factual accuracy, trade-offs, evidence strength, and executable acceptance. For empirical or calibration designs, read `references/research-admission.md` before proposing a fit.
+The legacy-named gate is a structure lint only: readable, nonempty, non-placeholder body. It does not require fixed headings, balance scope counts, or ban words. Its pass is not design approval. Semantic review owns factual accuracy, trade-offs, evidence strength, and executable acceptance. For empirical or calibration designs, read the shared `../../references/research-admission.md` before proposing a fit.
 
 ## Boundary with `breach`
 
