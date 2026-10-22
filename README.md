@@ -98,13 +98,13 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 |---|---|---|---|---|
 | `acquisition` | media | user | adapter | Ingest videos, articles and PDFs into a knowledge base |
 | `after-action` | workflow | model | renderer | Write a post-mortem for a hard fix |
-| `breach` | design | model | renderer | Single-page HTML deliverables (status, flowcharts, digests) |
+| `breach` | design | model | renderer | Single-page HTML deliverables; discussion digest and read-only dossier archive modes |
 | `chart` | learning | user | orchestrator | Build a durable Study Hub for a repo or product |
 | `codify` | workflow | model | discipline | Distill one reusable guardrail from a mistake |
 | `conops` | workflow | model | renderer | Technical design document for review |
 | `cover` | design | user | renderer | Generate a DESIGN.md token spec |
 | `cartographic-recon` | design | user | orchestrator | Create and revise illustrated maps with geographic evidence and visual checks |
-| `dossier` | workflow | user | orchestrator | Build, retrieve and update source-linked dossier material packages; deduplicate before creation |
+| `dossier` | workflow | user | orchestrator | Three modes: create, retrieve, update; person creation and “查这个人” use the OSINT branch from links, IDs or names; retrieval keeps source dossiers read-only and defaults to a separate Breach Archive HTML |
 | `execute` | workflow | model | orchestrator | Run a task and leave a resumable record |
 | `go-nogo` | meta | model | discipline | Decide whether a new skill or tool is worth building |
 | `herdr` | automation | model | adapter | Inspect and drive Herdr panes |

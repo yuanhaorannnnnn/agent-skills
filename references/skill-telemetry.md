@@ -71,7 +71,7 @@ old records remain readable and are counted as `unobserved`, never inferred.
 
 | Skill | Allowed routes | Decision vocabulary | Step names |
 |---|---|---|---|
-| breach | general-page, discussion-digest, native-handoff, inline-answer, unresolved | content-profile: default/eli5; prose: author/faithful; style: project-design/selected-design/awesome-design/digest-template/none; charts: lieflat/native/omit/unavailable; hairline: embed/static/omit/unavailable | paperwork, layout, style, render, charts, hairline, visual-check |
+| breach | general-page, discussion-digest, archive, native-handoff, inline-answer, unresolved | content-profile: default/eli5; prose: author/faithful; style: project-design/selected-design/awesome-design/digest-template/archive-template/none; charts: lieflat/native/omit/unavailable; hairline: embed/static/omit/unavailable | paperwork, layout, style, render, charts, hairline, visual-check |
 | acquisition | article, wechat-article, wechat-album, video, pdf, clippings, local-markdown, chart-handoff, deduplicated, unresolved | identity: new/complete/raw-only/incomplete/changed/weak; delivery: raw-query/raw-only/handoff/reuse; fetch: direct/jina/wechat-cli/youtube/x-download/local/none | identity, archive, paperwork, query, index-log, catalog, handoff |
 | execute | direct, delegate, unresolved | requested: auto/direct/delegate; persistence: local/task/goal/plan | implementation, delegation, validation, review, execution-gate |
 | sanitize | closeout, report, both, unresolved | publish: none/commit/push (highest completed action) | report, report-gate, review, commit, push, canon |

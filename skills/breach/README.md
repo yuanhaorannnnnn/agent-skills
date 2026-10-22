@@ -122,3 +122,15 @@ The comparison is a local, reproducible HTML render:
 ![Rendered comparison](examples/before-after.png)
 
 Inspect the [HTML source](examples/before-after.html) to reproduce the PNG.
+
+## Archive mode
+
+`$breach --archive <manifest.json>` renders only a registered dossier package that passes the upstream dossier gate. It does not retrieve, create, update or re-evaluate dossier content.
+
+```bash
+python3 skills/breach/scripts/render_archive.py --archive /absolute/package/manifest.json --catalog /absolute/canon/artifacts/dossier-index.json -o /absolute/workspace/.proposal/archive/example/index.html
+```
+
+Requires installed `dossier` (its read-only validator) and `markdown-it-py`. Raw documents and unregistered/ad-hoc manifests are rejected; input standardization belongs to dossier. See [archive-mode.md](references/archive-mode.md). The bundled [archive.html](assets/archive.html) uses the reference-backed [archive-DESIGN.md](assets/archive-DESIGN.md): cloth spine, ruled jacket, later registry label, and clear document pages. The receipt records the visual specification hash; source material stays read-only. Output is standalone HTML plus a `.render.json` provenance receipt.
+
+Archive视觉参考随skill保存在 [references/archive-visual/index.md](references/archive-visual/index.md)，含8张精选样图与出处/hash清单；完整PDF与研究记录保留在Wiki，不构成skill依赖。

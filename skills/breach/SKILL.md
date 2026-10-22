@@ -1,7 +1,7 @@
 ---
 name: breach
 description: |
-  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus a dedicated structured discussion-digest mode. Trigger on HTML artifact requests or explicit structured discussion digests ("digest this thread"); ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, or full websites.
+  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests, explicit structured discussion digests ("digest this thread"), `$breach --archive`, requests to render an existing dossier material package, or dossier retrieval handoffs for default archive display; ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, or full websites.
 ---
 
 # Quick Page
@@ -45,10 +45,14 @@ Choose one mode:
 
 - **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens; load the General page interaction reference when the page has controls or requested motion.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
+- **Archive (`--archive`)** — render only a registered, dossier-gate-validated standard package with the bundled archive renderer/template and its reference-backed `assets/archive-DESIGN.md`. Material acquisition and conclusions remain upstream; no automatic dossier creation.
 
 ## Minimal entry
 
 Choose one artifact mode and read only its route:
+
+- `$breach --archive [manifest.json]` or render an existing dossier material package →
+  [Archive](references/archive-mode.md). Require the dossier manifest and its identity catalog; the renderer runs dossier gate before rendering. An omitted input must resolve to one explicit registered package in context; otherwise ask for it. Reject raw documents or ad-hoc manifests; never standardize them inside breach. “调取XX的档案” first belongs to dossier for read-only lookup; dossier then calls Archive by default with the registered manifest, catalog and a separate output path. Breach does not perform the lookup or modify the source dossier.
 
 - HTML status page, diagram, slide-like page, PR/incident page →
   [General page](references/general-page.md) for layout, project DESIGN.md tokens,
@@ -57,7 +61,7 @@ Choose one artifact mode and read only its route:
   [Discussion digest](references/discussion-digest-mode.md) for schema and
   deterministic renderer.
 
-For either mode, apply the writing discipline below before authoring new
+For each mode, apply the writing discipline below before authoring new
 technical narrative. A supplied approved text rendered faithfully needs no
 re-authoring.
 
@@ -68,7 +72,7 @@ another renderer:
 
 ### Writing discipline
 
-Before drafting or materially restructuring technical narrative in either mode,
+Before drafting or materially restructuring technical narrative in the selected mode,
 invoke `paperwork`. It owns the content model, reader task,
 information relationships, evidence calibration, and prose quality; Breach owns
 HTML structure, visual tokens, rendering, and provenance. Follow that skill's
@@ -98,6 +102,7 @@ source material directory. Default output paths by context:
 - Defect fix plans → `.proposal/repair/<bug-id>/index.html`
 - Design proposals → `.proposal/<topic>/index.html`
 - Research findings → `.research/<topic>/index.html`
+- Archive → `.proposal/archive/<dossier-id>/index.html`, outside the read-only source package.
 - General artifacts → caller-specified path, defaulting to `.proposal/` if unspecified
 
 When invoked by another skill (e.g., repair), the caller provides the output
@@ -125,12 +130,12 @@ path; breach accepts it and writes there. Never write HTML into
 At entry, retain the trigger category and entry form. After the final local
 verdict, emit **one** event following
 [the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
-Use `route=general-page|discussion-digest|native-handoff|inline-answer|unresolved`.
+Use `route=general-page|discussion-digest|archive|native-handoff|inline-answer|unresolved`.
 A route is the branch actually entered, even if it later fails. Record
 `content-profile=default|eli5`, `prose=author|faithful`, and the selected style
 source category. For General page, also record chart/Hairline decisions after
 resolving availability and integration; for digest, use `style=digest-template`
-and `charts=omit`, `hairline=omit`.
+and `charts=omit`, `hairline=omit`. Archive uses `style=archive-template`, `prose=faithful`, and the same omitted chart/illustration decisions; record actual render/visual checks. It preserves existing relationship views, not new analytical content.
 
 Record actual step states for `paperwork`, `layout`, `style`, `render`, `charts`,
 `hairline`, `visual-check`. `pass` requires the relevant completed work or check;

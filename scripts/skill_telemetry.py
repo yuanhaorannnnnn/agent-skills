@@ -19,7 +19,7 @@ RUNTIMES = ("codex", "claude", "pi", "kimi", "other")
 ENTRIES = ("skill-name", "natural-language", "caller", "unknown")
 # Closed vocabulary: never accept a prompt, source title, or arbitrary reason.
 ROUTES = {
-    "breach": ("general-page", "discussion-digest", "native-handoff", "inline-answer", "unresolved"),
+    "breach": ("general-page", "discussion-digest", "archive", "native-handoff", "inline-answer", "unresolved"),
     "acquisition": ("article", "wechat-article", "wechat-album", "video", "pdf", "clippings", "local-markdown", "chart-handoff", "deduplicated", "unresolved"),
     "execute": ("direct", "delegate", "unresolved"),
     "sanitize": ("closeout", "report", "both", "unresolved"),
@@ -28,7 +28,7 @@ DECISIONS = {
     "breach": {
         "content-profile": ("default", "eli5"),
         "prose": ("author", "faithful"),
-        "style": ("project-design", "selected-design", "awesome-design", "digest-template", "none"),
+        "style": ("project-design", "selected-design", "awesome-design", "digest-template", "archive-template", "none"),
         "charts": ("lieflat", "native", "omit", "unavailable"),
         "hairline": ("embed", "static", "omit", "unavailable"),
     },

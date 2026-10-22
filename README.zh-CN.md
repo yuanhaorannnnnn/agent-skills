@@ -76,13 +76,13 @@ skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `
 |---|---|---|---|---|
 | `acquisition` | media | user | adapter | 视频/文章/PDF 摄入知识库 |
 | `after-action` | workflow | model | renderer | 故障复盘记录 |
-| `breach` | design | model | renderer | 单页 HTML 交付页 |
+| `breach` | design | model | renderer | 单页 HTML、讨论摘要、`--archive` 档案呈现 |
 | `chart` | learning | user | orchestrator | 软件/仓库 Study Hub |
 | `codify` | workflow | model | discipline | 沉淀可复用 guardrail |
 | `conops` | workflow | model | renderer | 技术开发设计方案 |
 | `cover` | design | user | renderer | 设计规范（DESIGN.md） |
 | `cartographic-recon` | design | user | orchestrator | 地图侦察：地理核验、手绘地图与改图验收 |
-| `dossier` | workflow | user | orchestrator | 卷宗建档、只读调档与更新；来源可追溯，建档前去重 |
+| `dossier` | workflow | user | orchestrator | 建档、调档、更新三个模式；人物在建档中走OSINT，支持链接、ID、名字，已有档案沿原ID调查更新；调档原档只读，默认由breach生成独立HTML展示 |
 | `execute` | workflow | model | orchestrator | 执行任务并留可恢复记录 |
 | `go-nogo` | meta | model | discipline | 判断该不该做、该不该建 skill |
 | `herdr` | automation | model | adapter | 控制 Herdr pane |

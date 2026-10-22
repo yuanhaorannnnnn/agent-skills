@@ -1,0 +1,155 @@
+{
+  "as_of": "2026-10-22",
+  "purpose": "Bundled visual reference only; not dossier evidence or output imagery",
+  "rights": "Original rights remain with respective owners; source inclusion does not grant a reuse license.",
+  "sources": [
+    {
+      "file": "soviet-jacket.jpg",
+      "url": "https://e.tsdahou.archives.gov.ua/static/files/090/090807.jpg",
+      "source": "https://e.tsdahou.archives.gov.ua/file-viewer/37095",
+      "sha256": "98f4eea0459dd82a4b14388fab9b594d9223046bff9c67443a20730c23df668d",
+      "use": "封套主参考：布脊、双框、后贴签、淡紫印迹"
+    },
+    {
+      "file": "fallout-team-file.jpg",
+      "url": "https://images.propstore.com/6bd29e33833530f2e33f459659b3d553-1.jpg",
+      "source": "https://propstore.com/product/mission-impossible-fallout-2018/lot-1164-ethan-hunts-tom-cruise-team-file/",
+      "sha256": "a8e49ad202ce622a44bd9fc02ed4d5681b76549ac4cae81a25173f2c5bfc9074",
+      "use": "封套与内页形成统一材料包"
+    },
+    {
+      "file": "cold-war-evidence.png",
+      "url": "https://static.wixstatic.com/media/d43f74_12d187980d004aaab5f140b9d18ffe0f~mv2.png/v1/fill/w_1074,h_604,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/Call%20of%20Duty%C2%AE_%20Black%20Ops%20Cold%20War%202020-11-18%2011-42-52.png",
+      "source": "https://www.sydney-terris.com/callofduty-blackopscoldwar",
+      "sha256": "ac745496baef3abc50b2d06b864015036dd5a6d5e9bcfd07fa13ba153c8e3a44",
+      "use": "材料背景与当前对象的聚焦关系"
+    },
+    {
+      "file": "cia-iraq-p01.png",
+      "source": "https://nsarchive2.gwu.edu/news/20120905/CIA-Iraq.pdf",
+      "derived_from": "CIA-Iraq.pdf",
+      "source_sha256": "f834fa5d995a93bbd31f11690b9935f5c0393276812e1a871567f3a87e61aec2",
+      "pdf_page": 1,
+      "derivation": "pdftoppm page rasterization; no retouching",
+      "sha256": "6d99203d885a7fcaee22687ef9e1126439d508ed56e2abc819da552c1e83755f",
+      "use": "报告封面：编号、标题、页边登记"
+    },
+    {
+      "file": "cia-iraq-p06.png",
+      "source": "https://nsarchive2.gwu.edu/news/20120905/CIA-Iraq.pdf",
+      "derived_from": "CIA-Iraq.pdf",
+      "source_sha256": "f834fa5d995a93bbd31f11690b9935f5c0393276812e1a871567f3a87e61aec2",
+      "pdf_page": 6,
+      "derivation": "pdftoppm page rasterization; no retouching",
+      "sha256": "0f370e865868b04e1751d912d3475334fff3d26cecc2f69ef694f7727252f778",
+      "use": "白纸正文：层级、留白、页码"
+    },
+    {
+      "file": "user-cia-cable.png",
+      "source": "user attachment; original publication not independently verified",
+      "sha256": "3fe0e79cddc27503988d63ee20ef79814c56862aa744615bf156dfa067fdce45",
+      "use": "黑白电报：规则线、文字密度、批注"
+    },
+    {
+      "file": "user-identity-card.png",
+      "source": "user attachment; original publication not independently verified",
+      "sha256": "5e960cb6685b807a46ab0b58784ff58849cff0a0bd2257afc0df09ebb153bb00",
+      "use": "证件：照片、印刷字段、手写字段与骑缝印"
+    },
+    {
+      "file": "user-soviet-decree.png",
+      "source": "user attachment; original publication not independently verified",
+      "sha256": "78770ca343339e574e1e853bb2be66e026a4d63ec023b1c3a8e948d358ddd418",
+      "use": "正式文书：抬头、留白、签署区"
+    },
+    {
+      "document_id": "CIA-RDP80B01676R001300080017-4",
+      "official_record": "https://www.cia.gov/readingroom/document/cia-rdp80b01676r001300080017-4",
+      "official_pdf": "https://www.cia.gov/readingroom/docs/CIA-RDP80B01676R001300080017-4.pdf",
+      "retrieved_from": "https://archive.org/download/cia-readingroom-document-cia-rdp80b01676r001300080017-4/cia-rdp80b01676r001300080017-4.pdf",
+      "mirror_item": "https://archive.org/details/cia-readingroom-document-cia-rdp80b01676r001300080017-4",
+      "retrieved_at": "2026-10-22",
+      "pdf": "CIA-RDP80B01676R001300080017-4.pdf",
+      "pdf_sha256": "636f5dd4aa4ac0425ebb01b65b0345cb9a134ad93e46341a8ad839d8a1cb7a04",
+      "pdf_page": 1,
+      "preview": "CIA-RDP80B01676R001300080017-4-p01.png",
+      "preview_sha256": "053f524542b8a29da279e16d72e7a9181c2a605e1bb80c54cee4937791a28053",
+      "derivation": "pdftoppm page rasterization; no retouching",
+      "official_fetch": "redirected to readingroom homepage, not PDF; exact byte match with live official file not verified",
+      "file": "cia-memo-p01.png",
+      "sha256": "053f524542b8a29da279e16d72e7a9181c2a605e1bb80c54cee4937791a28053",
+      "use": "备忘录：左对齐主题、窄行距、较宽页边",
+      "read_status": "selected page visually inspected; not full-document review"
+    },
+    {
+      "document_id": "CIA-RDP79B01709A002100070003-0",
+      "official_record": "https://www.cia.gov/readingroom/document/cia-rdp79b01709a002100070003-0",
+      "official_pdf": "https://www.cia.gov/readingroom/docs/CIA-RDP79B01709A002100070003-0.pdf",
+      "retrieved_from": "https://archive.org/download/cia-readingroom-document-cia-rdp79b01709a002100070003-0/cia-rdp79b01709a002100070003-0.pdf",
+      "mirror_item": "https://archive.org/details/cia-readingroom-document-cia-rdp79b01709a002100070003-0",
+      "retrieved_at": "2026-10-22",
+      "pdf": "CIA-RDP79B01709A002100070003-0.pdf",
+      "pdf_sha256": "4b989ff026a6a38e16ff58a8af56bc53678394d894f5c6d4c353a5cb45619981",
+      "pdf_page": 1,
+      "preview": "CIA-RDP79B01709A002100070003-0-p01.png",
+      "preview_sha256": "664a1198912e84557a23b72171cd74da12c97adb0c0b2083427b4bb213db9d42",
+      "derivation": "pdftoppm page rasterization; no retouching",
+      "official_fetch": "redirected to readingroom homepage, not PDF; exact byte match with live official file not verified",
+      "file": "cia-lightning-p01.png",
+      "sha256": "664a1198912e84557a23b72171cd74da12c97adb0c0b2083427b4bb213db9d42",
+      "use": "字段行与正文分层，删节有留白框",
+      "read_status": "selected page visually inspected; not full-document review"
+    },
+    {
+      "document_id": "CIA-RDP78-04864A000100060013-0",
+      "official_record": "https://www.cia.gov/readingroom/document/cia-rdp78-04864a000100060013-0",
+      "official_pdf": "https://www.cia.gov/readingroom/docs/CIA-RDP78-04864A000100060013-0.pdf",
+      "retrieved_from": "https://archive.org/download/cia-readingroom-document-cia-rdp78-04864a000100060013-0/cia-rdp78-04864a000100060013-0.pdf",
+      "mirror_item": "https://archive.org/details/cia-readingroom-document-cia-rdp78-04864a000100060013-0",
+      "retrieved_at": "2026-10-22",
+      "pdf": "CIA-RDP78-04864A000100060013-0.pdf",
+      "pdf_sha256": "98412d131cd3d762b9e6802b9a5c94bdb0a37e3d5e40bed477137674af6ba633",
+      "pdf_page": 1,
+      "preview": "CIA-RDP78-04864A000100060013-0-p01.png",
+      "preview_sha256": "fa378c5da589808c6fcfa4e1bd05a4aab7f07c8180ff92f93847836b62f56e1f",
+      "derivation": "pdftoppm page rasterization; no retouching",
+      "official_fetch": "redirected to readingroom homepage, not PDF; exact byte match with live official file not verified",
+      "file": "cia-grading-p01.png",
+      "sha256": "fa378c5da589808c6fcfa4e1bd05a4aab7f07c8180ff92f93847836b62f56e1f",
+      "use": "表单：无填色细黑框、独立字段、边缘扫描噪点",
+      "read_status": "selected page visually inspected; not full-document review"
+    },
+    {
+      "document_id": "C06928140",
+      "official_record": "https://www.cia.gov/readingroom/document/06928140",
+      "official_pdf": "https://www.cia.gov/readingroom/docs/INTELLIGENCE%20REPORT%20LEADE%5B16026069%5D.pdf",
+      "retrieved_from": "https://archive.org/download/cia-readingroom-document-06928140/06928140.pdf",
+      "mirror_item": "https://archive.org/details/cia-readingroom-document-06928140",
+      "pdf": "C06928140-CHOU-EN-LAI.pdf",
+      "pdf_sha256": "70f161f57a700f409f173b91cdc3efc4b45472782e3b711d1334994dfdd683e6",
+      "read_status": "selected page visually inspected; not full-document review",
+      "title": "INTELLIGENCE REPORT LEADERS OF COMMUNIST CHINA IV. CHOU EN-LAI",
+      "file": "cia-zhou-cover.png",
+      "pdf_page": 1,
+      "sha256": "287fe41f55187675d7887efbcdf39f6915afe1fac18118a39312cf04d7004f29",
+      "use": "周恩来人物报告封面：标题层级与留白",
+      "derivation": "pdftoppm page rasterization; no retouching"
+    },
+    {
+      "document_id": "C06928140",
+      "official_record": "https://www.cia.gov/readingroom/document/06928140",
+      "official_pdf": "https://www.cia.gov/readingroom/docs/INTELLIGENCE%20REPORT%20LEADE%5B16026069%5D.pdf",
+      "retrieved_from": "https://archive.org/download/cia-readingroom-document-06928140/06928140.pdf",
+      "mirror_item": "https://archive.org/details/cia-readingroom-document-06928140",
+      "pdf": "C06928140-CHOU-EN-LAI.pdf",
+      "pdf_sha256": "70f161f57a700f409f173b91cdc3efc4b45472782e3b711d1334994dfdd683e6",
+      "read_status": "selected page visually inspected; not full-document review",
+      "title": "INTELLIGENCE REPORT LEADERS OF COMMUNIST CHINA IV. CHOU EN-LAI",
+      "file": "cia-zhou-brief.png",
+      "pdf_page": 4,
+      "sha256": "384097422f1c66ff43da2952980d334682fe312800383daed162f79996e49c39",
+      "use": "人物简报：首行缩进、窄行距、灰色复制底纹",
+      "derivation": "pdftoppm page rasterization; no retouching"
+    }
+  ]
+}
