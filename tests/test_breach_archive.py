@@ -43,6 +43,17 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(before, {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
         return document, receipt
 
+    def test_overview_material_does_not_shadow_entry(self):
+        import re
+        self.data['materials'][0]['id'] = 'overview'
+        self.data['materials'].append(dict(id='_overview', title='Second', kind='report', source_ref='S01', sources=['S01']))
+        document, _ = self.run_render()
+        panels = re.findall(r'data-panel="([^"]+)"', document)
+        selectors = re.findall(r'data-select="([^"]+)"', document)
+        self.assertEqual(len(panels), 3)
+        self.assertEqual(len(set(panels)), 3)
+        self.assertEqual(selectors, panels)
+
     def test_preserves_content_and_does_not_write(self):
         document, receipt = self.run_render()
         self.assertIn('Original boundary.', document)

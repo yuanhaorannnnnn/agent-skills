@@ -128,7 +128,11 @@ def render(manifest_path, catalog_path, template_path=TEMPLATE):
         return ''.join(f'<button class="source-button" data-source="{esc(sid)}">{esc(sid)}</button>' for sid in refs)
 
     entry = inside(data['entry'])
-    articles = [f'<article class="paper" data-panel="overview" tabindex="-1"><div class="sheet-head"><span>卷宗概览</span><span>{esc(data["id"])}</span></div>{content(entry)}</article>']
+    overview_id = 'overview'
+    material_ids = {item['id'] for item in data['materials']}
+    while overview_id in material_ids:
+        overview_id = '_' + overview_id
+    articles = [f'<article class="paper" data-panel="{esc(overview_id)}" tabindex="-1"><div class="sheet-head"><span>卷宗概览</span><span>{esc(data["id"])}</span></div>{content(entry)}</article>']
     nav, contents, ids = [], [], set()
     for i, item in enumerate(data['materials'], 1):
         mid = item['id']
@@ -156,7 +160,7 @@ def render(manifest_path, catalog_path, template_path=TEMPLATE):
         source_details.append(f'<section data-source-panel="{esc(sid)}" hidden><h3>{esc(sid)}</h3><p>{esc(source["evidence"])} / {esc(source["read_status"])}</p><p>{esc(source.get("locator", ""))}</p><code class="source-path">{esc(path)}</code><p>登记读取日期：{esc(source.get("read_at", "未登记"))}</p><p>登记 hash：<code>{esc(source.get("sha256", "未登记"))}</code></p></section>')
     template_bytes = Path(template_path).read_bytes()
     design_bytes = read(DESIGN)
-    substitutions = dict(TITLE=esc(data['title']), ID=esc(data['id']), SCOPE=esc(data['scope']), DATE=esc(data['as_of']), COUNT=str(len(ids)), CONTENTS=''.join(contents), NAV=''.join(nav), ARTICLES=''.join(articles), SOURCES=''.join(source_details), SOURCE_BUTTONS=source_buttons(sources), GAPS=''.join('<li>'+esc(x)+'</li>' for x in data['gaps']) or '<li>材料包未登记缺口。</li>', PROVENANCE=esc(f'route=archive; dossier_gate=pass; catalog={catalog_path}; manifest={manifest_path}; manifest_sha256={inputs[str(manifest_path)]}; template={Path(template_path).resolve()}; template_sha256={sha(template_bytes)}'))
+    substitutions = dict(OVERVIEW_ID=esc(overview_id), TITLE=esc(data['title']), ID=esc(data['id']), SCOPE=esc(data['scope']), DATE=esc(data['as_of']), COUNT=str(len(ids)), CONTENTS=''.join(contents), NAV=''.join(nav), ARTICLES=''.join(articles), SOURCES=''.join(source_details), SOURCE_BUTTONS=source_buttons(sources), GAPS=''.join('<li>'+esc(x)+'</li>' for x in data['gaps']) or '<li>材料包未登记缺口。</li>', PROVENANCE=esc(f'route=archive; dossier_gate=pass; catalog={catalog_path}; manifest={manifest_path}; manifest_sha256={inputs[str(manifest_path)]}; template={Path(template_path).resolve()}; template_sha256={sha(template_bytes)}'))
     substitutions['TYPEWRITER_FONT'] = base64.b64encode(read(TYPEWRITER_FONT)).decode()
     substitutions['FONT_LICENSE'] = esc(read(FONT_LICENSE).decode())
     substitutions['PROVENANCE'] += esc(f'; design={DESIGN}; design_sha256={sha(design_bytes)}')
