@@ -2,10 +2,16 @@
 
 此契约用于建档模式的新建、人物分支沿原ID补充，以及更新模式的修改。调档保持源包与身份索引只读，默认展示的 HTML/渲染回执写在包外。旧版档案仍可读取，不强制迁移；不满足 Archive 输入契约时返回原档并说明展示限制。
 
+## 存储根与权威入口
+
+Canon `artifacts/dossier-index.json` 是唯一身份目录。默认从其 `archive_root` 解析档案馆位置；`storage_policy` 可引用 Canon 的存储决策。新包放 `<archive_root>/dossiers/<project-or-topic>/<id>/`，不随当前代码分支或工作目录改变。
+
+调档先读取索引指定入口；馆内范围检索和迁移映射用于处理未命中或历史路径。已迁移旧包保留为历史副本，不继续双写。调档保持只读，不因缺路径自动迁移、重建、登记或回写索引。
+
 ## 包结构
 
 ```text
-<id>/
+<archive_root>/dossiers/<project-or-topic>/<id>/
   dossier.md       可独立阅读的入口，指向材料、附件、来源与缺口
   manifest.json    身份、有序材料与来源定位
   materials/      按需生成的整理稿/摘录；原始附件可留在原位置
@@ -62,8 +68,10 @@
 ```json
 {
   "schema_version": 1,
+  "archive_root": "/resolved/archive",
+  "storage_policy": "/resolved/canon/decisions/unified-dossier-archive.md",
   "dossiers": [
-    {"id": "lidar-weather", "scope": "simulation/lidar-weather", "title": "激光雷达天气模型", "aliases": ["LiDAR雨雪雾"], "path": "/resolved/package/manifest.json"}
+    {"id": "lidar-weather", "scope": "simulation/lidar-weather", "title": "激光雷达天气模型", "aliases": ["LiDAR雨雪雾"], "path": "/resolved/archive/dossiers/simulation/lidar-weather/manifest.json"}
   ]
 }
 ```
