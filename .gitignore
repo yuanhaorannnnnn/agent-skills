@@ -8,6 +8,7 @@ node_modules/
 *.tgz
 
 # Runtime scratch dirs
+.local/
 .eval/
 .planning/
 .proposal/

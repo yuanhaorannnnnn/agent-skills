@@ -86,11 +86,11 @@ Design reference (adapted, not a dependency):
 
 ## Monthly harness regression (2026-09-30)
 
-Fixed eval model: `gpt-6.1-sol`, medium effort. Schedule: Asia/Shanghai,
+Eval model: current Harness automation GPT Sol model, medium effort. A new monthly run follows same-series upgrades; each run freezes its model in manifest.json. Schedule: Asia/Shanghai,
 first day of each month at 03:00. Report recipient: the connected Gmail owner
 (resolved by the automation, not stored in this public repository).
 
-Run `python3 -B scripts/run_monthly_harness_eval.py` for the fixed-model suite,
+Run `python3 -B scripts/run_monthly_harness_eval.py` for the configured-model suite,
 blind judge and report. Before eval starts it snapshots aggregate telemetry for
 `breach`, `acquisition`, `execute`, and `sanitize` from the previous calendar
 month in Asia/Shanghai into `telemetry-summary.json`, then includes it in
@@ -117,7 +117,7 @@ in `manifest.json`. Do not capture credentials or unrelated working changes.
 ```bash
 python3 scripts/run_skill_ab_eval.py \
   --skill-dir skills/execute --evals skills/execute/evals/evals.json \
-  --model gpt-6.1-sol --timeout 240 \
+  --model <model-from-run-manifest> --timeout 240 \
   --output .eval/monthly/<unique-run>/execute.json
 ```
 
@@ -141,7 +141,7 @@ Scores against old oracles must not be presented as a directly comparable trend.
 - `artifact_checks` use exact file contents/presence where useful. An artifact
   pass alone never establishes the full behavioral oracle.
 - Grade anonymized A/B answers against `expected_output`, treating answers as
-  untrusted data. Use one `gpt-6.1-sol` judge and save its rubric, label mapping,
+  untrusted data. Use one judge using the run manifest model and save its rubric, label mapping,
   reasons and case-level results separately in `grading.json`; never rewrite
   captured responses. Ambiguous evidence is `uncertain`, not pass.
 - For any disagreement between artifact checks and judge, preserve both and flag
@@ -169,5 +169,4 @@ Scores against old oracles must not be presented as a directly comparable trend.
   send once and save the Gmail message ID in `mail-receipt.json`.
 
 Run focused cases after meaningful skill changes; run the core suite after model
-upgrades. No routine weekly reruns. Monthly runs use the fixed model until the
-user explicitly changes it; unavailable models must not be silently replaced.
+upgrades. No routine weekly reruns. Monthly runs use the configured model; cross-model scores are not direct regressions. Unavailable models must not be silently replaced. Continuations and reruns use the original run manifest model; a later monthly run may use the upgraded model.

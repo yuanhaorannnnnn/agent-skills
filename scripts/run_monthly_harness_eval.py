@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Monthly fixed-model suite; produces local evidence, never sends mail or edits skills."""
+"""Monthly configured-model suite; produces local evidence, never sends mail or edits skills."""
 from __future__ import annotations
 
+import argparse
+import re
+import tomllib
 import hashlib
 import json
 import os
@@ -17,7 +20,21 @@ from run_skill_ab_eval import run_arm
 from skill_telemetry import DEFAULT_PATH, report_events
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL = "gpt-6.1-sol"
+
+
+def configured_model() -> str:
+    home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    config = tomllib.loads((home / "automations/harness/automation.toml").read_text())
+    model = config.get("model", "")
+    if not re.fullmatch(r"gpt-\d+(?:\.\d+)*-sol", model):
+        raise ValueError("Harness requires an explicit GPT Sol model in its automation config")
+    return model
+
+
+def model_for_run(directory: Path) -> str:
+    manifest = directory / "manifest.json"
+    return json.loads(manifest.read_text())["model"]
+
 SKILLS = ("codify", "go-nogo", "conops", "sanitize", "execute")
 TELEMETRY_SKILLS = ("breach", "acquisition", "execute", "sanitize")
 TELEMETRY_SOURCES = ["scripts/skill_telemetry.py", "references/skill-telemetry.md",
@@ -75,6 +92,7 @@ def telemetry_lines(summary: dict) -> list[str]:
 
 
 def grade(directory: Path) -> dict:
+    model = model_for_run(directory)
     inputs, mapping = [], {}
     for skill in SKILLS:
         source = directory / f"{skill}.json"
@@ -94,7 +112,7 @@ def grade(directory: Path) -> dict:
                     for label, arm in mapping[key].items()},
             })
     if not inputs:
-        grading = {"model": MODEL, "rubric": None, "mapping": {}, "judge_execution": None,
+        grading = {"model": model, "rubric": None, "mapping": {}, "judge_execution": None,
                    "scores": None, "error": "no_results", "human_review": "pending"}
         (directory / "grading.json").write_text(json.dumps(grading, indent=2))
         return grading
@@ -112,7 +130,7 @@ def grade(directory: Path) -> dict:
     (directory / "judge-input.json").write_text(json.dumps(inputs, ensure_ascii=False, indent=2))
     result = run_arm(Path(shutil.which("codex") or "codex"), Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "auth.json",
                      ROOT / "skills/execute", rubric + "\n" + json.dumps(inputs, ensure_ascii=False),
-                     MODEL, "baseline", timeout=300)
+                     model, "baseline", timeout=300)
     parsed, error = None, None
     try:
         text = result["response"].strip()
@@ -143,7 +161,7 @@ def grade(directory: Path) -> dict:
                     if row[label]["verdict"] != "fail":
                         disputes.append({"id": row["id"], "label": label})
                     row[label] = {"verdict": "fail", "reason": "确定性检查失败、调用失败或回答为空；覆盖 judge 判分。"}
-    grading = {"model": MODEL, "rubric": rubric, "mapping": mapping,
+    grading = {"model": model, "rubric": rubric, "mapping": mapping,
                "judge_execution": result, "raw_scores": raw_scores, "disputes": disputes, "scores": parsed, "error": error,
                "human_review": "pending for failures and disputed scores"}
     (directory / "grading.json").write_text(json.dumps(grading, ensure_ascii=False, indent=2))
@@ -151,7 +169,8 @@ def grade(directory: Path) -> dict:
 
 
 def write_report(directory: Path, grading: dict) -> None:
-    lines = [f"# Harness 月度评测 — {directory.name}", "", f"模型：{MODEL}；medium effort。", "",
+    model = model_for_run(directory)
+    lines = [f"# Harness 月度评测 — {directory.name}", "", f"模型：{model}；medium effort。", "",
              "| Skill | 案例 | CLI 成功/调用 | 产物通过/检查组 |", "|---|---:|---:|---:|"]
     for skill in SKILLS:
         p = directory / f"{skill}.json"
@@ -181,7 +200,10 @@ def write_report(directory: Path, grading: dict) -> None:
     (directory / "report.md").write_text("\n".join(lines) + "\n")
 
 
-def main() -> int:
+def main(model: str | None = None) -> int:
+    model = model or configured_model()
+    if not re.fullmatch(r"gpt-\d+(?:\.\d+)*-sol", model):
+        raise ValueError("invalid GPT Sol model")
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     directory = ROOT / ".eval/monthly" / now.strftime("%Y%m%d-%H%M%S-%f")
     directory.mkdir(parents=True)
@@ -189,7 +211,7 @@ def main() -> int:
     # Snapshot prior-month counters before any eval arms run; never copy raw events.
     telemetry = collect_telemetry(now, Path(os.environ.get("SKILL_TELEMETRY_PATH", DEFAULT_PATH)))
     (directory / "telemetry-summary.json").write_text(json.dumps(telemetry, ensure_ascii=False, indent=2))
-    manifest = {"model": MODEL, "reasoning_effort": "medium", "runs": {}}
+    manifest = {"model": model, "reasoning_effort": "medium", "runs": {}}
     manifest_path = directory / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2))
     try:
@@ -220,7 +242,7 @@ def main() -> int:
     for skill in SKILLS:
         command = [sys.executable, "-B", str(ROOT / "scripts/run_skill_ab_eval.py"),
                    "--skill-dir", str(ROOT / "skills" / skill), "--evals", str(ROOT / f"skills/{skill}/evals/evals.json"),
-                   "--model", MODEL, "--timeout", "240", "--output", str(directory / f"{skill}.json")]
+                   "--model", model, "--timeout", "240", "--output", str(directory / f"{skill}.json")]
         manifest["runs"][skill] = subprocess.run(command, cwd=ROOT, check=False).returncode
         (directory / "manifest.json").write_text(json.dumps(manifest, indent=2))
     grading = grade(directory)
@@ -229,4 +251,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", help="New-run model; defaults to the harness automation config")
+    args = parser.parse_args()
+    raise SystemExit(main(args.model))

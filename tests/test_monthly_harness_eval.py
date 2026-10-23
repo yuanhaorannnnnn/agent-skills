@@ -14,9 +14,36 @@ import run_monthly_harness_eval as monthly
 
 
 class MonthlyEvalTests(unittest.TestCase):
+    def setUp(self):
+        model = patch.object(monthly, 'configured_model', return_value='gpt-6.1-sol')
+        model.start()
+        self.addCleanup(model.stop)
+
+    def test_run_manifest_preserves_model_after_upgrade(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            (directory / "manifest.json").write_text(json.dumps({"model": "gpt-6.1-sol"}))
+            (directory / 'manifest.json').write_text(json.dumps({'model': 'gpt-6-sol'}))
+            self.assertEqual(monthly.model_for_run(directory), 'gpt-6-sol')
+
+    def test_missing_run_manifest_does_not_use_current_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(FileNotFoundError):
+                monthly.model_for_run(Path(tmp))
+
+    def test_explicit_model_is_propagated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with patch.object(monthly, 'ROOT', root), patch.object(monthly.subprocess, 'check_output', side_effect=OSError):
+                self.assertEqual(monthly.main('gpt-7-sol'), 1)
+            manifest = next((root / '.eval/monthly').glob('*/manifest.json'))
+            self.assertEqual(json.loads(manifest.read_text())['model'], 'gpt-7-sol')
+            self.assertIn('gpt-7-sol', (manifest.parent / 'report.md').read_text())
+
     def test_blind_grading_cannot_override_failed_artifacts(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
+            (directory / "manifest.json").write_text(json.dumps({"model": "gpt-6.1-sol"}))
             arms = {a: {'returncode': 0, 'response': 'answer', 'artifact_pass': False,
                         'artifact_checks': [{'passed': False}]} for a in ('baseline', 'skill')}
             report = {'cases': [{'id': 1, 'prompt': 'task', 'expected_output': 'oracle', **arms}]}
@@ -39,6 +66,7 @@ class MonthlyEvalTests(unittest.TestCase):
     def test_blind_input_withholds_arm_paths_and_preserves_raw_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
+            (directory / "manifest.json").write_text(json.dumps({"model": "gpt-6.1-sol"}))
             arms = {arm: {'returncode': 0, 'response': 'reader-visible answer',
                           'artifact_checks': [],
                           'command_executions': [{'command': f'cat /tmp/skill-ab-{arm}-secret/home/.agents/skills/paperwork/SKILL.md',
@@ -74,6 +102,7 @@ class MonthlyEvalTests(unittest.TestCase):
                 p.write_text('source snapshot')
             arm = {'returncode': 0, 'response': 'answer', 'artifact_checks': [], 'artifact_pass': None}
             def fake_run(command, **kwargs):
+                self.assertEqual(command[command.index('--model') + 1], 'gpt-7-sol')
                 output = Path(command[command.index('--output') + 1])
                 output.write_text(json.dumps({'cases': [{'id': 1, 'prompt': 'task',
                     'expected_output': 'oracle', 'baseline': arm, 'skill': arm}]}))
@@ -84,11 +113,12 @@ class MonthlyEvalTests(unittest.TestCase):
                     patch.object(monthly.subprocess, 'check_output', return_value='fixture') as check, \
                     patch.object(monthly.subprocess, 'run', side_effect=fake_run), \
                     patch.object(monthly, 'run_arm', return_value={'returncode': 0, 'response': json.dumps(score)}):
-                self.assertEqual(monthly.main(), 0)
+                self.assertEqual(monthly.main('gpt-7-sol'), 0)
             directory = next((root / '.eval/monthly').iterdir())
             self.assertEqual((directory / 'sources/scripts/run_monthly_harness_eval.py').read_text(), 'source snapshot')
             self.assertTrue(any(c.args[0][:3] == ['git', 'diff', 'HEAD'] for c in check.call_args_list))
             self.assertTrue((directory / 'report.md').is_file())
+            self.assertEqual(json.loads((directory / 'grading.json').read_text())['model'], 'gpt-7-sol')
 
     def test_initialization_failure_leaves_report(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -104,6 +134,7 @@ class MonthlyEvalTests(unittest.TestCase):
     def test_judge_missing_cases_is_not_success(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
+            (directory / "manifest.json").write_text(json.dumps({"model": "gpt-6.1-sol"}))
             report = {'cases': [{'id': 1, 'prompt': 'task', 'expected_output': 'oracle',
                        **{a: {'returncode': 0, 'response': 'answer', 'artifact_checks': []}
                           for a in ('baseline', 'skill')}}]}
@@ -161,6 +192,7 @@ class MonthlyEvalTests(unittest.TestCase):
     def test_eval_failure_report_still_includes_saved_telemetry(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
+            (directory / "manifest.json").write_text(json.dumps({"model": "gpt-6.1-sol"}))
             log = directory / 'events.jsonl'
             log.write_text('')
             summary = monthly.collect_telemetry(datetime(2026, 10, 1, tzinfo=ZoneInfo('Asia/Shanghai')), log)
