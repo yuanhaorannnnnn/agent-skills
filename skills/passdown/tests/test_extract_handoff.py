@@ -57,6 +57,88 @@ class PassdownExtractorTest(unittest.TestCase):
                 code = extract_handoff.main()
         return code, stdout.getvalue(), stderr.getvalue()
 
+    def make_codex(self, home, archived, name, project="/project"):
+        folder = "archived_sessions" if archived else "sessions/2026/10/23"
+        path = Path(home) / ".codex" / folder / name
+        write_jsonl(path, [
+            {"type": "session_meta", "payload": {"cwd": project}},
+            {"type": "response_item", "payload": {"role": "user", "content": [
+                {"type": "input_text", "text": "archive-test " + name}]}}
+        ])
+        return path
+
+    def test_codex_archive_scope_and_explicit_id(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            active = self.make_codex(home, False, "active-id.jsonl")
+            archived = self.make_codex(home, True, "archived-id.jsonl")
+            argv = ["--former", "codex", "--dir", "/project", "--focus", "archive-test", "--retriever", "keyword", "--json"]
+            code, out, err = self.run_main_json(argv)
+            self.assertEqual(code, 0, err)
+            self.assertEqual(json.loads(out)["session_files"], [str(active)])
+            code, out, err = self.run_main_json(argv + ["--archived"])
+            self.assertEqual(code, 0, err)
+            self.assertEqual(set(json.loads(out)["session_files"]), {str(active), str(archived)})
+            code, out, err = self.run_main_json(["--former", "codex", "--session", "archived-id", "--json"])
+            self.assertEqual(code, 0, err)
+            self.assertEqual(json.loads(out)["session_files"], [str(archived)])
+
+    def test_zvec_moves_resolve_before_scope_and_cwd_filter(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            original = self.make_codex(home, False, "rollout-moved.jsonl")
+            archived = Path(home) / ".codex/archived_sessions" / original.name
+            archived.parent.mkdir(parents=True)
+            original.rename(archived)
+            index = Path(home) / "index"
+            # Missing source_cwd forces original-log lookup after path recovery.
+            write_jsonl(index / "metadata.jsonl", [{"id": "hit", "runtime": "codex", "session_file": str(original)}])
+            fake_zvec = mock.Mock()
+            fake_zvec.open.return_value.query.return_value = [type("Hit", (), {"id": "hit", "score": 0.8})()]
+            with mock.patch.dict(sys.modules, {"zvec": fake_zvec}), mock.patch.object(extract_handoff, "passdown_zvec_path", return_value=index):
+                self.assertEqual(extract_handoff.find_zvec_candidates(["/project"], ["codex"], "test"), [])
+                hits = extract_handoff.find_zvec_candidates(["/project"], ["codex"], "test", include_archived=True)
+                self.assertEqual([h["path"] for h in hits], [archived])
+                self.assertEqual(extract_handoff.find_zvec_candidates(["/other"], ["codex"], "test", include_archived=True), [])
+                # An index written after archive must also survive unarchive.
+                write_jsonl(index / "metadata.jsonl", [{"id": "hit", "runtime": "codex", "session_file": str(archived)}])
+                archived.rename(original)
+                hits = extract_handoff.find_zvec_candidates(["/project"], ["codex"], "test")
+                self.assertEqual([h["path"] for h in hits], [original])
+                original.rename(archived)
+                self.assertEqual(extract_handoff.find_zvec_candidates(["/project"], ["codex"], "test"), [])
+
+    def test_auto_archived_supplements_partial_index(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            active = self.make_codex(home, False, "active.jsonl")
+            archived = self.make_codex(home, True, "not-indexed.jsonl")
+            hit = {"path": active, "runtime": "codex", "source_cwd": "/project", "focus_score": 1, "mtime": 1}
+            with mock.patch.object(extract_handoff, "find_zvec_candidates", return_value=[hit]):
+                code, out, err = self.run_main_json(["--former", "codex", "--dir", "/project", "--focus", "archive-test", "--archived", "--json"])
+            self.assertEqual(code, 0, err)
+            self.assertEqual(set(json.loads(out)["session_files"]), {str(active), str(archived)})
+            self.assertEqual(json.loads(out)["retriever"], "zvec+keyword")
+
+    def test_moved_path_rejects_ambiguous_or_unrelated_files(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            a = self.make_codex(home, True, "rollout-copy.jsonl")
+            b = a.parent / "duplicate" / a.name
+            write_jsonl(b, [])
+            old = Path(home) / ".codex/sessions" / a.name
+            self.assertIsNone(extract_handoff.resolve_indexed_codex_path(old, True, {}))
+            b.unlink()
+            self.assertIsNone(extract_handoff.resolve_indexed_codex_path(Path(home) / a.name, True, {}))
+            self.assertEqual(extract_handoff.resolve_indexed_codex_path(old, True, {}), a)
+
+    def test_index_discovery_archive_opt_in(self):
+        index_script = SCRIPT.with_name("zvec_index.py")
+        spec = importlib.util.spec_from_file_location("zvec_index", index_script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            active = self.make_codex(home, False, "active.jsonl")
+            archived = self.make_codex(home, True, "archive.jsonl")
+            self.assertEqual([c["path"] for c in module.discover_sessions(["/project"], ["codex"])], [active])
+            self.assertEqual({c["path"] for c in module.discover_sessions(["/project"], ["codex"], True)}, {active, archived})
+
     def test_parse_claude_filters_tool_result_user_messages(self):
         with tempfile.TemporaryDirectory() as td:
             session = Path(td) / "session.jsonl"

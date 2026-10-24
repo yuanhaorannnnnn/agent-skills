@@ -15,6 +15,10 @@ python3 /home/yhr/.agents/repos/agent-skills/skills/passdown/scripts/extract_han
   --focus "your task or topic" --json
 ```
 
+Codex search excludes archives by default. Add `--archived` to include them;
+`--session SESSION_UUID` always checks both active and archived logs. Neither
+option restores or modifies the source conversation.
+
 Useful variations:
 
 ```bash

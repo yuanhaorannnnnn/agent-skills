@@ -320,7 +320,35 @@ def _metadata_matches_sources(meta: dict, source_dirs: list[str]) -> bool:
     return False
 
 
-def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str | None, top_k: int = 80, min_sessions: int = 20) -> list[dict]:
+def codex_session_files(include_archived: bool = False):
+    roots = [Path.home() / ".codex" / "sessions"]
+    if include_archived:
+        roots.append(Path.home() / ".codex" / "archived_sessions")
+    for root in roots:
+        yield from root.rglob("*.jsonl")
+
+
+def is_archived_codex_path(path: Path) -> bool:
+    return path.resolve().is_relative_to(Path.home() / ".codex" / "archived_sessions")
+
+
+def resolve_indexed_codex_path(path: Path, include_archived: bool, cache: dict) -> Path | None:
+    """Resolve archive/unarchive moves by exact rollout filename, without index writes."""
+    if path.is_file():
+        return path if include_archived or not is_archived_codex_path(path) else None
+    roots = [Path.home() / ".codex" / name for name in ("sessions", "archived_sessions")]
+    if not any(path.is_relative_to(root) for root in roots):
+        return None
+    if "by_name" not in cache:
+        by_name = {}
+        for candidate in codex_session_files(include_archived):
+            by_name.setdefault(candidate.name, []).append(candidate)
+        cache["by_name"] = by_name
+    matches = cache["by_name"].get(path.name, [])
+    return matches[0] if len(matches) == 1 else None
+
+
+def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str | None, top_k: int = 80, min_sessions: int = 20, include_archived: bool = False) -> list[dict]:
     """Return Passdown session candidates from zvec.
 
     zvec is only a retriever. Candidates still point at original JSONL files;
@@ -355,6 +383,7 @@ def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str
     session_scores: dict[str, float] = {}
     session_chunks: dict[str, list[dict]] = {}
     session_sample: dict[str, dict] = {}
+    path_cache = {}
     for result in results:
         meta = metadata.get(result.id)
         if not meta:
@@ -362,13 +391,17 @@ def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str
         runtime = meta.get("runtime", "")
         if runtime_set and runtime not in runtime_set:
             continue
-        if not _metadata_matches_sources(meta, source_dirs):
-            continue
         session_file = meta.get("session_file")
         if not session_file:
             continue
         path = Path(session_file)
-        if not path.is_file():
+        if runtime == "codex":
+            path = resolve_indexed_codex_path(path, include_archived, path_cache)
+        if path is None or not path.is_file():
+            continue
+        session_file = str(path)
+        meta = {**meta, "session_file": session_file}
+        if not _metadata_matches_sources(meta, source_dirs):
             continue
         score = float(getattr(result, "score", 0.0))
         session_scores[session_file] = session_scores.get(session_file, 0.0) + score
@@ -437,11 +470,10 @@ def _cwd_matches(session_cwd: str, target_cwd: str) -> bool:
     return session_cwd == target_cwd or target_cwd.startswith(session_cwd + "/")
 
 
-def find_codex_candidates(cwd: str, focus: str | None = None) -> list[dict]:
+def find_codex_candidates(cwd: str, focus: str | None = None, include_archived: bool = False) -> list[dict]:
     """Find Codex session candidates for the given source cwd."""
-    sessions_root = Path.home() / ".codex" / "sessions"
     candidates = []
-    for jsonl in sessions_root.rglob("*.jsonl"):
+    for jsonl in codex_session_files(include_archived):
         try:
             with open(jsonl, encoding="utf-8", errors="ignore") as f:
                 for line in f:
@@ -926,11 +958,9 @@ def _resolve_session_for_runtime(session_id: str, src_dir: str, runtime: str) ->
                 if session_id in f.stem:
                     return f
     elif runtime == "codex":
-        sessions_root = Path.home() / ".codex" / "sessions"
-        if sessions_root.is_dir():
-            for f in sorted(sessions_root.rglob("*.jsonl"), key=_mtime, reverse=True):
-                if session_id in f.stem:
-                    return f
+        for f in sorted(codex_session_files(include_archived=True), key=_mtime, reverse=True):
+            if session_id in f.stem:
+                return f
     elif runtime == "pi":
         slug = slugify_pi(src_dir)
         candidate = Path.home() / ".pi" / "agent" / "sessions" / slug / f"{session_id}.jsonl"
@@ -961,6 +991,7 @@ def main() -> int:
     parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")
     parser.add_argument("--file", help="Direct session JSONL path; bypass session discovery")
     parser.add_argument("--session", help="Session ID (UUID/filename stem); lookup in runtime dirs, bypass discovery")
+    parser.add_argument("--archived", action="store_true", help="Include archived Codex sessions in search (explicit --session always searches both stores)")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
     parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="Candidate retriever. auto uses zvec for focused queries when an index is available, then falls back to keyword.")
     parser.add_argument("--max-tokens", type=positive_int, default=DEFAULT_MAX_TOKENS, help=f"Hard cap for extracted handoff turns (default: {DEFAULT_MAX_TOKENS})")
@@ -996,6 +1027,7 @@ def main() -> int:
 
     parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude, "dsh": parse_dsh}
 
+    archive_scope = "including archived Codex sessions" if args.archived else "archived Codex sessions excluded; use --archived to include"
     candidates = []
     retriever_used = "file" if args.file else "keyword"
     retriever_fallback = None
@@ -1037,7 +1069,7 @@ def main() -> int:
         all_candidates = []
         if args.focus and args.retriever in ("auto", "zvec"):
             try:
-                all_candidates = find_zvec_candidates(source_dirs, runtimes_to_scan, args.focus)
+                all_candidates = find_zvec_candidates(source_dirs, runtimes_to_scan, args.focus, include_archived=args.archived)
             except Exception as exc:
                 if args.retriever == "zvec":
                     print(f"Error: zvec retriever failed: {exc}", file=sys.stderr)
@@ -1049,10 +1081,22 @@ def main() -> int:
             elif args.retriever == "zvec":
                 rt_list = ",".join(runtimes_to_scan)
                 dir_list = ",".join(source_dirs)
-                print(f"No zvec session candidates for source={rt_list} dirs={dir_list} focus={args.focus}", file=sys.stderr)
+                print(f"No zvec session candidates for source={rt_list} dirs={dir_list} focus={args.focus}; {archive_scope}", file=sys.stderr)
                 return 1
             else:
                 retriever_fallback = retriever_fallback or "zvec_no_hits"
+
+        # An older index may never have indexed archived sessions. Supplement
+        # auto retrieval so opting in does not depend on an index rebuild.
+        if all_candidates and args.retriever == "auto" and args.archived and "codex" in runtimes_to_scan:
+            known = {c["path"] for c in all_candidates}
+            for src_dir in source_dirs:
+                for c in find_codex_candidates(src_dir, args.focus, include_archived=True):
+                    if c["path"] not in known and is_archived_codex_path(c["path"]) and c["focus_score"] > 0:
+                        c.update(runtime="codex", source_cwd=src_dir)
+                        all_candidates.append(c)
+                        known.add(c["path"])
+                        retriever_used = "zvec+keyword"
 
         if not all_candidates:
             # Scan every dir × runtime combination using the legacy keyword/mtime retriever.
@@ -1060,7 +1104,8 @@ def main() -> int:
             for src_dir in source_dirs:
                 for rt in runtimes_to_scan:
                     try:
-                        rt_candidates = candidate_finders[rt](src_dir, args.focus)
+                        kwargs = {"include_archived": args.archived} if rt == "codex" else {}
+                        rt_candidates = candidate_finders[rt](src_dir, args.focus, **kwargs)
                         for c in rt_candidates:
                             c["runtime"] = rt
                             c["source_cwd"] = src_dir
@@ -1071,7 +1116,7 @@ def main() -> int:
         if not all_candidates:
             rt_list = ",".join(runtimes_to_scan)
             dir_list = ",".join(source_dirs)
-            print(f"No session found for source={rt_list} dirs={dir_list} focus={args.focus or ''}", file=sys.stderr)
+            print(f"No session found for source={rt_list} dirs={dir_list} focus={args.focus or ''}; {archive_scope}", file=sys.stderr)
             return 1
 
         # With focus active, rank by focus score first; otherwise recency wins.
@@ -1091,7 +1136,7 @@ def main() -> int:
                 rt_list = ",".join(runtimes_to_scan)
                 dir_list = ",".join(source_dirs)
                 print(
-                    f"No session found matching focus for source={rt_list} dirs={dir_list} focus={args.focus}",
+                    f"No session found matching focus for source={rt_list} dirs={dir_list} focus={args.focus}; {archive_scope}",
                     file=sys.stderr,
                 )
                 return 1
@@ -1157,6 +1202,7 @@ def main() -> int:
         "source_cwd": ", ".join(source_dirs) if not (args.file or args.session) else str(session_path),
         "focus": args.focus,
         "retriever": retriever_used,
+        "include_archived": bool(args.archived or args.session or args.file),
         "multi_session": multi_session,
         "matched_sessions": len(session_paths),
         "session_file": str(session_path),

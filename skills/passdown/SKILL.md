@@ -32,6 +32,19 @@ For same-directory handoff, run:
 python3 <skill-dir>/scripts/extract_handoff.py --focus "<topic>" --json
 ```
 
+Codex search excludes archived conversations by default. Add `--archived` to
+include both `~/.codex/sessions` and `~/.codex/archived_sessions` (not archive-only).
+An explicit `--session <id>` searches both stores without requiring the flag;
+`--file` reads the specified file directly. These are read-only selections, not
+permission to archive, restore, or resume the source conversation. When default
+search finds nothing, report that archives were excluded; do not claim no
+historical record exists or silently broaden the search.
+
+```bash
+python3 <skill-dir>/scripts/extract_handoff.py --former codex --archived --focus "<topic>" --json
+python3 <skill-dir>/scripts/extract_handoff.py --former codex --session <id> --json
+```
+
 When the source directory/runtime/session is specified, for fresh-conversation
 rollover, for optional archival, or for DeepSeek/Gemini → GPT handoff, read
 [mode routing and review contract](references/modes.md) before acting.
@@ -73,7 +86,7 @@ If no source directory was specified, use current cwd as `--cwd`.
 If the extractor returns `No session found`, manually locate the session:
 
 - **Claude Code**: `ls ~/.claude/projects/-<slug>/*.jsonl`, where slug replaces `/` and `_` with `-`.
-- **Codex**: `find ~/.codex/sessions -name "*.jsonl" | sort` then inspect cwd/focus.
+- **Codex**: search `~/.codex/sessions` by cwd/focus; include `~/.codex/archived_sessions` only with `--archived` or an explicit session ID. Preserve this scope in manual/tool fallback too; use `list_archived_threads` only when archives are in scope.
 - **Pi**: `ls -t ~/.pi/agent/sessions/--<cwd-with-dashes>--/`.
 - **DSH**: `ls -t ~/.dsh/sessions/--<cwd-with-dashes>--/`; each subdirectory is a session id holding `session.jsonl.zstd`.
 

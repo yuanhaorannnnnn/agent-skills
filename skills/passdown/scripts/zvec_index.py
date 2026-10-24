@@ -60,7 +60,7 @@ def open_collection(create: bool = False):
     return zvec.open(path=str(index_path))
 
 
-def discover_sessions(source_dirs: list[str], runtimes: list[str]) -> list[dict]:
+def discover_sessions(source_dirs: list[str], runtimes: list[str], include_archived: bool = False) -> list[dict]:
     candidate_finders = {
         "codex": eh.find_codex_candidates,
         "pi": eh.find_pi_candidates,
@@ -74,7 +74,8 @@ def discover_sessions(source_dirs: list[str], runtimes: list[str]) -> list[dict]
             finder = candidate_finders.get(runtime)
             if not finder:
                 continue
-            for candidate in finder(source_cwd, None):
+            kwargs = {"include_archived": include_archived} if runtime == "codex" else {}
+            for candidate in finder(source_cwd, None, **kwargs):
                 path = Path(candidate["path"])
                 key = (str(path), runtime, source_cwd)
                 if key in seen:
@@ -93,7 +94,7 @@ def discover_sessions(source_dirs: list[str], runtimes: list[str]) -> list[dict]
 def build_index(args) -> int:
     source_dirs = source_dirs_from_args(args)
     runtimes = runtimes_from_args(args)
-    sessions = discover_sessions(source_dirs, runtimes)
+    sessions = discover_sessions(source_dirs, runtimes, include_archived=args.archived)
     if args.dry_run:
         print(json.dumps({
             "index_path": str(eh.passdown_zvec_path()),
@@ -203,7 +204,7 @@ def show_stats() -> int:
 def query_index(args) -> int:
     source_dirs = source_dirs_from_args(args)
     runtimes = runtimes_from_args(args)
-    candidates = eh.find_zvec_candidates(source_dirs, runtimes, args.focus, top_k=args.top_k, min_sessions=args.min_sessions)
+    candidates = eh.find_zvec_candidates(source_dirs, runtimes, args.focus, top_k=args.top_k, min_sessions=args.min_sessions, include_archived=args.archived)
     payload = [{k: (str(v) if isinstance(v, Path) else v) for k, v in c.items()} for c in candidates]
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0 if payload else 1
@@ -215,6 +216,7 @@ def main() -> int:
     parser.add_argument("--source", action="append", help="Alias for --former")
     parser.add_argument("--cwd", action="append", help="Source working directory. Repeatable/comma-separated.")
     parser.add_argument("--dir", dest="source_dir", action="append", help="Alias for --cwd")
+    parser.add_argument("--archived", action="store_true", help="Include archived Codex sessions when building or querying the index")
     parser.add_argument("--rebuild", action="store_true", help="Delete and rebuild the zvec index")
     parser.add_argument("--dry-run", action="store_true", help="Only report discovered sessions")
     parser.add_argument("--stats", action="store_true", help="Show sidecar metadata stats")

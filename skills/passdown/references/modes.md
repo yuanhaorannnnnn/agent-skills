@@ -122,7 +122,22 @@ python3 <skill-dir>/scripts/extract_handoff.py --file /absolute/session.jsonl --
 - `--former <codex|pi|claude|dsh,...>` — optional, comma-separated. Auto-detect from all four runtimes if omitted. Multi-runtime matches sorted by mtime desc.
 - `--dir <path>` — optional, repeatable. Accepts multiple paths via `--dir /a --dir /b` or `--dir /a,/b`. Defaults to current working directory.
 - `--file <path>` — direct session JSONL path; bypass discovery.
-- `--session <id>` — select one source session by UUID or filename stem.
+- `--session <id>` — select one source session by UUID or filename stem; Codex searches active and archived storage regardless of `--archived`.
+- `--archived` — include archived Codex conversations alongside active ones. Default search excludes archives; this flag does not change source lifecycle state.
 - `--focus "<topic>"` — find ALL matching sessions across runtimes. Extracts and deduplicates turns from every session with a non-zero focus score.
 - `--max-tokens <n>` — hard cap for returned turns. Defaults to 8000 estimated tokens.
 - `--retriever <auto|keyword|zvec>` — candidate retrieval mode. `auto` uses zvec for focused queries when an index exists, then falls back to keyword/mtime; `zvec` is strict; `keyword` preserves legacy behavior.
+
+### zvec archive scope and moved paths
+
+The extractor and `scripts/zvec_index.py` both accept `--archived`; indexing and
+querying exclude archived Codex logs by default. A missing indexed Codex path is
+resolved by its exact rollout filename within the allowed stores, only when the
+match is unique. Resolve first, then apply scope and read the original log;
+archive/unarchive moves do not require rewriting the index during retrieval.
+
+`--retriever auto --archived` supplements zvec hits with archived keyword hits,
+because an existing index may not contain those sessions. Strict `--retriever
+zvec` searches only indexed candidates; it is not an exhaustive history search.
+To index archives, pass `--archived` to `zvec_index.py` when building; inspect
+`--dry-run` first. Do not rebuild a user's live index merely to read history.
