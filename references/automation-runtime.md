@@ -6,7 +6,7 @@
 
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。
 
-原任务模型前置门禁优先；门禁前不读业务数据、不写状态。未知实际模型视为blocked，不凭配置替代实际运行模型。通过后，以实际run/thread ID为key使用run action，分别记录：
+模型由任务或所属会话配置决定，直接执行任务业务，不进行运行前模型/provider检查，不因无法自证模型身份而中止。历史prompt、运行记忆中的模型前置条件已于2026-10-24取消；业务授权、来源校验、内容安全和投递防重仍按原任务执行。以实际run/thread ID为key使用run action，分别记录：
 - business_status：running / completed / no_op / partial / blocked / failed。
 - notification_status：not_needed / pending / reported_in_chat / confirmed / unverified / failed。
 - 可选gate、artifact、updated_at；只存最小诊断，禁止凭据或无关业务正文。
