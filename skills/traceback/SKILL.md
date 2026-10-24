@@ -13,6 +13,11 @@ Verify one chain with file evidence:
 traceback is not a linter, test runner, or duplicate code review. Review Gate
 judges code quality; traceback proves delivery traceability.
 
+Use at an independently verifiable delivery milestone, after validation and
+Review Gate; do not run it for every exploratory iteration. Data admissibility
+and changing hypotheses belong to research/execution, not this gate. A completed
+analysis does not satisfy an outstanding physical/runtime acceptance requirement.
+
 ## Hard rules
 
 1. Derive requirements only from approved source artifacts.
@@ -22,6 +27,10 @@ judges code quality; traceback proves delivery traceability.
 5. Re-read files. Never infer coverage from naming or proximity alone.
 6. Block stale evidence when source hashes, Git HEAD, or workspace fingerprint changed.
 7. Record critical gaps, waivers, and skipped traceback in Canon.
+8. For changed scope or acceptance, retain the prior requirement, change reason,
+   and user approval reference in the approved source or Canon. Use the approved
+   revision; an unapproved proposal cannot replace the baseline. Never rewrite
+   requirements to match finished code merely to pass this gate.
 
 ## Input resolution
 

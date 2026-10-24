@@ -80,6 +80,8 @@ Replace the content of these sections entirely — do not append:
 ## Key Decisions
 ```
 
+持久任务的稳定摘要应让接手者迅速知道：当前能力及适用范围、关键证据链接、影响方向的未知项，以及下一步要消除什么不确定性。复用上述 sections，不新增一套认识文档；探索产物与交付进展分别说明。改写当前摘要时，将被替代的重大要求/决策、变更原因及用户批准依据保留在 action layer 或链接的原始材料中，避免丢失演变过程。
+
 ### Action layer (append/update)
 
 Merge new content into existing:
