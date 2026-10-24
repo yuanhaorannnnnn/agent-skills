@@ -9,9 +9,12 @@ import re
 import subprocess
 import sys
 import time
+import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 APP = "x-bookmark-ingest"
 XURL = [str(Path.home() / ".local" / "bin" / "xurl"), "--app", APP, "-u", "haoran_yuan"]
@@ -39,10 +42,14 @@ MEDIA_FIELDS = (
 USER_FIELDS = "user.fields=username,name,description,public_metrics,verified"
 
 SENSITIVE_PAT = re.compile(
-    r"(porn|pornhub|nsfw|nude|裸|色情|成人|女菩萨|91\b|SNOS-|IPZZ-|"
+    r"(porn(?:hub)?|nsfw|nudes?|naked|erotic|\bsex(?:ual)?\b|\bxxx\b|"
+    r"\bj[\s._-]*a[\s._-]*v\b|hentai|onlyfans|成人视频|成人片|无码|無碼|色情|裸|裸体|裸體|性行为|性行為|性交|"
+    r"做爱|做愛|性爱|性愛|自慰|手淫|打飞机|打飛機|打.{0,8}(?:飞机|✈)|女优|女優|少妇|熟女|女菩萨|"
+    r"91\b|SNOS-|IPZZ-|"
     r"亚洲马桶|烂裤裆|后宫文)",
     re.I,
 )
+SENSITIVE_MARKER = "⚠️ 敏感内容，正文不复述，点开原帖查看。"
 
 
 def now_iso() -> str:
@@ -50,8 +57,14 @@ def now_iso() -> str:
 
 
 def run_xurl(path: str) -> dict:
+    endpoint = urlsplit(path)
+    if endpoint.scheme or endpoint.netloc or not re.fullmatch(
+        r"/2/users/(?:me|[0-9]+/liked_tweets)", endpoint.path
+    ):
+        raise ValueError("X Likes permits only current-user and liked_tweets GET requests")
     proc = subprocess.run(
-        XURL + [path], capture_output=True, text=True, timeout=45
+        XURL + ["--auth", "oauth2", "-X", "GET", path],
+        capture_output=True, text=True, timeout=45
     )
     if proc.returncode != 0:
         try:
@@ -60,19 +73,21 @@ def run_xurl(path: str) -> dict:
             payload = None
         if isinstance(payload, dict) and payload.get("status") == 402:
             raise RuntimeError(
-                "X API credits depleted (402): "
-                f"{payload.get('detail') or 'Payment Required'}. "
-                "Top up the X Developer account, then rerun baseline."
+                "X API credits depleted (402): stop; do not retry through MCP"
             )
-        raise RuntimeError(
-            f"xurl failed ({proc.returncode}): {proc.stderr.strip()[:500]}"
-        )
+        diagnostic = proc.stderr.lower()
+        if (isinstance(payload, dict) and payload.get("status") in (401, 403)) or any(
+            term in diagnostic for term in ("oauth", "refresh", "unauthorized", "forbidden", "invalid_grant")
+        ):
+            raise RuntimeError("X authentication/permission failure: stop; do not switch to MCP")
+        raise RuntimeError(f"xurl failed ({proc.returncode}); classify the failure before MCP fallback")
     try:
-        return json.loads(proc.stdout)
+        payload = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            f"xurl returned non-JSON: {proc.stdout[:500]}"
-        ) from exc
+        raise RuntimeError("xurl returned non-JSON; do not advance the Likes ledger") from exc
+    if not isinstance(payload, dict) or payload.get("errors") or payload.get("status", 200) >= 400:
+        raise RuntimeError("X API returned an error; do not advance the Likes ledger")
+    return payload
 
 
 def get_me() -> dict:
@@ -312,6 +327,27 @@ def normalize_source(raw: dict) -> tuple[list, dict]:
     return posts, includes
 
 
+def load_mcp_source(path: str, state: dict) -> tuple[dict, list, dict]:
+    """Consume an ordered Likes snapshot collected through the fallback MCP."""
+    raw = json.loads(Path(path).read_text())
+    user = raw.get("user") or {}
+    posts = raw.get("data")
+    if (
+        raw.get("errors") or raw.get("status", 200) >= 400
+        or not str(user.get("id", "")).isdigit()
+        or user.get("username") != "haoran_yuan"
+        or not isinstance(posts, list)
+        or any(not isinstance(p, dict) or not str(p.get("id", "")).isdigit() for p in posts)
+    ):
+        raise ValueError("Invalid MCP Likes snapshot: expected authenticated user and ordered posts")
+    seen = state.get("seen") or {}
+    boundary = next((i for i, p in enumerate(posts) if str(p["id"]) in seen), None)
+    if (raw.get("meta") or {}).get("next_token") and boundary is None:
+        raise ValueError("Partial MCP Likes snapshot: fetch remaining pages before build")
+    _, includes = normalize_source(raw)
+    return user, posts[:boundary], includes
+
+
 def classify(post: dict, media: list) -> str:
     if any(m.get("type") in ("video", "animated_gif") for m in media):
         return "video"
@@ -327,11 +363,50 @@ def classify(post: dict, media: list) -> str:
     return "long" if len(text) > 280 else "text"
 
 
-def is_sensitive(post: dict) -> bool:
+def has_sensitive_signal(text: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", text or "").casefold()
+    normalized = re.sub(r"[\u200b-\u200f\u2060\ufeff]", "", normalized)
+    return bool(SENSITIVE_PAT.search(normalized))
+
+
+def is_sensitive(post: dict, media: list | None = None) -> bool:
     if post.get("possibly_sensitive"):
         return True
-    text = (post.get("note_tweet") or {}).get("text") or post.get("text", "")
-    return bool(SENSITIVE_PAT.search(text))
+    texts = [
+        (post.get("note_tweet") or {}).get("text", ""),
+        post.get("text", ""),
+        *(m.get("alt_text", "") for m in (media or [])),
+    ]
+    return any(has_sensitive_signal(text) for text in texts)
+
+
+class _VisibleText(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+
+    def handle_data(self, data):
+        self.parts.append(data)
+
+
+def validate_html_safety(document: str) -> None:
+    visible = _VisibleText()
+    visible.feed(document)
+    if any(has_sensitive_signal(part) for part in visible.parts) or has_sensitive_signal(
+        "".join(visible.parts)
+    ):
+        raise ValueError("sensitive-content gate: risky text remains visible in HTML")
+
+
+def validate_pending(manifest_path: Path) -> dict:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    checked = 0
+    for part in manifest.get("parts", []):
+        validate_html_safety(Path(part["html_path"]).read_text(encoding="utf-8"))
+        checked += 1
+    if not checked:
+        raise ValueError("sensitive-content gate: pending manifest has no HTML parts")
+    return {"status": "pass", "parts_checked": checked}
 
 
 def clean_text(text: str, limit: int = 160) -> str:
@@ -412,7 +487,7 @@ def build_html(
             for k in post.get("attachments", {}).get("media_keys", [])
             if k in media_by_key
         ]
-        sensitive = is_sensitive(post)
+        sensitive = is_sensitive(post, media)
         if sensitive:
             sensitive_count += 1
         buckets[classify(post, media)].append((post, media, sensitive))
@@ -440,8 +515,11 @@ def build_html(
             user = users.get(post.get("author_id"), {})
             username = html.escape(str(user.get("username") or "unknown"))
             url = f"https://x.com/{username}/status/{post['id']}"
+            author_html = (
+                "" if sensitive else f'<div style="font-size:12px;color:#8a8a8a;">@{username}</div>'
+            )
             if sensitive:
-                text_html = '<span style="color:#c92a2a;">⚠️ 敏感内容，正文不复述，点开原帖查看。</span>'
+                text_html = f'<span style="color:#c92a2a;">{SENSITIVE_MARKER}</span>'
             else:
                 text = (post.get("note_tweet") or {}).get("text") or post.get(
                     "text", ""
@@ -469,7 +547,7 @@ def build_html(
               <tr>
                 <td width="34" valign="top" style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:14px;font-weight:800;color:{color};">{number:03d}</td>
                 <td style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;">
-                  <div style="font-size:12px;color:#8a8a8a;">@{username}</div>
+                  {author_html}
                   <div style="font-size:15px;line-height:1.7;color:#222;border-left:3px solid #ececec;padding-left:12px;margin-top:8px;">{text_html}</div>
                   {media_html}
                   <div style="margin-top:8px;"><a href="{url}" style="font-size:12px;color:#1a73e8;text-decoration:none;">看原帖 →</a></div>
@@ -483,7 +561,7 @@ def build_html(
         if part_total > 1
         else f"本周新增 {total_count} 条"
     )
-    return f'''<!doctype html>
+    document = f'''<!doctype html>
 <html lang="zh-CN">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>X 瞎看 · {date_label}</title></head>
@@ -506,6 +584,8 @@ def build_html(
   </td></tr>
   <tr><td style="background:#fafafa;border-top:1px solid #ececec;padding:18px 26px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:11px;line-height:1.7;color:#aaa;text-align:center;">按你的设置：不过滤条目 · 视频只给链接 · 敏感内容保留链接但不复述正文<br>每周五 20:30 发送 · 不进 Wiki · 不公开</td></tr>
 </table></td></tr></table></body></html>'''
+    validate_html_safety(document)
+    return document
 
 
 def summarize_posts(posts: list, includes: dict) -> tuple[Counter, int]:
@@ -519,7 +599,7 @@ def summarize_posts(posts: list, includes: dict) -> tuple[Counter, int]:
             if k in media_by_key
         ]
         counts[classify(post, media)] += 1
-        if is_sensitive(post):
+        if is_sensitive(post, media):
             sensitive_count += 1
     return counts, sensitive_count
 
@@ -544,6 +624,8 @@ def split_parts(
 
 def build(args) -> None:
     state = load_state()
+    if args.mcp_source and not state.get("baseline_at"):
+        raise ValueError("baseline-missing: MCP fallback cannot establish a baseline")
     if args.source_json:
         raw = json.loads(Path(args.source_json).read_text())
         posts, includes = normalize_source(raw)
@@ -565,8 +647,11 @@ def build(args) -> None:
                 )
             )
             return
-        user = get_me()
-        posts, includes = fetch_new(state, user)
+        if args.mcp_source:
+            _, posts, includes = load_mcp_source(args.mcp_source, state)
+        else:
+            user = get_me()
+            posts, includes = fetch_new(state, user)
         issue_id = datetime.now(TZ).strftime("%Y%m%d-%H%M%S")
         date_label = datetime.now(TZ).strftime("%Y.%m.%d")
 
@@ -718,8 +803,12 @@ def status(_args) -> None:
 
 
 def probe(_args) -> None:
-    user = get_me()
-    payload = fetch_page(user["id"], max_results=5)
+    if _args.mcp_source:
+        user, posts, _ = load_mcp_source(_args.mcp_source, load_state())
+        payload = {"data": posts}
+    else:
+        user = get_me()
+        payload = fetch_page(user["id"], max_results=5)
     print(
         json.dumps(
             {
@@ -740,15 +829,26 @@ def probe(_args) -> None:
     )
 
 
+def validate_pending_command(args) -> None:
+    print(json.dumps(validate_pending(Path(args.manifest)), ensure_ascii=False, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_probe = sub.add_parser("probe", help="read-only X API check")
+    p_probe.add_argument("--mcp-source", help="validate a fallback MCP Likes snapshot without CLI requests")
     p_probe.set_defaults(func=probe)
 
     p_status = sub.add_parser("status", help="print state summary")
     p_status.set_defaults(func=status)
+
+    p_validate = sub.add_parser(
+        "validate-pending", help="fail closed if pending HTML exposes sensitive text"
+    )
+    p_validate.add_argument("--manifest", required=True, help="pending.json to check before sending")
+    p_validate.set_defaults(func=validate_pending_command)
 
     p_baseline = sub.add_parser("baseline", help="record current likes as baseline")
     p_baseline.add_argument("--max-pages", type=int, default=BASELINE_PAGE_CAP)
@@ -775,7 +875,9 @@ def main() -> None:
     p_start.set_defaults(func=set_start)
 
     p_build = sub.add_parser("build", help="fetch new likes and build HTML parts")
-    p_build.add_argument("--source-json", help="offline JSON for dry-run")
+    source = p_build.add_mutually_exclusive_group()
+    source.add_argument("--source-json", help="offline JSON for dry-run")
+    source.add_argument("--mcp-source", help="authenticated ordered Likes snapshot from fallback MCP")
     p_build.add_argument("--limit", type=int, default=0)
     p_build.set_defaults(func=build)
 

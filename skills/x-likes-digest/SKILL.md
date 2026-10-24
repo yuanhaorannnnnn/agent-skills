@@ -20,8 +20,14 @@ description: 读取 X/Twitter 账号新增的 Likes，按当周实际内容生�
 
 - `xurl` app `x-bookmark-ingest`，当前 OAuth 已具备 `like.read`。
 - 本机固定入口：`~/.local/bin/xurl`（官方 release v1.3.4，安装时校验 SHA-256）；定时运行不调用 `npx` 下载。
-- 只读探测：`~/.local/bin/xurl --app x-bookmark-ingest -u haoran_yuan /2/users/me`；每次请求最多等待 45 秒，probe 成功后才继续 build。
-- MCP 的 X 工具没有“读取自己 likes”的接口，必须用 xurl REST；不要用 `get_posts_liking_users` 代替。
+- 只读探测：`~/.local/bin/xurl --app x-bookmark-ingest -u haoran_yuan /2/users/me`；每次请求最多等待 45 秒，CLI probe 成功后才继续 build；符合备用条件时也可通过 MCP snapshot probe，不能忽略认证/额度失败。
+- 邮件发送前必须对 pending manifest 执行 `python3 <skill-dir>/scripts/x_likes_digest.py validate-pending --manifest <pending.json>`；命令失败就停止发送并保留 pending。新 build 在写入前也会执行相同 HTML 安全检查。
+- CLI REST 是主路径；MCP 未启动/不可见不阻断正常 CLI。CLI 不存在、不能执行或瞬时传输故障时，备用 `xapi_wiki`（或同账号 `xapi`）的 `get_users_me` + `get_users_liked_posts`。不得用 `get_posts_liking_users`（某帖点赞者）代替当前用户 Likes。
+- 401/403、OAuth refresh/授权失败、402 均停止，不换 MCP 绕过。瞬时故障至多一次备用尝试，CLI/MCP 串行，不执行自动登录或重新授权。凭据错误只报告分类，不输出原始诊断或启用 verbose/trace。
+- 备用 MCP 用与脚本 `POST_FIELDS/EXPANSIONS/MEDIA_FIELDS/USER_FIELDS` 对应的字段（MCP 使用 `post.fields`），每页最多 100。按最新优先取到已见 ID 或无 next_token，保留 data/includes 和末页 meta；不额外查询单帖/搜索。
+- 只使用本轮 CLI 故障后实时获取的备用响应，不复用旧快照。将备用响应聚合为 `<state-dir>/mcp-likes.json`：`{"user":{"id":"<authenticated-id>","username":"haoran_yuan"},"data":[<按页顺序的原始 Likes>],"includes":{"users":[],"media":[],"tweets":[]},"meta":{<末页 meta>}}`。合并 includes 去重；保留 next_token，不能把截断结果改成完整。
+- 先 `probe --mcp-source <snapshot>` 验证，再 `build --mcp-source <snapshot>`；后者复用 seen/baseline、HTML、pending 与 mark-sent，不重复 CLI 请求、不使用仅供离线演示的 `--source-json` 发送邮件。已有 pending 优先恢复，禁止重新 build。未取到已见边界且仍有 next_token 时停止并报告 partial。
+- MCP 备用同样保留原 45 分钟总预算；工具无法硬设 45 秒时如实记录。
 - Gmail 发送：
   `gmail_send_email({to:"me", subject, payload:{mime_type:"text/html", charset:"UTF-8", body:{content:html}}, response_fields:["id","thread_id"]})`
 
