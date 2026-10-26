@@ -24,6 +24,10 @@
 - 技能中的 `<skill-dir>` 是实际加载的 SKILL.md 所在目录，`<skills-root>` 是其父目录，不替换成猜测的 runtime 路径。
 - 上下文换会话：新建对话，用 passdown 并读其 rollover 规则；不 resume/fork 旧 transcript，`/compact` 不重置 Guardian。
 
+## 邮件交付
+
+- 用户明确要求某个任务完成后发邮件时，读取 `/home/yhr/.agents/repos/agent-skills/references/automation-runtime.md` 的“按任务启用的完成邮件”，复用现有投递防重与回执机制。邮件含结果、关键限制、手机可读成果入口，草稿明确标识；邮件回复不自动触发 agent。没有该任务发送授权时仍在当前聊天交付。
+
 ## Prompt 调用
 
 用户明确输入 `&<名称>` 时，读取当前用户 `~/.agents/prompts/<名称>.md`，作为当前对话的附加指令。只接受单个文件名，不接受路径；缺失就说明，不猜正文。
