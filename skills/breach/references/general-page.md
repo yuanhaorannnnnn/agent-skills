@@ -77,23 +77,26 @@ in page provenance. Passing the text validator alone is not visual acceptance.
 
 ## General Page Mode
 
-Two constraints, always applied:
+Read [the shared reference collaboration rules](../../cover/references/cross-media-design.md)
+before resolving a new page's design. Breach owns the artifact brief and final
+implementation; a new project DESIGN.md is not a prerequisite.
 
-**Layout — from html-effectiveness**:
-1. Read `/media/yhr/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`.
-2. Match the user's request to the closest page type.
-3. Read the corresponding HTML example for its grid, component arrangement,
-   and spatial patterns.
-
-**Style — from DESIGN.md or awesome-design-md**:
-1. If `DESIGN.md` exists in the target artifact's project root, use its tokens
-   directly — skip the awesome-design-md lookup. Do not borrow another
-   project's DESIGN.md unless the user or caller explicitly selects it.
-2. If not, read `~/.agents/repos/awesome-design-md/README.md`, choose 1-2
-   matching DESIGN.md files, then read them.
-3. Use only those DESIGN.md sources for `colors`, `typography`, `spacing`,
-   radius, shadows, and component tone. html-effectiveness is layout-only.
-4. Never write a DESIGN.md file. This lookup is read-only.
+1. Read the target project's DESIGN.md if present. Separate fixed constraints
+   from defaults/legacy tokens and resolve the work-specific visual idea. Keep
+   unrelated projects' specifications out unless explicitly selected as references.
+2. When reading structure is unresolved, consult
+   `/media/yhr/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`
+   and a relevant HTML example. Borrow information grouping and spatial patterns,
+   then adapt them to the content and direction. Existing or straightforward
+   structures need no lookup; label an original layout honestly.
+3. When typography, controls or components need reference, consult
+   `~/.agents/repos/awesome-design-md/README.md` and read only relevant DESIGN.md
+   files. Skip this lookup when the project/brief already resolves those choices.
+4. Derive the artifact's concrete tokens from its direction and inherited
+   constraints. Exact source paths/URLs support reference choices; original
+   choices carry a brief rationale. Scoped overrides can change default colors,
+   fonts and component appearance without editing the project's DESIGN.md.
+   Breach does not write DESIGN.md; use Cover when a reusable spec is requested.
 
 **Content mode — when the selected DESIGN.md defines `content-modes`**:
 1. Choose the mode from the artifact's reader task and evidence type, not from
@@ -111,36 +114,105 @@ Two constraints, always applied:
 4. Record the selected mode in the provenance comment as `content_mode`; the
    visible footer still needs only layout and style.
 
-**Style gate**:
+**Resolved brief and provenance**:
 
-Before writing HTML, identify exact sources:
+Before implementation, retain the visual idea, concrete signature choices,
+inherited constraints, scoped token overrides and references actually used in
+the existing brief or conversation. A catalog ID, brand name or palette alone
+is insufficient. An original direction is valid without a DESIGN.md source;
+record it as original rather than inventing a source path.
 
-```text
-layout_name: html-effectiveness catalog/page type name
-layout_source: /absolute/path/to/html-effectiveness/example.html
-style_sources:
-- /absolute/path/to/DESIGN.md
-tokens_used: colors, typography, spacing
-content_mode: selected mode, if the DESIGN.md defines content-modes
-```
-
-If `style_sources` is empty, stop. `Style: Anthropic` without a DESIGN.md path
-is invalid.
-
-**Provenance footer**:
-
-Every page must include a clean visible footer plus an HTML comment with exact paths:
+Every page keeps a clean visible footer and a `BREACH_PROVENANCE` HTML comment.
+The comment carries exact reference paths/URLs and their roles, or identifies
+original decisions. Retain existing provenance keys for compatibility; add
+`art_direction`, `medium`, `artifact_idea`, `reference_roles` and `scoped_overrides`
+when relevant. `layout_source`/`style_source` may be `original` when no external
+source supplies that choice; explain that choice in the brief. Do not manufacture
+a route receipt when the structured router was not used.
 
 ```html
 <!-- BREACH_PROVENANCE
-layout_name="11-status-report"
-layout_source="/abs/example.html"
-style_name="Field Notes Wiki"
+layout_name="original comparison layout"
+layout_source="original"
+style_name="work-specific geometric study"
 style_source="/abs/DESIGN.md"
-content_mode="research-explainer"
+art_direction="precisionism"
+medium="page"
+artifact_idea="Organize prediction, observation and residuals as three linked test bays."
+reference_roles="/abs/DESIGN.md: inherited typography; geometry/composition: original translation"
+scoped_overrides="page only: legacy rounded panels replaced by hard-edged bays"
 -->
-<footer>Layout: 11-status-report | Style: Field Notes Wiki</footer>
+<footer>Layout: comparison | Style: geometric study</footer>
 ```
 
-Do not show absolute paths in the visible footer. Exact paths live only in
-`BREACH_PROVENANCE`.
+Use actual decisions, not these illustrative values. Keep absolute paths and
+implementation details in the comment, outside the visible footer. When no
+catalog family applies, use a descriptive direction rather than a fictitious ID.
+For telemetry, use `style=none` when no DESIGN source was used; the resolved
+original direction remains in provenance, so `none` does not mean unstyled.
+
+## Cross-media project contracts
+
+When DESIGN.md has `art-direction` or `medium-rules`, consume the rules for the
+requested medium only. Record the resolved direction as `art_direction` and the
+medium as `medium` in BREACH_PROVENANCE. Existing specifications without these
+fields remain valid as inherited constraints; new works still need an
+artifact-specific direction.
+
+Apply the shared conflict-resolution rules: explicit artifact direction can
+select a new direction outside the project catalog. Otherwise use the project's
+selection rule, treating `per-artifact` as requiring a fresh choice. Record any
+scoped override; do not silently mute its colors or change the project DESIGN.md. Never import the Wiki's warm-paper style into an
+unrelated project. Content modes choose treatment and density, not a mandatory
+palette. Fonts, negative space, hard edges, saturation, and texture may express
+personality while evidence remains legible and semantically accurate.
+
+For an HTML storyboard/review page, preserve shot order, timecodes, captions,
+audio intentions and validation status supplied by the video owner. Keep page
+navigation and explanatory labels outside the frames. A storyboard can describe
+motion; it cannot prove an exported film, soundtrack, or timing has been tested.
+Discussion digest and Archive retain their dedicated template contracts.
+
+Review technical usability and artistic fidelity separately. Inspect the actual
+render for the chosen signature choices and topic-specific composition. Passing
+layout, overflow, or accessibility checks does not establish a distinctive style.
+If the requested personality disappeared, revise the relevant composition,
+typography, imagery, or motion rather than merely swapping accent colors.
+
+
+### Shared style routing when a direction needs selection
+
+Layout is selected for the reader task and adapted to the resolved direction. For an explicit new style,
+reference-led direction, or unresolved alternatives, read
+[Cover's style-routing contract](../../cover/references/style-routing.md) and
+use `<skills-root>/cover/scripts/style_route.py` when Cover is installed. Pass
+observations grounded in inspected material; record the selected ID and receipt
+path in the artifact provenance. `proposed`, `ambiguous`, `needs_observation`, `needs_context`,
+`needs_style_definition`, and `conflict` are not completed selections, even when
+the script exits 0. Resolve them as the contract specifies before applying style. For a selected contextual/umbrella family, honor
+`reference_refinement_required` and its refinement note before production.
+
+A selected direction supplements the project's tokens through an explicitly
+scoped artifact brief; it does not authorize Breach to edit DESIGN.md. Existing
+project pages still use their specification directly without invoking the router
+or searching references. If the optional router is unavailable, preserve the
+explicit/project direction and disclose that structured matching was not run;
+do not invent a registered style. Archive/digest do not enter this route.
+
+
+### Artifact identity before implementation
+
+For every new General page, resolve the work-specific visual idea and signature
+choices described in [the cross-media contract](../../cover/references/cross-media-design.md).
+Record them in the existing brief or conversation and carry the direction into
+composition, typography, imagery and interaction. Selecting a catalog family or
+project default alone is not design completion. Comparison with the nearest
+available prior work should expose intentional content-led differences; a color
+swap is not enough. No additional approval form is required.
+
+Validate the rendered result against those choices. Generic layout examples are
+structural references, not skins to copy. Functional checks may fix an unreadable
+caption or broken control but may not silently replace saturation, symmetry,
+font choices or dramatic scale with a universal safe aesthetic. Dedicated
+Archive/digest requests still preserve their requested template identity;
+redesigning those templates requires that scope rather than a silent restyle.

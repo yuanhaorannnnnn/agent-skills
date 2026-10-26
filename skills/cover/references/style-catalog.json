@@ -1,0 +1,1405 @@
+{
+  "schema_version": 1,
+  "purpose": "working visual-direction vocabulary, not authoritative art-history classification",
+  "features": {
+    "botanical-repeat": {
+      "dimension": "ornament",
+      "description": "植物形体反复形成装饰节律",
+      "required_level": "frames"
+    },
+    "woven-flat-pattern": {
+      "dimension": "surface",
+      "description": "平面纹样与材料/织物感共同构成表面",
+      "required_level": "frames"
+    },
+    "industrial-geometry": {
+      "dimension": "subject",
+      "description": "工业或机械对象被概括成几何体块",
+      "required_level": "frames"
+    },
+    "hard-edge-space": {
+      "dimension": "space",
+      "description": "以硬边、平面和明确透视组织空间",
+      "required_level": "frames"
+    },
+    "paper-fragments": {
+      "dimension": "material",
+      "description": "可分辨的纸片/图像碎片叠置与裁切",
+      "required_level": "frames"
+    },
+    "assembled-relationships": {
+      "dimension": "composition",
+      "description": "连接、重组或并置的材料关系承担内容",
+      "required_level": "frames"
+    },
+    "procedural-repetition": {
+      "dimension": "form",
+      "description": "同类点线或形体的规则重复",
+      "required_level": "frames"
+    },
+    "field-topology": {
+      "dimension": "space",
+      "description": "场、环、网或连续轨迹组织空间",
+      "required_level": "frames"
+    },
+    "text-as-image": {
+      "dimension": "subject",
+      "description": "文字是主视觉对象而非附加说明",
+      "required_level": "frames"
+    },
+    "scale-led-hierarchy": {
+      "dimension": "composition",
+      "description": "尺度/字重/位置差异主导信息层级",
+      "required_level": "frames"
+    },
+    "narrative-type-motion": {
+      "dimension": "motion",
+      "description": "文字的删除/保留/移动直接表达内容变化",
+      "required_level": "sequence"
+    },
+    "continuous-reconfiguration": {
+      "dimension": "motion",
+      "description": "形态持续重组而非静态形体平移",
+      "required_level": "sequence"
+    },
+    "material-sound": {
+      "dimension": "sound",
+      "description": "声音具有可辨认的材料触感并与动作相连",
+      "required_level": "audio"
+    },
+    "essential-solid-forms": {
+      "dimension": "form",
+      "description": "对象被概括为完整基本形体，细节明显简化",
+      "required_level": "frames"
+    },
+    "ordered-object-relations": {
+      "dimension": "composition",
+      "description": "对象以清楚、稳定的相互关系组织而非多视点碎裂",
+      "required_level": "frames"
+    },
+    "precise-dispassionate-figures": {
+      "dimension": "form",
+      "description": "人物或物件以清晰边界、克制细节呈现",
+      "required_level": "frames"
+    },
+    "social-observation": {
+      "dimension": "subject",
+      "description": "都市人物及具体社会处境成为画面重点",
+      "required_level": "frames"
+    },
+    "faceted-planes": {
+      "dimension": "form",
+      "description": "对象拆分为相互穿插的平面",
+      "required_level": "frames"
+    },
+    "simultaneous-viewpoints": {
+      "dimension": "space",
+      "description": "同一对象的不同视点在同一画面并置",
+      "required_level": "frames"
+    },
+    "sensuous-ornament": {
+      "dimension": "surface",
+      "description": "材质、图案和线条形成感官性的装饰关系",
+      "required_level": "frames"
+    },
+    "compositional-harmony": {
+      "dimension": "composition",
+      "description": "色线与对象关系围绕整体协调组织",
+      "required_level": "frames"
+    },
+    "elongated-torsion": {
+      "dimension": "form",
+      "description": "人物或对象出现有意拉长、扭转与不自然姿态",
+      "required_level": "frames"
+    },
+    "unstable-space": {
+      "dimension": "space",
+      "description": "空间压缩、失衡或刻意复杂化",
+      "required_level": "frames"
+    },
+    "motion-phases": {
+      "dimension": "composition",
+      "description": "同一动作的重复相位或运动轨迹在画面叠置",
+      "required_level": "frames"
+    },
+    "force-diagonals": {
+      "dimension": "space",
+      "description": "斜向力线穿透对象并组织空间",
+      "required_level": "frames"
+    },
+    "machine-angularity": {
+      "dimension": "form",
+      "description": "机械性棱角与楔形替代圆滑轮廓",
+      "required_level": "frames"
+    },
+    "compressed-geometric-energy": {
+      "dimension": "composition",
+      "description": "碎裂的硬边形体以密集对冲关系构图",
+      "required_level": "frames"
+    },
+    "distorted-expressive-forms": {
+      "dimension": "form",
+      "description": "形体与姿态偏离自然比例以强化情绪",
+      "required_level": "frames"
+    },
+    "nonlocal-colour": {
+      "dimension": "color",
+      "description": "颜色明显不服从对象自然固有色",
+      "required_level": "frames"
+    },
+    "emblematic-figures": {
+      "dimension": "subject",
+      "description": "物象作为寓意或象征线索出现，含义须查来源",
+      "required_level": "frames"
+    },
+    "dream-association": {
+      "dimension": "composition",
+      "description": "物象以非日常因果的联想关系组合",
+      "required_level": "frames"
+    },
+    "everyday-life": {
+      "dimension": "subject",
+      "description": "当代普通人的生活、劳动或环境成为主体",
+      "required_level": "frames"
+    },
+    "unidealized-figures": {
+      "dimension": "form",
+      "description": "人物与场景保留普通、粗粝或不美化的形态",
+      "required_level": "frames"
+    },
+    "social-contrast": {
+      "dimension": "composition",
+      "description": "人物与处境的对照提示社会问题，具体评论须核实",
+      "required_level": "frames"
+    },
+    "rural-community": {
+      "dimension": "subject",
+      "description": "乡土社区、农事或区域生活构成叙事主体",
+      "required_level": "frames"
+    },
+    "modeled-narrative-figures": {
+      "dimension": "form",
+      "description": "可辨识人物以具象塑形参与场景叙事",
+      "required_level": "frames"
+    },
+    "separated-colour-marks": {
+      "dimension": "surface",
+      "description": "离散小点或短笔触保持独立色块",
+      "required_level": "frames"
+    },
+    "optical-colour-relations": {
+      "dimension": "color",
+      "description": "相邻色彩的并置被用来建立光与色的整体关系",
+      "required_level": "frames"
+    },
+    "photographic-optics": {
+      "dimension": "space",
+      "description": "视角、裁切、反射或景深关系呈现摄影式观察",
+      "required_level": "frames"
+    },
+    "smooth-minute-detail": {
+      "dimension": "surface",
+      "description": "细节清晰而笔触存在感被压低",
+      "required_level": "frames"
+    },
+    "sinuous-contours": {
+      "dimension": "form",
+      "description": "延展的鞭状曲线或植物式轮廓",
+      "required_level": "frames"
+    },
+    "organic-structural-unity": {
+      "dimension": "composition",
+      "description": "有机线条贯穿图像、边界或对象结构而非附加花边",
+      "required_level": "frames"
+    },
+    "geometric-ornamental-fields": {
+      "dimension": "surface",
+      "description": "几何图案与装饰色面构成表面",
+      "required_level": "frames"
+    },
+    "integrated-arts-layout": {
+      "dimension": "composition",
+      "description": "平面装饰与空间布局或多个艺术门类被统合设计",
+      "required_level": "frames"
+    },
+    "courtly-elegance": {
+      "dimension": "form",
+      "description": "人物与衣褶呈现精致、优雅的风格化轮廓",
+      "required_level": "frames"
+    },
+    "ornamental-natural-detail": {
+      "dimension": "surface",
+      "description": "装饰性布局中同时保留细致自然物描绘",
+      "required_level": "frames"
+    },
+    "idealized-anatomy": {
+      "dimension": "form",
+      "description": "人体或具象形体被组织成理想化而可信的比例与体积",
+      "required_level": "frames"
+    },
+    "balanced-unified-space": {
+      "dimension": "composition",
+      "description": "主体、动作与透视形成统一平衡的整体",
+      "required_level": "frames"
+    },
+    "broken-spontaneous-marks": {
+      "dimension": "surface",
+      "description": "可见短碎笔触使形体边界呈现松动感",
+      "required_level": "frames"
+    },
+    "light-coloured-shadows": {
+      "dimension": "color",
+      "description": "光照变化与有色阴影主导色彩关系",
+      "required_level": "frames"
+    },
+    "constructed-form": {
+      "dimension": "form",
+      "description": "形体的结构或表现性处理超越即刻视觉印象",
+      "required_level": "frames"
+    },
+    "nonoptical-colour": {
+      "dimension": "color",
+      "description": "色彩服务结构、情绪或象征而非仅记录光学印象",
+      "required_level": "frames"
+    },
+    "minute-natural-detail": {
+      "dimension": "surface",
+      "description": "植物、物件或人物以细密观察呈现",
+      "required_level": "frames"
+    },
+    "serious-narrative-subject": {
+      "dimension": "subject",
+      "description": "文学、宗教或社会叙事需要被具体读解",
+      "required_level": "frames"
+    },
+    "bold-open-brushwork": {
+      "dimension": "surface",
+      "description": "显露且有力度的笔触形成画面",
+      "required_level": "frames"
+    },
+    "flattened-picture-space": {
+      "dimension": "space",
+      "description": "弱化透视和明暗塑形，强调平面",
+      "required_level": "frames"
+    },
+    "pattern-led-composition": {
+      "dimension": "composition",
+      "description": "图案与色面组织主体与环境关系",
+      "required_level": "frames"
+    },
+    "modernist-figuration": {
+      "dimension": "form",
+      "description": "具象形体采用现代主义的简化或重组",
+      "required_level": "frames"
+    },
+    "modern-life-narrative": {
+      "dimension": "subject",
+      "description": "现代生活或人物经验构成叙事",
+      "required_level": "frames"
+    },
+    "structured-colour-planes": {
+      "dimension": "composition",
+      "description": "以色面和轮廓组织静物、人物或风景",
+      "required_level": "frames"
+    },
+    "urban-domestic-scenes": {
+      "dimension": "subject",
+      "description": "城市日常、普通室内或疏离的人物关系",
+      "required_level": "frames"
+    },
+    "postimpressionist-handling": {
+      "dimension": "surface",
+      "description": "具象题材由色块与可见笔触构成",
+      "required_level": "frames"
+    },
+    "empty-classical-space": {
+      "dimension": "space",
+      "description": "不自然空旷的广场、拱廊或古典建筑空间",
+      "required_level": "frames"
+    },
+    "incongruous-objects": {
+      "dimension": "subject",
+      "description": "熟悉物件、雕像等以不寻常的关系并置",
+      "required_level": "frames"
+    }
+  },
+  "styles": [
+    {
+      "id": "purism",
+      "aliases": [
+        "纯粹主义",
+        "Purism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "纯粹主义",
+      "signature_features": [
+        "essential-solid-forms",
+        "ordered-object-relations"
+      ],
+      "thesis": "以简化而完整的体积组织对象，压低无关细节。",
+      "historical_scope": "以基本形体和秩序处理对象，批评立体主义对物象的碎裂和装饰化。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "区别立体主义的多视点分解，也不等于精确主义的美国工业题材。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "通过完整形体和稳定对象关系构图，而非一律使用空白卡片。",
+        "image": "以简化而完整的体积组织对象，压低无关细节。",
+        "video": "以对象的组装、对齐或重排解释内容；不将“简洁”等同于缓慢淡入。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Purism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/purism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/purism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "new-objectivity",
+      "aliases": [
+        "新客观主义",
+        "New Objectivity",
+        "Neue Sachlichkeit",
+        "新即物主义"
+      ],
+      "family": "historical-inspired",
+      "source_label": "新客观主义",
+      "signature_features": [
+        "precise-dispassionate-figures",
+        "social-observation"
+      ],
+      "thesis": "清晰具象与冷静细节服务具体社会处境。",
+      "historical_scope": "德国现代现实主义语境，包含对战后社会的尖锐观察；不同作者并非统一题材或画法。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "清晰街景并不能单独证明新客观主义；与现实主义及德国表现主义的历史语境不同。",
+      "auto_match": false,
+      "refinement": "明确借鉴哪件作品及其社会观察方式，避免把“冷色写实”当历史归属。",
+      "media": {
+        "page": "以可核查对象、明确关系与冷静排版形成观察式表达。",
+        "image": "清晰具象与冷静细节服务具体社会处境。",
+        "video": "先选具体叙事与作者参考，再用凝视、场景对照或切镜表达处境。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Neue Sachlichkeit | Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/n/neue-sachlichkeit",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/new-objectivity.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "precisionism",
+      "aliases": [
+        "精确主义",
+        "Precisionism",
+        "precisionism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "精确主义",
+      "signature_features": [
+        "industrial-geometry",
+        "hard-edge-space"
+      ],
+      "thesis": "用清楚轮廓、简化体块和光洁表面构造工业或日常对象。",
+      "historical_scope": "美国画家以受控技法、几何结构、清楚轮廓和光洁表面表现工业、建筑，也包括农舍和静物。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是只要冷蓝或硬边即可；与纯粹主义的简化秩序、漩涡主义的压缩冲突分别比较。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "用空间轴线和几何体积组织主题，细节按信息职责保留。",
+        "image": "用清楚轮廓、简化体块和光洁表面构造工业或日常对象。",
+        "video": "沿对象结构和机械行为组织镜头；声音与时长按内容选择，不能默认科技音效。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Precisionism - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/precisionism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/precisionism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "cubism",
+      "aliases": [
+        "立体主义",
+        "Cubism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "立体主义",
+      "signature_features": [
+        "faceted-planes",
+        "simultaneous-viewpoints"
+      ],
+      "thesis": "将主体的不同观察面拆分并在同一平面重组。",
+      "historical_scope": "把同一对象的多视点放在同一画面，通过平面分解挑战单一视点透视；分析与综合阶段有差别。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是所有多边形或等距图都是立体主义；仅有碎裂没有多视点关系也不足。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "将同一对象的不同信息视角组织成有关联的平面；仍须清楚阅读顺序。",
+        "image": "将主体的不同观察面拆分并在同一平面重组。",
+        "video": "把视角变化转为可辨认的分解与重组，不以随机碎片转场替代结构。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Cubism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/c/cubism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/cubism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "aestheticism",
+      "aliases": [
+        "唯美主义",
+        "Aestheticism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "唯美主义",
+      "signature_features": [
+        "sensuous-ornament",
+        "compositional-harmony"
+      ],
+      "thesis": "围绕具体材料、色线与对象关系形成感官整体。",
+      "historical_scope": "英国唯美运动重视美与感官体验，跨绘画、室内和设计，参考来源多元，并无单一固定外观。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "花园、雕塑或柔美画面不能证明唯美主义；与工艺美术的制作伦理、新艺术的有机结构有交集但不等同。",
+      "auto_match": false,
+      "refinement": "指定借鉴的作者/作品及其形式关系；美丽或优雅不是可验证的分类签名。",
+      "media": {
+        "page": "根据选定作品处理装饰与内容的关系，不给所有页面强加奢华风。",
+        "image": "围绕具体材料、色线与对象关系形成感官整体。",
+        "video": "先确定感官对象与观看方式，再安排细节停留、节奏与声画关系。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "An introduction to the Aesthetic Movement - London - V&A",
+          "url": "https://www.vam.ac.uk/articles/an-introduction-to-the-aesthetic-movement?srsltid=AYCX9vIeyCkTYLl0dLHhlmsWADiHgY4Tz37uw7n3YuZ1btFhrZkXEuC4",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/aestheticism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "mannerism",
+      "aliases": [
+        "样式主义",
+        "Mannerism",
+        "风格主义",
+        "矫饰主义"
+      ],
+      "family": "historical-inspired",
+      "source_label": "样式主义",
+      "signature_features": [
+        "elongated-torsion",
+        "unstable-space"
+      ],
+      "thesis": "用延长、扭转与空间张力形成有意识的非自然关系。",
+      "historical_scope": "以有意延长的形体、扭曲姿态、复杂或不稳定空间形成精致而人工的表达。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不同于盛期文艺复兴的协调平衡；也不能把任何变形或粉色画面归入样式主义。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "允许比例和构图带张力，但不拉伸正文或破坏操作目标。",
+        "image": "用延长、扭转与空间张力形成有意识的非自然关系。",
+        "video": "通过姿态、空间与尺度变化表达张力；不是照搬历史绘画的某种固定镜头节拍。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Moses Striking the Rock by Joachim Anthonisz Wtewael",
+          "url": "https://www.nga.gov/artworks/53142-moses-striking-rock",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/mannerism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "futurism",
+      "aliases": [
+        "未来主义",
+        "Futurism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "未来主义",
+      "signature_features": [
+        "motion-phases",
+        "force-diagonals"
+      ],
+      "thesis": "将动作相位、轨迹和力线叠置为画面结构。",
+      "historical_scope": "意大利现代运动强调现代世界的速度、能量与动力，借用立体主义和新印象主义手段。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是泛科幻风或霓虹；区别漩涡主义的机械硬边对冲和精确主义的受控体块。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "以方向和连续阶段表达过程，数据与正文保持可读。",
+        "image": "将动作相位、轨迹和力线叠置为画面结构。",
+        "video": "让相位重复、加速或重叠服务真实叙事过程；不得虚构流程速度或性能。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Futurism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/f/futurism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/futurism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "vorticism",
+      "aliases": [
+        "漩涡主义",
+        "Vorticism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "漩涡主义",
+      "signature_features": [
+        "machine-angularity",
+        "compressed-geometric-energy"
+      ],
+      "thesis": "将机械性棱角组织为压缩、对冲的构图。",
+      "historical_scope": "英国前卫群体将立体主义碎裂与机械、都市的硬边意象结合，追求现代动力。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "名称不要求旋涡形状；与未来主义有关但不等同，静态棱角也不是充分条件。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "以硬边和方向冲突强调主题关系，不把阅读顺序拆碎。",
+        "image": "将机械性棱角组织为压缩、对冲的构图。",
+        "video": "从几何结构的碰撞、聚合和切分建立动作，先明确内容对应。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Vorticism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/v/vorticism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/vorticism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "german-expressionism",
+      "aliases": [
+        "德国表现主义",
+        "German Expressionism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "德国表现主义",
+      "signature_features": [
+        "distorted-expressive-forms",
+        "nonlocal-colour"
+      ],
+      "thesis": "以非自然色与形体张力表达主题的主观体验。",
+      "historical_scope": "以主观情绪和精神体验为重，形体、色彩与笔触可偏离自然再现；包含桥社、蓝骑士等不同实践。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "与野兽派共享强色和显露笔触，但形体情绪扭变更关键；德国历史归属须背景证据。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "让图像和字形气质承载情绪，保留事实与解释边界。",
+        "image": "以非自然色与形体张力表达主题的主观体验。",
+        "video": "先明确情绪对象，再选择形变、节奏或声画张力，不能把粗暴抖动当风格。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Expressionism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/e/expressionism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/german-expressionism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "symbolism",
+      "aliases": [
+        "象征主义",
+        "Symbolism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "象征主义",
+      "signature_features": [
+        "emblematic-figures",
+        "dream-association"
+      ],
+      "thesis": "让物象之间的联想承载一个明确的观念。",
+      "historical_scope": "通过色线、构图和寓意物象表达情绪或观念，常有梦境、神话或精神性联想。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "神秘蓝色、孤独人物不能单独判定；象征的具体意义需要文本或作品语境。",
+      "auto_match": false,
+      "refinement": "先确定作品中的象征关系及来源，不按常识随意赋予物象含义。",
+      "media": {
+        "page": "选取与内容有关的象征关系，解释性图像不能冒充证据。",
+        "image": "让物象之间的联想承载一个明确的观念。",
+        "video": "以物象重复、转换和呼应建立寓意；解释不确定处明确保留。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Symbolism - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/symbolism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/symbolism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "social-realism",
+      "aliases": [
+        "社会现实主义",
+        "Social Realism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "社会现实主义",
+      "signature_features": [
+        "everyday-life",
+        "social-contrast"
+      ],
+      "thesis": "通过普通生活与处境的对照呈现具体社会关系。",
+      "historical_scope": "具象现实描绘中包含可辨认的社会或政治评论；范围跨作者和时期。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是灰褐调日常画面，也不等于作为官方 doctrine 的社会主义现实主义。",
+      "auto_match": false,
+      "refinement": "核实具体社会评论，保持与一般现实主义、社会主义现实主义的区分。",
+      "media": {
+        "page": "以人物处境、事实与关系组织叙事，不用装饰滤镜替代论点。",
+        "image": "通过普通生活与处境的对照呈现具体社会关系。",
+        "video": "把观察、对照和证据对应到镜头；不编造被摄者处境或动机。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Social realism | Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/s/social-realism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/social-realism.md"
+        },
+        {
+          "title": "Socialist realism — Tate (distinction)",
+          "url": "https://www.tate.org.uk/art/art-terms/s/socialist-realism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/socialist-realism-distinction.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "neo-impressionism",
+      "aliases": [
+        "新印象主义",
+        "Neo-Impressionism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "新印象主义",
+      "signature_features": [
+        "separated-colour-marks",
+        "optical-colour-relations"
+      ],
+      "thesis": "以相邻独立色触构造光与形体，保留整体秩序。",
+      "historical_scope": "以有计划的分色笔触与当时光学/色彩理论建立色彩关系；分色法不等于只用圆点。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是印象派的所有碎笔触，也不是噪点滤镜；需独立色触和相邻色组织。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "在主视觉使用分色结构，正文和数值保持清晰。",
+        "image": "以相邻独立色触构造光与形体，保留整体秩序。",
+        "video": "可由色触聚合形成主体；运动与声音是现代转译，不假称历史规范。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Georges Seurat (1859–1891) and Neo-Impressionism",
+          "url": "https://www.metmuseum.org/essays/georges-seurat-1859-1891-and-neo-impressionism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/neo-impressionism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "american-regionalism",
+      "aliases": [
+        "美国地区主义",
+        "American Regionalism",
+        "美国地方主义"
+      ],
+      "family": "historical-inspired",
+      "source_label": "美国地区主义",
+      "signature_features": [
+        "rural-community",
+        "modeled-narrative-figures"
+      ],
+      "thesis": "围绕可辨识地方生活建立人物与环境叙事。",
+      "historical_scope": "与美国乡土、区域生活及具象叙事有关，Grant Wood、Thomas Hart Benton等作者各有处理方式。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "农田景观不是充分条件；与一般现实主义共享形态，地区归属须具体作者/作品证据。",
+      "auto_match": false,
+      "refinement": "选择具体作者与地方题材，不把美国地理身份从画面色调中猜出。",
+      "media": {
+        "page": "把地方材料与具体关系组织成主题页面，不用泛乡村装饰替代地方性。",
+        "image": "围绕可辨识地方生活建立人物与环境叙事。",
+        "video": "按一个真实场所或生活过程组织镜头，风格参考须落实到作品。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Thomas Hart Benton | Whitney Museum of American Art",
+          "url": "https://whitney.org/artists/101",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/american-regionalism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "realism",
+      "aliases": [
+        "现实主义",
+        "Realism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "现实主义",
+      "signature_features": [
+        "everyday-life",
+        "unidealized-figures"
+      ],
+      "thesis": "以不美化的形体和具体日常关系呈现主体。",
+      "historical_scope": "此条以十九世纪法国现实主义为历史核心：直接观察当代普通生活，反对理想化或异国情调的替代。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "广义“画得像”不同于历史Realism；摄影写实主义强调摄影式细节与表面，二者不是同义词。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "让真实对象与证据承担主要视觉，避免捏造“真实感”数据。",
+        "image": "以不美化的形体和具体日常关系呈现主体。",
+        "video": "按可观察行为组织镜头，不将仿真画面或重建标为实录。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Nineteenth-Century French Realism - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/nineteenth-century-french-realism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/realism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "photorealism",
+      "aliases": [
+        "摄影写实主义",
+        "Photorealism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "摄影写实主义",
+      "signature_features": [
+        "photographic-optics",
+        "smooth-minute-detail"
+      ],
+      "thesis": "以摄影式裁切、光学关系和细密表面刻画对象。",
+      "historical_scope": "追求摄影般清晰、复杂细节与压低个人笔触的绘画方式。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是任何照片或写实CG；画面近似只能支持设计方向，绘画媒介与制作过程需另证。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "用高保真主体与严谨材料细节形成表达，不伪造产品能力。",
+        "image": "以摄影式裁切、光学关系和细密表面刻画对象。",
+        "video": "镜头与光学连续性服务对象观察；真实拍摄、渲染和重建应明确区分。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Photorealism - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/p/photorealism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/photorealism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "art-nouveau",
+      "aliases": [
+        "新艺术运动",
+        "Art Nouveau"
+      ],
+      "family": "historical-inspired",
+      "source_label": "新艺术运动",
+      "signature_features": [
+        "sinuous-contours",
+        "organic-structural-unity"
+      ],
+      "thesis": "让有机曲线贯穿主体、边界和结构。",
+      "historical_scope": "跨多种视觉与设计媒介，有机形态、蔓状曲线与几何实验构成表现词汇。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "并非有花朵就是新艺术；区别工艺美术纹样与纳比派平面色面，观察线条是否参与结构。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "把图文结构与曲线关系一起设计，不在通用卡片外随意贴花边。",
+        "image": "让有机曲线贯穿主体、边界和结构。",
+        "video": "通过轮廓延展、形态相生连接内容；字体可读性不让位于蔓线。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Art Nouveau – Explore the Collections - V&A",
+          "url": "https://www.vam.ac.uk/collections/art-nouveau?srsltid=AYCX9vIax-vw37Yj7i4mId5-YjSIW2jGOo7ErqW_Slf7gMH16NW63pGm",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/art-nouveau.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "vienna-secession",
+      "aliases": [
+        "维也纳分离派",
+        "Vienna Secession"
+      ],
+      "family": "historical-inspired",
+      "source_label": "维也纳分离派",
+      "signature_features": [
+        "geometric-ornamental-fields",
+        "integrated-arts-layout"
+      ],
+      "thesis": "先选具体作品，将装饰色面与整体布局共同组织。",
+      "historical_scope": "维也纳的艺术家团体与展览实践，强调独立现代艺术及跨艺术整合；不是单一金色装饰样式。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "金箔或几何花纹不能证明成员关系；Klimt的一件作品不代表所有成员。",
+      "auto_match": false,
+      "refinement": "选择Klimt、Moser或其他具体成员的作品/媒介；先区分组织史与作品外观。",
+      "media": {
+        "page": "参考特定海报、刊物或空间实践形成整体设计，不把“金色”作为默认。",
+        "image": "先选具体作品，将装饰色面与整体布局共同组织。",
+        "video": "围绕统一主题协调画面、空间和声音；借鉴具体作品，记录转译来源。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Wiener Secession: Association",
+          "url": "https://secession.at/en/kuenstlerinnenvereinigung",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/vienna-secession.md"
+        },
+        {
+          "title": "Beethovenfries — Secession",
+          "url": "https://secession.at/beethovenfries",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/vienna-beethoven-frieze.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "arts-and-crafts",
+      "aliases": [
+        "工艺美术运动",
+        "Arts and Crafts Movement",
+        "arts and crafts"
+      ],
+      "family": "historical-inspired",
+      "source_label": "工艺美术运动",
+      "signature_features": [
+        "botanical-repeat",
+        "woven-flat-pattern"
+      ],
+      "thesis": "表面纹样分支可用植物节律和材料感；其他分支须依据具体工艺作品。",
+      "historical_scope": "围绕材料、制作与装饰艺术地位的改革理念，涵盖建筑、家具、织物等，并非规定单一风格。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "植物纹样只是Morris等相关的表面设计路径，不是整个运动的必要条件；与新艺术的结构曲线区分。",
+      "auto_match": true,
+      "refinement": "当前视觉签名只覆盖植物/织物纹样分支。家具、建筑或其他分支需先选具体作品，不能据缺少花纹排除运动归属。",
+      "media": {
+        "page": "由所选材料和制作逻辑决定边界与结构，而不强制所有作品铺满植物。",
+        "image": "表面纹样分支可用植物节律和材料感；其他分支须依据具体工艺作品。",
+        "video": "让纹样生成或材料组装表达内容；数字模拟必须与实体拍摄分清。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Arts and Crafts: an introduction - V&A",
+          "url": "https://www.vam.ac.uk/articles/arts-and-crafts-an-introduction?srsltid=AYCX9vJUVuJIdZHXyBY0wyvCjEcLGkvIpxkyyolqaIYIkjRVf1preScB",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/arts-and-crafts.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "international-gothic",
+      "aliases": [
+        "国际哥特式",
+        "International Gothic"
+      ],
+      "family": "historical-inspired",
+      "source_label": "国际哥特式",
+      "signature_features": [
+        "courtly-elegance",
+        "ornamental-natural-detail"
+      ],
+      "thesis": "优雅轮廓与细密自然物共同构成装饰性场景。",
+      "historical_scope": "宫廷间传播的装饰性、精致形体与丰富色彩/金饰表达，常兼有不合逻辑空间与细致自然观察。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是哥特建筑尖拱或所有中世纪图像；金色与城堡也不是充分条件。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "以精致轮廓和细节层次组织主题，避免把装饰密度压到正文上。",
+        "image": "优雅轮廓与细密自然物共同构成装饰性场景。",
+        "video": "通过细节与整体尺度切换展开叙事，避免把历史图像运动化后声称为原作形式。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "International Gothic | Glossary | National Gallery, London",
+          "url": "https://www.nationalgallery.org.uk/paintings/glossary/international-gothic",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/international-gothic.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "high-renaissance",
+      "aliases": [
+        "盛期文艺复兴",
+        "High Renaissance"
+      ],
+      "family": "historical-inspired",
+      "source_label": "盛期文艺复兴",
+      "signature_features": [
+        "idealized-anatomy",
+        "balanced-unified-space"
+      ],
+      "thesis": "以可信而理想化的形体与统一平衡的空间组织主体。",
+      "historical_scope": "特定历史阶段的古典现实主义框架内追求协调和平衡；不是任何对称古典构图的名称。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "与样式主义的扭转失衡对照；有透视或拱廊并不足以确定历史阶段。",
+      "auto_match": false,
+      "refinement": "选择具体作品与其构图逻辑；历史时期不能仅由画面几何判断。",
+      "media": {
+        "page": "让主要关系、比例和层级组成整体，不机械要求居中或三角版式。",
+        "image": "以可信而理想化的形体与统一平衡的空间组织主体。",
+        "video": "通过稳定空间与人物动作关系构造叙事，镜头规律须由具体作品转译。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "[PDF] The Inquiring Eye: European Renaissance Art — Part One",
+          "url": "https://www.nga.gov/sites/default/files/migrate_images/content/dam/ngaweb/education/learning-resources/teaching-packets/pdfs/european-renaissance-art-tp1.pdf",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/high-renaissance.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "impressionism",
+      "aliases": [
+        "印象派",
+        "Impressionism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "印象派",
+      "signature_features": [
+        "broken-spontaneous-marks",
+        "light-coloured-shadows"
+      ],
+      "thesis": "让短碎笔触和光色关系塑造对象与气氛。",
+      "historical_scope": "以现代生活与光色变化为关注点，常见短碎笔触、未混合色与有色阴影；群体内部并非完全一致。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "与新印象主义有计划的分色系统区别；朦胧滤镜或柔焦不能替代笔触与光色关系。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "主视觉表达瞬间光感，文字/图表不施加模糊纹理。",
+        "image": "让短碎笔触和光色关系塑造对象与气氛。",
+        "video": "以光照、气氛与视点变化组织段落，避免全片只有柔焦与慢移。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Impressionism: Art and Modernity - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/impressionism-art-and-modernity",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/impressionism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "post-impressionism",
+      "aliases": [
+        "后印象派",
+        "Post-Impressionism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "后印象派",
+      "signature_features": [
+        "constructed-form",
+        "nonoptical-colour"
+      ],
+      "thesis": "先选结构色面、表现笔触、象征平涂或分色等具体路径。",
+      "historical_scope": "后设总称，包含Cézanne、Van Gogh、Gauguin、Seurat等各自不同的结构、表现、象征和分色道路。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "旋涡笔触只是部分作者路径；不能把全部后印象派压成梵高式黄蓝风景。",
+      "auto_match": false,
+      "refinement": "必须先选分支或作品：结构、表现、象征、分色等；此条不能靠共同外观自动定类。",
+      "media": {
+        "page": "按选定路径确定形体与色彩组织，不混合所有作者的标志。",
+        "image": "先选结构色面、表现笔触、象征平涂或分色等具体路径。",
+        "video": "具体化作者/作品路径后再定义镜头和动态；总标签不直接生成统一转场。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Post-Impressionism - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/post-impressionism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/post-impressionism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "pre-raphaelitism",
+      "aliases": [
+        "拉斐尔前派",
+        "Pre-Raphaelitism",
+        "Pre-Raphaelite",
+        "前拉斐尔派"
+      ],
+      "family": "historical-inspired",
+      "source_label": "拉斐尔前派",
+      "signature_features": [
+        "minute-natural-detail",
+        "serious-narrative-subject"
+      ],
+      "thesis": "让细致自然物与严肃叙事相互支持。",
+      "historical_scope": "以细密自然观察处理严肃宗教、文学与社会题材，后续发展与象征主义有联系。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "细密植物和长发人物不足以判定；需具体题材、叙事与观察方式，区别唯美主义和象征主义。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "以可辨认的叙事线索和细节组织阅读，不借历史装饰替代内容。",
+        "image": "让细致自然物与严肃叙事相互支持。",
+        "video": "细节的出现次序服务具体故事，物象寓意须有来源。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Pre-Raphaelite | Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/p/pre-raphaelite",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/pre-raphaelitism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "fauvism",
+      "aliases": [
+        "野兽派",
+        "Fauvism"
+      ],
+      "family": "historical-inspired",
+      "source_label": "野兽派",
+      "signature_features": [
+        "nonlocal-colour",
+        "bold-open-brushwork"
+      ],
+      "thesis": "让主观色彩与有力度的笔触构成画面关系。",
+      "historical_scope": "以鲜明、主观的色彩与显露笔触回应自然，色面组织可偏离传统三维空间。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "高饱和本身不足；与德国表现主义共享强色，但不必具有情绪性形体扭曲。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "以色面和字形建立层级，不能用饱和度上限消除表达。",
+        "image": "让主观色彩与有力度的笔触构成画面关系。",
+        "video": "通过色面变化和主体关系推动内容，不给任意画面统一套高饱和滤镜。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Fauvism - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/fauvism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/fauvism.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "nabis",
+      "aliases": [
+        "纳比派",
+        "Nabis"
+      ],
+      "family": "historical-inspired",
+      "source_label": "纳比派",
+      "signature_features": [
+        "flattened-picture-space",
+        "pattern-led-composition"
+      ],
+      "thesis": "以平面色面、图案与轮廓组织主体和环境，允许笔触纹理。",
+      "historical_scope": "强调绘画的平面、图案与装饰功能，挑战绘画和工艺边界，作者实践各异。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "区别新艺术以曲线参与结构；纳比派不是只能画平涂森林，也不等于无纹理的矢量图。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "使图文成为有秩序的平面组合，不机械复制界面卡片。",
+        "image": "以平面色面、图案与轮廓组织主体和环境，允许笔触纹理。",
+        "video": "用平面关系的展开、遮挡和重组讲述内容，不强加三维运镜。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "The Nabis and Decorative Painting - The Metropolitan Museum of Art",
+          "url": "https://www.metmuseum.org/essays/the-nabis-and-decorative-painting",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/nabis.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "harlem-renaissance",
+      "aliases": [
+        "哈莱姆文艺复兴",
+        "Harlem Renaissance"
+      ],
+      "family": "historical-inspired",
+      "source_label": "哈莱姆文艺复兴",
+      "signature_features": [
+        "modernist-figuration",
+        "modern-life-narrative"
+      ],
+      "thesis": "依据具体作者与作品确定其现代人物和生活表达。",
+      "historical_scope": "黑人现代主体、文化生活与跨大西洋现代主义的广泛历史运动，覆盖绘画、雕塑、摄影、电影等。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是紫金城市或某一种几何人物画法；不能根据人物肤色推断文化运动归属。",
+      "auto_match": false,
+      "refinement": "先选具体作者/作品；文化背景与归属用来源核实，不由像素或种族外观猜测。",
+      "media": {
+        "page": "先落实主题与作品语境，再转译排版、形体或节律，不把文化身份做成装饰标签。",
+        "image": "依据具体作者与作品确定其现代人物和生活表达。",
+        "video": "选择具体作品的叙事方法与声音背景，避免把运动简化成统一爵士配乐。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "The Harlem Renaissance and Transatlantic Modernism",
+          "url": "https://www.metmuseum.org/exhibitions/the-harlem-renaissance-and-transatlantic-modernism",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/harlem-renaissance.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "scottish-colourists",
+      "aliases": [
+        "苏格兰色彩派",
+        "Scottish Colourists"
+      ],
+      "family": "historical-inspired",
+      "source_label": "苏格兰色彩派",
+      "signature_features": [
+        "nonlocal-colour",
+        "structured-colour-planes"
+      ],
+      "thesis": "选择具体作者的色面、轮廓与色彩关系，题材可为静物、人物或风景。",
+      "historical_scope": "对Peploe、Cadell、Hunter、Fergusson四位画家的归类；法国艺术影响下各有不同色彩与笔触探索。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是所有明亮海岸风景；与野兽派的视觉重叠不能证明作者群体身份。",
+      "auto_match": false,
+      "refinement": "明确四位作者中的哪一位/哪件作品；共同外观不足以归入该群体。",
+      "media": {
+        "page": "从选定作品推导色面与空间，不把海岸和高饱和当必选项。",
+        "image": "选择具体作者的色面、轮廓与色彩关系，题材可为静物、人物或风景。",
+        "video": "由选定作者作品的结构决定运动转译，不制造统一苏格兰色彩派节拍。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Scottish Colourists | National Galleries of Scotland",
+          "url": "https://www.nationalgalleries.org/art-and-artists/glossary-terms/scottish-colourists",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/scottish-colourists.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "camden-town-group",
+      "aliases": [
+        "卡姆登镇画派",
+        "Camden Town Group"
+      ],
+      "family": "historical-inspired",
+      "source_label": "卡姆登镇画派",
+      "signature_features": [
+        "urban-domestic-scenes",
+        "postimpressionist-handling"
+      ],
+      "thesis": "以具体城市或室内关系结合可见笔触与色面。",
+      "historical_scope": "与英国卡姆登镇群体相关的城市日常、室内及部分风景，采用多种后印象派处理方式。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是紫灰屋顶或旧城画面的同义词；与广义现实主义和后印象派共享外观。",
+      "auto_match": false,
+      "refinement": "选定Sickert或其他具体成员作品，再定义局部视觉方向。",
+      "media": {
+        "page": "以日常场景和人物关系组织叙事，颜色来自所选作品而非固定紫灰。",
+        "image": "以具体城市或室内关系结合可见笔触与色面。",
+        "video": "用空间停留和人物关系展开具体故事；不将作者群体变成通用怀旧滤镜。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Camden Town Group | Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/c/camden-town-group",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/camden-town-group.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "metaphysical-painting",
+      "aliases": [
+        "形而上绘画",
+        "Metaphysical Painting",
+        "Metaphysical Art",
+        "Pittura Metafisica"
+      ],
+      "family": "historical-inspired",
+      "source_label": "形而上绘画",
+      "signature_features": [
+        "empty-classical-space",
+        "incongruous-objects"
+      ],
+      "thesis": "用空旷空间和熟悉物件的反常关系制造心理张力。",
+      "historical_scope": "以不自然空旷的广场、拱廊和意外物件并置形成梦境式、超越日常现实的世界。",
+      "recognition_scope": "来源支持的设计参考方向；签名仅筛选视觉近似，不证明历史归属。",
+      "distinguish": "不是只要长阴影或空旷建筑；对象间不寻常关系是重要线索，并与超现实主义区分。",
+      "auto_match": true,
+      "refinement": "选择与主题相符的具体作品，检验视觉主张；不作作者或历史归属鉴定。",
+      "media": {
+        "page": "让空间与物象关系服务主题，关键导航和数据不能因陌生化失去可用性。",
+        "image": "用空旷空间和熟悉物件的反常关系制造心理张力。",
+        "video": "以停顿、揭示与空间关系变化形成叙事，声音由本作决定而非默认悬疑配乐。"
+      },
+      "media_status": "本项目设计转译建议；非历史运动固有的UI、镜头或声音规则，须成品验证。",
+      "sources": [
+        {
+          "title": "Metaphysical Art - Tate",
+          "url": "https://www.tate.org.uk/art/art-terms/m/metaphysical-art",
+          "archive": "/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/metaphysical-painting.md"
+        }
+      ],
+      "definition_status": "institution-text-grounded; production treatments proposed"
+    },
+    {
+      "id": "material-collage",
+      "aliases": [
+        "实体拼贴",
+        "数字拼贴",
+        "纸材拼贴",
+        "material collage"
+      ],
+      "family": "contemporary-direction",
+      "signature_features": [
+        "paper-fragments",
+        "assembled-relationships"
+      ],
+      "thesis": "让材料的裁切、叠压与连接表达信息关系。",
+      "distinguish": "暖色、纸张背景或阴影不等于拼贴；数字模拟不得标成实拍。",
+      "media": {
+        "page": "用材料关系组织内容，控件与文字保持可操作和可读。",
+        "image": "明确碎片、边缘、叠压与连接的构图目的。",
+        "video": "材料的出现/重排/交接对应叙事，不只做纸片漂浮。"
+      }
+    },
+    {
+      "id": "generative-field",
+      "aliases": [
+        "生成艺术线场",
+        "冷色生成艺术",
+        "generative field"
+      ],
+      "family": "contemporary-direction",
+      "signature_features": [
+        "procedural-repetition",
+        "field-topology"
+      ],
+      "thesis": "让规则生成的点线结构承载场、连接或连续变化。",
+      "distinguish": "蓝色、粒子或旋转不能证明生成方法；先描述外观，算法须源码证据。",
+      "media": {
+        "page": "只在结构本身能解释内容时使用生成图形。",
+        "image": "以可辨认的规则与拓扑形成主体。",
+        "video": "运动规则须对应内容；颜色可冷可暖，不能以冷色代替主题联系。"
+      }
+    },
+    {
+      "id": "expressive-typography",
+      "aliases": [
+        "强字体编排",
+        "动态字体",
+        "expressive typography",
+        "kinetic typography"
+      ],
+      "family": "contemporary-direction",
+      "signature_features": [
+        "text-as-image",
+        "scale-led-hierarchy"
+      ],
+      "thesis": "文字通过尺度、位置与对比承担视觉和叙事。",
+      "distinguish": "大标题不等于完整字体方向；动态性需序列证据，静帧不能证明。",
+      "media": {
+        "page": "文字主导构图，字形/字号/留白形成可辨认节奏。",
+        "image": "将文字作为主体，用对比建立语义关系。",
+        "video": "以划除/保留/指向等文字动作承载内容；逐句保证阅读停留。"
+      }
+    }
+  ],
+  "coverage": {
+    "source_label_count": 29,
+    "historical_direction_count": 29,
+    "contemporary_direction_count": 3,
+    "source_label_map": {
+      "纯粹主义": "purism",
+      "新客观主义": "new-objectivity",
+      "精确主义": "precisionism",
+      "立体主义": "cubism",
+      "唯美主义": "aestheticism",
+      "样式主义": "mannerism",
+      "未来主义": "futurism",
+      "漩涡主义": "vorticism",
+      "德国表现主义": "german-expressionism",
+      "象征主义": "symbolism",
+      "社会现实主义": "social-realism",
+      "新印象主义": "neo-impressionism",
+      "美国地区主义": "american-regionalism",
+      "现实主义": "realism",
+      "摄影写实主义": "photorealism",
+      "新艺术运动": "art-nouveau",
+      "维也纳分离派": "vienna-secession",
+      "工艺美术运动": "arts-and-crafts",
+      "国际哥特式": "international-gothic",
+      "盛期文艺复兴": "high-renaissance",
+      "印象派": "impressionism",
+      "后印象派": "post-impressionism",
+      "拉斐尔前派": "pre-raphaelitism",
+      "野兽派": "fauvism",
+      "纳比派": "nabis",
+      "哈莱姆文艺复兴": "harlem-renaissance",
+      "苏格兰色彩派": "scottish-colourists",
+      "卡姆登镇画派": "camden-town-group",
+      "形而上绘画": "metaphysical-painting"
+    },
+    "status": "definitions complete; visual classification and rendering not benchmarked"
+  }
+}

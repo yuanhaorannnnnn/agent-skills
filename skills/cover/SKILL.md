@@ -1,14 +1,15 @@
 ---
 name: cover
 description: |
-  Create a project-specific DESIGN.md visual token spec from project intent and the awesome-design-md reference library. Trigger on "DESIGN.md", "视觉设计", "设计规范", "design spec", or "参考 XX 风格做设计". Not for a one-off mockup.
+  Create or update a project-specific DESIGN.md with a distinctive art direction and visual tokens for pages, images, and video. Trigger on "DESIGN.md", "视觉设计", "设计规范", "design spec", or "参考 XX 风格做设计". Not for a one-off mockup or video production.
 ---
 
 # Visual Design
 
-Generate a DESIGN.md — a plain-text design token specification that AI coding
-agents read to produce consistent, on-brand UI. Synthesize from the
-awesome-design-md reference library, adapted to the user's project.
+Create or update a project-owned DESIGN.md: art direction, visual tokens, and
+medium-specific expression rules. Renderers consume this contract; Cover does
+not make pages, images, or films. Preserve existing project choices unless
+the user requests a redesign.
 
 ## Core Rule
 
@@ -16,15 +17,33 @@ Don't copy a reference DESIGN.md — adapt it. References provide the design
 vocabulary (color families, type scales, spacing rhythms, component patterns);
 your job is to remix them for the user's specific product, audience, and tone.
 
+## Art direction before tokens
+
+State the project's visual idea and the concrete choices that make it recognizable:
+composition, shape, color relationships, typography, material, and, when relevant,
+motion and sound. Select a dominant direction rather than averaging references.
+Warm paper, muted colors, rounded cards, and glossy gradients are choices, never
+a universal safe default. Cold, monochrome, saturated, rough, or austere work can
+be equally coherent. Legibility constrains use, not personality.
+
+Before combining references or handing a direction to a renderer, read
+[Cross-media design](references/cross-media-design.md), including reference
+collaboration, conflict resolution and ownership. These rules also apply to HTML alone. For artist, artwork, or
+launch-film references, read [Reference selection](references/visual-references.md).
+A palette swap alone does not establish a new art direction. Each new work needs
+its own subject-led composition and signature choices, even when its style family
+or project tokens are shared. Read the artifact-identity section of the
+cross-media contract before handing a direction to a renderer.
+
 ## Reference Library
 
 ```
 ~/.agents/repos/awesome-design-md/design-md/
 ```
 
-71 DESIGN.md files from real products. The README.md in the repo root
-categorizes them by industry. Always read the README first to understand
-available categories and pick initial candidates.
+For product UI references, read the repo README first for the current index.
+Artist portfolios, specific artworks, and official films can also supply
+reference vocabulary; use actual inspected material and its provenance.
 
 ## Workflow
 
@@ -41,31 +60,46 @@ assumptions based on the product type and state them before generating.
 
 ### Step 2: Find reference matches
 
-Read the awesome-design-md README.md for the categorized index. Based on the
-project's industry and tone, pick 2-4 reference DESIGN.md files to study.
+When a request names a style, supplies new visual references, or needs a direction
+chosen, read [Style routing](references/style-routing.md). Use its catalog and
+structured route to resolve explicit/project/evidence selection before synthesis.
+Do not route from brand names or palette keywords alone. Preserve uncertainty
+when observations are insufficient; adding references does not require a new skill.
 
-Selection criteria:
-- Same industry as the target project → strongest structural match
-- Different industry but matching visual tone → useful for palette/typography
-- Adjacent product type (e.g. B2B SaaS → other B2B tools) → UX pattern match
 
-Read the selected DESIGN.md files in full to understand their design vocabulary.
+Study 2–4 focused references selected for the project's task and artistic direction.
+For UI references use the awesome-design-md index; for artworks/films use the
+reference-selection guide. A style catalog is a discovery pool, not 29 inputs
+to blend. Existing project DESIGN.md can be one reference during an update.
+
+Select by the decision that needs evidence: expressive choices must fit the
+work's thesis; structure and controls must fit the reader task. Industry similarity
+can help find functional patterns but does not select the aesthetic. Use only
+the relevant reference layers; do not force one source from each library.
+
+Read selected specifications in full; inspect artworks directly and films at the
+level needed for the claim. Record frame-only, sequence, audio, and creator-credit
+evidence separately. Do not infer motion timing or sound from stills.
 
 ### Step 3: Synthesize
 
-Produce a DESIGN.md that blends:
-- **From references**: color palette structure, type scale hierarchy, spacing
-  rhythm, component-level tokens
-- **From the project**: industry-appropriate conventions, audience expectations,
-  unique brand elements
+Produce a DESIGN.md around the resolved visual thesis. Derive tokens and
+medium rules from it, adapting the useful choices from each inspected reference.
+Preserve project constraints outside the requested change; record which defaults
+are replaced and why. Do not average reference styles or let website tokens
+overrule the selected art direction.
 
 The synthesis should feel like a coherent design system, not a patchwork.
-A single DESIGN.md should have a clear visual thesis — one dominant color
-family, one type personality, one spacing philosophy.
+A single artifact should have a clear visual thesis. A project may define named
+directions with explicit selection rules; resolve one direction per artifact.
+Shared identity can survive different palettes and media through recurring
+shape, composition, typography, material, or motion choices.
 
 ### Step 4: Output
 
-Generate the DESIGN.md with this structure:
+Record the art direction (thesis, signature choices, scope, and avoided defaults)
+before deriving tokens. Use the token structure below as a base; add medium rules
+only for requested media, following the cross-media reference:
 
 ```yaml
 ---
@@ -125,19 +159,23 @@ Run gate:
 ```bash
 python3 <skill-dir>/scripts/synthesis_gate.py --design <path> --evidence .design/evidence.json
 ```
-blocked → DESIGN.md 缺失 或 <2 references。pass → 完成。
+`pass` means structural checks passed, not that the style is distinctive or
+visually accepted. Report structural validation and artistic review separately.
+Inspect requested samples for recognizable choices, content fit, and fidelity
+to the chosen direction; absent samples remain `not-run`. Do not generate
+additional deliverables merely to satisfy a visual check.
 
-## Optional Implementation Guidance
+## Optional Implementation Checks
 
 Generating `DESIGN.md` does not require UI implementation advice. Only when the
 user also asks to build or review the UI, read
-`references/implementation-anti-slop.md` and apply its red lines. Keep those
-implementation heuristics out of the normal design-token synthesis context.
+[Implementation checks](references/implementation-anti-slop.md). It checks
+functional correctness and fidelity, without adding aesthetic defaults.
 
 ## What Not To Do
 
 - Don't copy a reference DESIGN.md wholesale — always adapt.
-- Don't use more than 4 references — synthesis quality drops.
+- Keep the synthesis to 2–4 studied references; the discovery library can be larger.
 - Don't include implementation code (CSS, JSX, etc.) — DESIGN.md is a spec, not code.
 - Don't prescribe exact component markup — describe the visual properties
   (border radius, shadow, padding) not the HTML structure.

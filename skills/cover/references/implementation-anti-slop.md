@@ -1,49 +1,35 @@
-# Implementation Anti-Slop Rules
+# Implementation checks
 
-Load only when implementing or reviewing UI from a generated `DESIGN.md`.
+Read when implementing or reviewing HTML/UI from a project or artifact design.
+The filename is retained for existing callers. This file checks whether the
+chosen expression works; it supplies no palette, font, symmetry, texture, card,
+spacing, transition, or component-style defaults.
 
-## Typography
+## Fidelity to the work
 
-- No browser default fonts or Inter/Arial everywhere. Use distinctive fonts.
-- Give headlines presence through size and tighter tracking.
-- Keep body text near 65ch maximum and increase line-height.
-- Use more than Regular 400 and Bold 700; include Medium 500 or SemiBold 600.
-- Use `tabular-nums` or monospace for numeric columns.
-- Avoid all-caps subheaders everywhere.
-- Use `text-wrap: balance` to avoid orphaned words.
+Compare the actual render with the artifact's selected composition, typography,
+shape, material and interaction decisions. Fix deviations at their cause.
+Do not replace them with a generic template to make implementation easier.
+Pure black, saturated or muted colors, symmetry, asymmetry, flatness, texture,
+hard cuts and stillness are all available when the work calls for them.
 
-## Color
+## Functional checks
 
-- Use off-black, charcoal, or tinted dark instead of pure `#000000`.
-- Keep accent saturation below 80% and choose one primary accent.
-- Keep one warm or cool gray family; do not mix both.
-- Avoid generic purple/blue AI gradients.
-- Tint shadows to the background hue and keep one light source.
-- Add subtle texture when flat surfaces feel synthetic.
-- Do not insert an isolated dark section into a light page without design intent.
+- Check text at its intended size and viewing conditions: no missing glyphs,
+  accidental clipping, unreadable contrast or unintended overlaps. Distinguish
+  an intentional crop from losing text needed to understand or use the work.
+- Verify hierarchy and reading order; keep numerical comparisons interpretable.
+  Text length, viewport changes and localization must not hide required content.
+- For interactive elements, verify keyboard operation, visible focus, semantic
+  labels and understandable state changes. Do not rely on color alone for status.
+- Check actual overflow, scrolling and responsive behavior. Choose layout
+  mechanisms and widths from the work's needs, not a prescribed grid or max-width.
+- Check loading, empty, error and active states where they exist; choose their
+  appearance from the artifact design. Respect reduced-motion preferences.
+- Verify content and provenance. Clearly label synthetic/demo data; realistic
+  looking sample values are not evidence of actual measurements.
 
-## Layout
-
-- Avoid fully centered symmetric layouts and generic three-equal-card rows.
-- Prefer asymmetric grids, zig-zag composition, or masonry when appropriate.
-- Use `min-height: 100dvh`, not `height: 100vh`.
-- Prefer CSS Grid over complex percentage-based flexbox math.
-- Use a 1200-1440px max-width container for wide screens.
-- Do not force equal-height cards unless content requires it.
-- Vary border radius by hierarchy and use optical alignment where needed.
-- Avoid defaulting every dashboard to a left sidebar.
-- Align comparable titles, values, and calls to action.
-
-## Interactivity
-
-- Provide hover, pressed, and visible keyboard-focus states.
-- Keep interaction transitions around 200-300ms.
-- Prefer skeleton loaders to generic spinners.
-- Design empty and error states; never use `window.alert()`.
-- Distinguish active navigation.
-- Animate with `transform` and `opacity`, not layout properties.
-
-## Content
-
-- Avoid "John Doe" and "Jane Smith" placeholders.
-- Use organic sample data instead of fake round numbers.
+Record technical defects separately from artistic fidelity. A technically valid
+render can still fail to realize the work's identity; aesthetic strength cannot
+excuse broken interactions or misleading data. Passing these checks does not
+establish originality or user aesthetic acceptance.

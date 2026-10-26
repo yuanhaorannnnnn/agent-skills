@@ -90,6 +90,16 @@ python <skill-dir>/scripts/source_identity.py \
 
 每条管线完成 raw 归档后，返回本文件的蒸馏、query 来源链和索引门禁。未命中的分支无需加载。
 
+## 设计参考库补充（仅明确的设计用途）
+
+当用户或调用方明确把输入作为已有设计/视频参考库的新增材料时，保留上述
+identity → raw → query/index/catalog 流程，再读取已安装
+`<skills-root>/cover/references/style-routing.md` 的参考登记契约。
+向该项目已有来源 manifest 追加或补充 source record；只登记实际看过的帧、片段
+或音频观察，按片段 scope 分开混合风格。没有观察则保留未分类，不凭账号或色彩
+补标签。运行 style_route.py 的 catalog/reference validation；若调用方请求选风格，
+再由该契约路由。普通收藏/知识摄入不触发此登记，也不改变项目 DESIGN 或启动视频制作。
+
 ## 蒸馏规则
 
 从内容中提取**可操作**的知识。核心原则：找"how"不找"what"。

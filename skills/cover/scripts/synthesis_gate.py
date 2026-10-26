@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cover synthesis gate — verify DESIGN.md generated from multiple references.
+"""Cover structural gate — does not validate artistic quality.
 
 Usage:
   python3 synthesis_gate.py --design <path> --evidence <path> [--json]
@@ -11,7 +11,10 @@ from pathlib import Path
 def check_design_md(p):
     if not Path(p).exists():
         return False, "DESIGN.md: missing FAIL"
-    text = Path(p).read_text()
+    try:
+        text = Path(p).read_text()
+    except (OSError, UnicodeError) as e:
+        return False, f"DESIGN.md: unreadable {e} FAIL"
     ok = len(text) > 100 and "colors:" in text and "typography:" in text
     return ok, f"DESIGN.md: {len(text)} chars {'OK' if ok else 'too short or missing sections'}" + (" OK" if ok else " FAIL")
 
@@ -21,8 +24,9 @@ def check_reference_count(ep):
     try:
         d = json.loads(Path(ep).read_text())
         refs = d.get("references_studied", [])
-        ok = len(refs) >= 2
-        return ok, f"references: {len(refs)} studied (need >=2)" + (" OK" if ok else " FAIL")
+        ok = (isinstance(refs, list) and all(isinstance(r, str) and r.strip() for r in refs)
+              and len({r.strip() for r in refs}) == len(refs) and len(refs) >= 2)
+        return ok, f"references: {len(refs)} studied (need >=2 distinct nonempty source strings)" + (" OK" if ok else " FAIL")
     except Exception as e:
         return False, f"evidence: error {e} FAIL"
 
@@ -38,8 +42,8 @@ def check_max_refs(ep):
 def check_no_wholesale_copy(ep):
     try:
         d = json.loads(Path(ep).read_text()) if Path(ep).exists() else {}
-        ok = not d.get("wholesale_copy", False)
-        return ok, "copy check: OK" if ok else "copy check: WHOLESALE COPY FLAGGED FAIL"
+        ok = d.get("wholesale_copy") is False
+        return ok, "copy check: OK" if ok else "copy check: require explicit wholesale_copy=false FAIL"
     except Exception:
         return True, "copy check: skip OK"
 
@@ -58,14 +62,14 @@ def main():
         ("4.no_copy", check_no_wholesale_copy(args.evidence)),
     ]
 
-    hard = {"1","2"}
+    hard = {"1","2","4"}
     fails = [c for c in checks if c[0].split(".")[0] in hard and not c[1][0]]
     verdict = "blocked" if fails else "pass"
 
     if args.json:
-        print(json.dumps({"verdict": verdict, "failed": [f"{n} {m}" for n,m in checks if not m[0]]}, indent=2, ensure_ascii=False))
+        print(json.dumps({"verdict": verdict, "check_kind": "structure_lint", "artistic_review": "required", "failed": [f"{n} {m}" for n,m in checks if not m[0]]}, indent=2, ensure_ascii=False))
     else:
-        print(f"Cover Gate: {verdict.upper()}")
+        print(f"Cover Gate: {verdict.upper()} (structure only; artistic review required)")
         for n, (ok, msg) in checks: print(f"  [{n}] {msg}")
     sys.exit(0 if verdict != "blocked" else 1)
 

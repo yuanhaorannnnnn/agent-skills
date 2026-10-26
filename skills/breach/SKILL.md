@@ -1,7 +1,7 @@
 ---
 name: breach
 description: |
-  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests, explicit structured discussion digests ("digest this thread"), `$breach --archive`, requests to render an existing dossier material package, or dossier retrieval handoffs for default archive display; ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, or full websites.
+  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests, explicit structured discussion digests ("digest this thread"), `$breach --archive`, requests to render an existing dossier material package, or dossier retrieval handoffs for default archive display; ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, full websites, or rendered video files.
 ---
 
 # Quick Page
@@ -36,14 +36,20 @@ mode or automatically produce HTML.
   derives HTML from the Markdown maintenance source. Conops validates the final
   HTML with its own quality gate; Breach rendering and visual checks still apply.
 
+A requested HTML storyboard, video review page, or player belongs to General
+page. A requested rendered film belongs to an available video-production
+capability; pass the project DESIGN.md, selected direction, content, and delivery
+requirements. If none is available, identify the gap without substituting an
+HTML animation for a video. Do not invoke a hypothetical skill.
+
 ## Core Rule
 
-Speed first, polish follows. A good-enough page in 30 seconds beats a perfect
-page in 5 minutes.
+Deliver efficiently while preserving the chosen art direction. A generic page
+that erases the requested style is incomplete even if it renders correctly.
 
 Choose one mode:
 
-- **General page** — use html-effectiveness for layout and DESIGN.md sources for visual tokens; load the General page interaction reference when the page has controls or requested motion.
+- **General page** — resolve the artifact direction and inherited constraints, then use website and layout references only where needed under the shared collaboration rules; load the interaction reference for controls or requested motion.
 - **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
 - **Archive (`--archive`)** — render only a registered, dossier-gate-validated standard package with the bundled archive renderer/template and its reference-backed `assets/archive-DESIGN.md`. Material acquisition and conclusions remain upstream; no automatic dossier creation.
 
@@ -55,8 +61,8 @@ Choose one artifact mode and read only its route:
   [Archive](references/archive-mode.md). Require the dossier manifest and its identity catalog; the renderer runs dossier gate before rendering. An omitted input must resolve to one explicit registered package in context; otherwise ask for it. Reject raw documents or ad-hoc manifests; never standardize them inside breach. “调取XX的档案” first belongs to dossier for read-only lookup; dossier then calls Archive by default with the registered manifest, catalog and a separate output path. Breach does not perform the lookup or modify the source dossier.
 
 - HTML status page, diagram, slide-like page, PR/incident page →
-  [General page](references/general-page.md) for layout, project DESIGN.md tokens,
-  optional chart gate, and provenance.
+  [General page](references/general-page.md) for reference collaboration, scoped
+  tokens, optional chart gate, and provenance.
 - Multi-party email, issue, PR, chat, or forum discussion digest →
   [Discussion digest](references/discussion-digest-mode.md) for schema and
   deterministic renderer.
@@ -121,9 +127,9 @@ path; breach accepts it and writes there. Never write HTML into
 ## Agent-Specific
 
 - **Claude Code**: use `frontend-design` for generation, passing the observed
-  layout patterns and DESIGN.md tokens as constraints.
-- **Codex / Pi**: generate HTML directly, using the example's layout patterns
-  and the DESIGN.md tokens.
+  artifact brief, inherited constraints, scoped overrides and relevant layout patterns.
+- **Codex / Pi**: generate HTML directly from the same resolved artifact brief
+  and scoped tokens; references inform rather than replace its direction.
 
 ## Routing telemetry
 
