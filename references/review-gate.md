@@ -55,6 +55,12 @@ Review two axes separately. A pass on one axis cannot offset a failure on the ot
 
 Record findings under `Standards` and `Spec`, then apply blocker policy to the combined set.
 
+## Finding Evidence, Re-review, and Validation Limits
+
+1. **Evidence and attribution:** Each finding must name a concrete trigger, impact, and verified file/line location, and classify its relation to the change: introduced, exposed or worsened by the change, or unrelated pre-existing issue. Explain that relationship from the current diff and connected code; do not report speculation as a confirmed defect. List unrelated pre-existing issues separately as follow-ups and exclude them from this change's blocker counts. An older defect that the change exposes or depends on for safe delivery remains relevant; age alone does not exempt it.
+2. **Re-review and convergence:** Check whether prior findings are resolved and whether the fixes introduce regressions, focusing on the new diff and affected dependencies. Reuse valid evidence for unchanged code; reopen a resolved finding only with new evidence. If repeated rounds make no substantive progress, stop repeating the same review and reassess the approach, unresolved disagreement, or missing evidence. Record the remaining blocker and next action; a round limit never grants a pass or waives an unresolved blocker.
+3. **Validation limits:** State the change's key failure modes, which executed checks cover them, and what remains unverified. Link existing test results and review evidence rather than creating a duplicate report. Distinguish static inspection, executed tests, and runtime validation; passing a narrow check does not establish broader behavior. Assess material validation gaps under the blocker policy.
+
 ## Reviewer Selection
 
 Use Codex review as the default gate.
@@ -69,7 +75,7 @@ For Claude Code and Pi, review invocation evidence should look the same: a `/cod
 
 ## Blocker Rules
 
-Default blocking policy:
+Default blocking policy, applied to findings relevant to the current change as defined above:
 
 - Any P1 finding → BLOCK.
 - Three or more P2 findings → BLOCK.
