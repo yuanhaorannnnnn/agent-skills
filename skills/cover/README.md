@@ -166,8 +166,10 @@ not a fictional visual-recognition confidence score. It validates agent-observed
 features; it does not watch films. Existing project specifications remain valid.
 
 
-A catalog selection resolves a family, not a finished work. Each new image,
-HTML artifact and video needs a subject-led visual idea and signature choices;
+A catalog selection resolves a family, not a finished work. Each new HTML
+artifact and video needs a subject-led visual idea and signature choices;
+image generation follows the user's prompt without mandatory catalog routing.
+Serious `lieflat-charts` graphs follow their own data, template and visual rules;
 shared tokens do not authorize copying the last composition. Functional checks
 verify readability and operation without prescribing an aesthetic. Final
 artistic review remains tied to the rendered work, not the routing status.

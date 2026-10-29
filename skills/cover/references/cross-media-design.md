@@ -5,8 +5,10 @@ project explicitly needs motion or sound direction. Cover owns the design
 contract. Each renderer owns its artifact and validation. No video renderer is
 installed or invoked by this reference.
 
-Resolve the direction through [Style routing](style-routing.md) when it is not
-already established. A style is independent from the content format: a launch
+For pages and video, resolve the direction through [Style routing](style-routing.md)
+when it is not already established. Image generation follows the user's prompt;
+do not impose a style family or route it through the catalog unless the user
+explicitly requests routing. Honor any style named in the prompt directly. A style is independent from the content format: a launch
 film, tutorial, or test report needs its own narrative structure even when it
 shares an artistic direction.
 
@@ -51,6 +53,14 @@ project specification, not to every artifact or to each reference layer.
   choices. Website tokens and layout examples supply adaptable references. A
   default token conflicting with the direction can be overridden in the brief
   and implementation; record the value/role and scope. Unaffected tokens remain.
+- When a serious data chart uses `lieflat-charts`, its data encoding, selected
+  template and visual rules govern the chart; the surrounding page's artistic
+  direction does not override them. Direct user instructions for that chart
+  remain authoritative. Keep page and chart coherent where those rules allow.
+- When an illustration uses `hairline-create`, its figure style, engine and
+  skill rules govern that figure rather than the surrounding page's artistic
+  direction. If they do not fit the work, choose a different illustration
+  approach. Direct user instructions for the figure remain authoritative.
 - Resolve ordinary design tradeoffs directly. Ask only when two explicit user
   requirements cannot both be met and the missing choice changes the result;
   do not add routine style approval or require a new DESIGN.md for a one-off.
@@ -61,8 +71,9 @@ The task's producing agent selects the applicable workflow; the user need not
 name skills. Invoke Cover when the task needs a new or updated reusable project
 specification. Cover writes DESIGN.md and its evidence. For a one-off HTML page,
 Breach resolves the brief and scoped tokens, reads the shared contract, and
-implements without invoking Cover solely to manufacture a file. Image/video
-producers receive the same artifact brief and own their medium-specific output.
+implements without invoking Cover solely to manufacture a file. Video producers
+receive the resolved brief and own their medium-specific output. Image generators
+follow the user's prompt, including any explicitly requested project direction.
 Breach may present a film review page but does not become the film producer.
 
 Handoff includes the content objective, actual project specification if present,
@@ -105,9 +116,11 @@ readability, focus visibility and truthful evidence within that expression.
 
 ## Each artifact has its own identity
 
-A style family is a vocabulary, not a finished design. For each new image, HTML
+A style family is a vocabulary, not a finished design. For each new HTML
 artifact or film, the producing agent resolves a work-specific direction before
-production, even if a project already supplies tokens. Reuse the existing brief
+production, even if a project already supplies tokens. Image generation follows
+the user's prompt without requiring a catalog family or extra art-direction step.
+Reuse the existing brief
 or conversation; no extra file, form, approval round or new style ID is required.
 
 State the work's subject and intended effect, its central visual idea, the
@@ -116,14 +129,14 @@ being inherited and what this work deliberately does differently from the
 nearest available project example. If no comparison exists, say so rather than
 claiming measured uniqueness. Do not search the whole world to prove originality.
 
-For images, describe the subject treatment, framing, shape and material choices.
 For HTML, express the idea through composition, typography, imagery and behavior
 across the work, not just a decorative hero. For video, give the movement,
 editing and sound choices a relationship to the script. A family name plus
-colors is insufficient for all three media.
+colors is insufficient for either medium.
 
 The caller passes this resolved direction along with the project constraints to
-its image-generation tool, HTML renderer or video producer. A tool's convenient
+the HTML renderer or video producer. For images, pass the user's prompt and any
+explicitly requested constraints. A tool's convenient
 default must not erase it. A continuous series may intentionally share a visual
 identity; distinguish its episodes through their content-driven compositions
 rather than random novelty. Editing an existing work preserves its established

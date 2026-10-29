@@ -40,9 +40,9 @@ class StyleRoutingTests(unittest.TestCase):
             p.write_text("# Existing project direction")
             brief = {"medium": "page", "project": {"design": str(p), "style_id": "legacy-project"}}
             self.assertEqual(self.call(brief)["selected"], "legacy-project")
-            brief["explicit_style"] = "强字体编排"
+            brief["explicit_style"] = "新艺术运动"
             result = self.call(brief)
-            self.assertEqual(result["selected"], "expressive-typography")
+            self.assertEqual(result["selected"], "art-nouveau")
             self.assertIn("project_override", result)
             self.assertEqual(p.read_text(), "# Existing project direction")
 
@@ -51,17 +51,17 @@ class StyleRoutingTests(unittest.TestCase):
         self.assertEqual(result["status"], "conflict")
 
     def test_signature_requires_same_source_and_scope(self):
-        a = observation("paper-fragments")
-        for b in [observation("assembled-relationships", source="other.png"),
-                  observation("assembled-relationships", scope="other-shot")]:
+        a = observation("industrial-geometry")
+        for b in [observation("hard-edge-space", source="other.png"),
+                  observation("hard-edge-space", scope="other-shot")]:
             self.assertEqual(self.call({"medium": "image", "observations": [a, b]})["status"], "needs_observation")
-        result = self.call({"medium": "image", "observations": [a, observation("assembled-relationships")]})
+        result = self.call({"medium": "image", "observations": [a, observation("hard-edge-space")]})
         self.assertEqual(result["status"], "proposed")
-        self.assertEqual(result["candidates"][0]["id"], "material-collage")
+        self.assertEqual(result["candidates"][0]["id"], "precisionism")
         self.assertIsNone(result["selected"])
 
     def test_mixed_complete_signatures_are_ambiguous(self):
-        obs = [observation(f) for f in ["text-as-image", "scale-led-hierarchy", "industrial-geometry", "hard-edge-space"]]
+        obs = [observation(f) for f in ["faceted-planes", "simultaneous-viewpoints", "industrial-geometry", "hard-edge-space"]]
         result = self.call({"medium": "video", "observations": obs})
         self.assertEqual(result["status"], "ambiguous")
         self.assertEqual(len(result["candidates"]), 2)
@@ -75,7 +75,7 @@ class StyleRoutingTests(unittest.TestCase):
         refs = {"references": [{"id": "new-film", "source_url": "https://example.org/film"}]}
         brief = {"medium": "video", "reference_ids": ["new-film"]}
         self.assertEqual(self.call(brief, refs)["status"], "needs_observation")
-        refs["references"][0]["style_observations"] = [observation("text-as-image", source="https://example.org/film"), observation("scale-led-hierarchy", source="https://example.org/film")]
+        refs["references"][0]["style_observations"] = [observation("industrial-geometry", source="https://example.org/film"), observation("hard-edge-space", source="https://example.org/film")]
         self.assertEqual(self.call(brief, refs)["status"], "proposed")
 
     def test_reference_cannot_borrow_an_unrelated_source(self):

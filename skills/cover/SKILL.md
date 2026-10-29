@@ -22,6 +22,9 @@ your job is to remix them for the user's specific product, audience, and tone.
 State the project's visual idea and the concrete choices that make it recognizable:
 composition, shape, color relationships, typography, material, and, when relevant,
 motion and sound. Select a dominant direction rather than averaging references.
+For image generation, follow the user's prompt; catalog style routing is not
+mandatory unless requested. Serious data charts using `lieflat-charts` follow
+its data, template and visual rules, not the surrounding artistic direction.
 Warm paper, muted colors, rounded cards, and glossy gradients are choices, never
 a universal safe default. Cold, monochrome, saturated, rough, or austere work can
 be equally coherent. Legibility constrains use, not personality.
@@ -30,9 +33,9 @@ Before combining references or handing a direction to a renderer, read
 [Cross-media design](references/cross-media-design.md), including reference
 collaboration, conflict resolution and ownership. These rules also apply to HTML alone. For artist, artwork, or
 launch-film references, read [Reference selection](references/visual-references.md).
-A palette swap alone does not establish a new art direction. Each new work needs
-its own subject-led composition and signature choices, even when its style family
-or project tokens are shared. Read the artifact-identity section of the
+A palette swap alone does not establish a new art direction. Each new HTML work
+or film needs its own subject-led composition and signature choices, even when
+its style family or project tokens are shared. Read the artifact-identity section of the
 cross-media contract before handing a direction to a renderer.
 
 ## Reference Library

@@ -26,7 +26,7 @@ method explainer and an archive tour may share a style without sharing a script.
 production, derive this work’s own visual idea and signature choices using the
 cross-media contract; an existing project default does not skip that step.
 
-The catalog covers all 29 source-video labels plus 3 contemporary directions.
+The catalog covers all 29 source-video labels. Material collage, generative fields and expressive typography are techniques, not catalogued artistic styles.
 Each historical entry links institutional sources and distinguishes historical
 scope from proposed page/image/video treatments. See
 [the 29-label guide](art-style-guide.md) for the mapping and important confusions.

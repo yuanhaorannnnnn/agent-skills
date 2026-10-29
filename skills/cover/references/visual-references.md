@@ -59,25 +59,14 @@ The source manifest is
 page snapshots, and 5 separately identified original samples. If unavailable,
 use the source URLs above; do not assume a portable installation contains media.
 
-The user reviewed the Passdown comparison on 2026-10-26 and accepted this
-project-specific direction: prioritize exploration of strong typography for release shorts;
-retain digital paper collage for material/archive/handoff stories; drop the
-cold generative sample from this round because its motion did not explain the
-subject. This is not a ban on cool palettes or generative art.
-
-When adapting these examples, make the visual action carry a content relation:
-strike out noise, preserve decisions, point to the next step. Replacing the
-subject should require reconsidering that action. Do not freeze these drafts
-as a final brand system or treat technical checks as user aesthetic acceptance
-of every detail. Video skill creation remains separate future work.
-
-This preference is not an automatic template for every new film. Resolve each
-work’s own content-led visual idea and signature choices before production,
-including when a preferred family is selected.
+The Passdown samples and their earlier comparison remain historical records.
+The user subsequently removed their three experimental techniques from the
+active style reference candidates; do not use that comparison as a default for
+new work. Explicit requests for an individual technique remain valid.
 
 ## 29-label definition coverage
 
 The original video labels now map to 29 sourced historical-inspired directions,
-with 3 contemporary directions retained separately. Use [the guide](art-style-guide.md)
+with the three previous experimental techniques excluded from style candidates. Use [the guide](art-style-guide.md)
 and [catalog](style-catalog.json); the source video remains an illustration
 reference, not the sole authority for these definitions.

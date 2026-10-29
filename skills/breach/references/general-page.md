@@ -31,6 +31,11 @@ In General page mode, `lieflat-charts` may render a chart module inside the
 page. Breach still owns page integration and chart placement;
 `paperwork` owns the surrounding narrative.
 
+For a serious data chart rendered with `lieflat-charts`, its own data encoding,
+template and visual rules govern the chart even when the page has an artistic
+style. Do not recolor or reshape it merely to match the page. Explicit user
+instructions for that chart remain authoritative.
+
 Use it only when all are true:
 
 - the input contains real quantitative data or an honest relationship graph;
@@ -59,6 +64,11 @@ follow its build, validator and visual checks; keep its kernel and bench
 unchanged. Generate in the caller's artifact directory. The managed upstream
 source and pinned revision live in agent-platform's
 `migration/upstream-manifest.yaml`; do not copy that skill into agent-skills.
+
+When Hairline is selected, its figure style, engine and skill rules govern the
+figure; the surrounding page's artistic style does not override them. If the
+fixed style does not fit, omit Hairline and use another suitable illustration
+approach. Explicit user instructions for the figure remain authoritative.
 
 Keep the validated standalone HTML as the source artifact. When useful inside
 the page, embed it in an isolated iframe with a descriptive `title` (`srcdoc`
@@ -171,7 +181,8 @@ For an HTML storyboard/review page, preserve shot order, timecodes, captions,
 audio intentions and validation status supplied by the video owner. Keep page
 navigation and explanatory labels outside the frames. A storyboard can describe
 motion; it cannot prove an exported film, soundtrack, or timing has been tested.
-Discussion digest and Archive retain their dedicated template contracts.
+Discussion digest preserves its schema and renderer contract; Archive retains
+its dedicated template and visual contract.
 
 Review technical usability and artistic fidelity separately. Inspect the actual
 render for the chosen signature choices and topic-specific composition. Passing
@@ -197,7 +208,9 @@ scoped artifact brief; it does not authorize Breach to edit DESIGN.md. Existing
 project pages still use their specification directly without invoking the router
 or searching references. If the optional router is unavailable, preserve the
 explicit/project direction and disclose that structured matching was not run;
-do not invent a registered style. Archive/digest do not enter this route.
+do not invent a registered style. Discussion digest also uses this style selection
+contract while preserving its input and rendering contracts. Archive retains its
+fixed dossier presentation and does not enter this route.
 
 
 ### Artifact identity before implementation
@@ -214,5 +227,6 @@ Validate the rendered result against those choices. Generic layout examples are
 structural references, not skins to copy. Functional checks may fix an unreadable
 caption or broken control but may not silently replace saturation, symmetry,
 font choices or dramatic scale with a universal safe aesthetic. Dedicated
-Archive/digest requests still preserve their requested template identity;
-redesigning those templates requires that scope rather than a silent restyle.
+Archive retains its fixed template identity. Discussion digest redesigns use
+an artifact-specific template while preserving its structured content; existing
+artifacts are not silently restyled.

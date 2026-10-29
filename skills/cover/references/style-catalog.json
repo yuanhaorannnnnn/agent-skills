@@ -1301,74 +1301,12 @@
         }
       ],
       "definition_status": "institution-text-grounded; production treatments proposed"
-    },
-    {
-      "id": "material-collage",
-      "aliases": [
-        "实体拼贴",
-        "数字拼贴",
-        "纸材拼贴",
-        "material collage"
-      ],
-      "family": "contemporary-direction",
-      "signature_features": [
-        "paper-fragments",
-        "assembled-relationships"
-      ],
-      "thesis": "让材料的裁切、叠压与连接表达信息关系。",
-      "distinguish": "暖色、纸张背景或阴影不等于拼贴；数字模拟不得标成实拍。",
-      "media": {
-        "page": "用材料关系组织内容，控件与文字保持可操作和可读。",
-        "image": "明确碎片、边缘、叠压与连接的构图目的。",
-        "video": "材料的出现/重排/交接对应叙事，不只做纸片漂浮。"
-      }
-    },
-    {
-      "id": "generative-field",
-      "aliases": [
-        "生成艺术线场",
-        "冷色生成艺术",
-        "generative field"
-      ],
-      "family": "contemporary-direction",
-      "signature_features": [
-        "procedural-repetition",
-        "field-topology"
-      ],
-      "thesis": "让规则生成的点线结构承载场、连接或连续变化。",
-      "distinguish": "蓝色、粒子或旋转不能证明生成方法；先描述外观，算法须源码证据。",
-      "media": {
-        "page": "只在结构本身能解释内容时使用生成图形。",
-        "image": "以可辨认的规则与拓扑形成主体。",
-        "video": "运动规则须对应内容；颜色可冷可暖，不能以冷色代替主题联系。"
-      }
-    },
-    {
-      "id": "expressive-typography",
-      "aliases": [
-        "强字体编排",
-        "动态字体",
-        "expressive typography",
-        "kinetic typography"
-      ],
-      "family": "contemporary-direction",
-      "signature_features": [
-        "text-as-image",
-        "scale-led-hierarchy"
-      ],
-      "thesis": "文字通过尺度、位置与对比承担视觉和叙事。",
-      "distinguish": "大标题不等于完整字体方向；动态性需序列证据，静帧不能证明。",
-      "media": {
-        "page": "文字主导构图，字形/字号/留白形成可辨认节奏。",
-        "image": "将文字作为主体，用对比建立语义关系。",
-        "video": "以划除/保留/指向等文字动作承载内容；逐句保证阅读停留。"
-      }
     }
   ],
   "coverage": {
     "source_label_count": 29,
     "historical_direction_count": 29,
-    "contemporary_direction_count": 3,
+    "contemporary_direction_count": 0,
     "source_label_map": {
       "纯粹主义": "purism",
       "新客观主义": "new-objectivity",

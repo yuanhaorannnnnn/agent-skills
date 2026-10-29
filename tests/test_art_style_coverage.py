@@ -30,8 +30,13 @@ class ArtStyleCoverageTests(unittest.TestCase):
                     self.assertTrue(result["artifact_direction_required"])
                     selected.add(result["selected"])
         self.assertEqual(len(selected), 29)
-        self.assertEqual(len(CATALOG["styles"]), 32)
+        self.assertEqual(len(CATALOG["styles"]), 29)
         self.assertEqual(set(CATALOG["coverage"]["source_label_map"]), set(LABELS))
+
+    def test_temporary_techniques_are_not_style_candidates(self):
+        for label in ("材料拼贴", "生成艺术线场", "强字体编排"):
+            result = router.route({"medium": "page", "explicit_style": label}, CATALOG)
+            self.assertEqual(result["status"], "needs_style_definition")
 
     def test_historical_sources_and_media_limits_required(self):
         for style in CATALOG["styles"]:

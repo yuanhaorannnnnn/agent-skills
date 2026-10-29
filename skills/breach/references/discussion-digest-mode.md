@@ -15,4 +15,11 @@ python3 <skill-dir>/scripts/render_discussion.py \
   raw/discussions/<slug>.json -o queries/<slug>.html
 ```
 
-The bundled `assets/discussion-digest.html` owns layout and style for this mode. The renderer adds breach provenance. Do not rewrite the HTML by hand unless the template itself needs repair.
+The bundled `assets/discussion-digest.html` is a default, not a fixed artistic
+direction. Resolve the work's artistic direction using the General page style
+contract; for a redesign, copy the template into the artifact directory, adapt
+its composition, typography and colors without changing placeholders or source
+semantics, and pass the copy with `--template`. Keep the structured JSON and
+renderer, record the actual template and style route in provenance, and validate
+the final output on desktop and mobile. Preserve existing artifacts unless a
+redesign was requested. Never substitute invented facts for source content.

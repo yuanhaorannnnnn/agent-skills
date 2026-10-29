@@ -50,8 +50,15 @@ that erases the requested style is incomplete even if it renders correctly.
 Choose one mode:
 
 - **General page** — resolve the artifact direction and inherited constraints, then use website and layout references only where needed under the shared collaboration rules; load the interaction reference for controls or requested motion.
-- **Discussion digest** — use the bundled schema, renderer, and template. Do not run the generic layout/style selection because this mode is deterministic.
+- **Discussion digest** — use the bundled schema and renderer; resolve an artistic direction and use an artifact-specific template when appropriate.
 - **Archive (`--archive`)** — render only a registered, dossier-gate-validated standard package with the bundled archive renderer/template and its reference-backed `assets/archive-DESIGN.md`. Material acquisition and conclusions remain upstream; no automatic dossier creation.
+
+For a General page or Discussion digest with an explicitly requested new artistic style, run the
+existing Cover style router before rendering, inspect its status and record the
+actual receipt in provenance, as specified in General page. Do not infer that
+reading the reference or naming a style is equivalent to running it. If the
+router is unavailable, follow the documented fallback and disclose it. A
+previously routed unchanged direction can reuse its existing receipt.
 
 ## Minimal entry
 
@@ -140,13 +147,13 @@ Use `route=general-page|discussion-digest|archive|native-handoff|inline-answer|u
 A route is the branch actually entered, even if it later fails. Record
 `content-profile=default|eli5`, `prose=author|faithful`, and the selected style
 source category. For General page, also record chart/Hairline decisions after
-resolving availability and integration; for digest, use `style=digest-template`
-and `charts=omit`, `hairline=omit`. Archive uses `style=archive-template`, `prose=faithful`, and the same omitted chart/illustration decisions; record actual render/visual checks. It preserves existing relationship views, not new analytical content.
+resolving availability and integration; for digest, record the actual style
+source and use `charts=omit`, `hairline=omit`. Archive uses `style=archive-template`, `prose=faithful`, and the same omitted chart/illustration decisions; record actual render/visual checks. It preserves existing relationship views, not new analytical content.
 
 Record actual step states for `paperwork`, `layout`, `style`, `render`, `charts`,
 `hairline`, `visual-check`. `pass` requires the relevant completed work or check;
 selection alone is `pending`. Faithful prose → `paperwork=skipped`; digest →
-`layout=skipped` (generic lookup), `style=pass` only after the template is read.
+`layout` and `style` reflect the actual selected template and style work.
 Modules omitted by decision → `skipped`; unavailable requested modules with a
 working native fallback → module `skipped`, rendered fallback verified separately.
 Stop before rendering → `render=pending`, never `pass`.
