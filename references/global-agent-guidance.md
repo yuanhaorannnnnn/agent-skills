@@ -38,6 +38,7 @@
 
 ## 操作约束
 
+- 浏览器按任务分流：需要登录、复用已有登录状态或使用已有标签页时，使用 Chrome（`@Chrome`）；公开网页和本地预览使用 ChatGPT 内置浏览器（`@Browser`）。两者重叠时优先满足登录或已有标签页需求。用户本轮明确指定浏览器时遵从指定；Chrome 不可用时说明缺口，不静默切换到内置浏览器要求重新登录。
 - 只读检查先用当前 sandbox；`rg`、`sed -n`、`jq`、`wc`、`nl`、`find` 和普通读取不预先提权。仅本轮发生具体 sandbox/网络拒绝后才可申请 `require_escalated`，理由引用该失败。
 - Auto-review 过多应修正 sandbox 边界、缩小 `writable_roots`；不得为少弹提示添加宽泛命令放行规则。
 - Headless 视觉验证：每版 artifact 合并所有 viewport/截图一次检查，仅发现具体视觉缺陷或后续改版才重跑。
