@@ -37,8 +37,11 @@ HTML page + provenance comment + visible footer
 
 The layout source determines spatial structure. The style source determines
 colors, typography, spacing, radius, shadows, and component tone. They are
-separate inputs. If a project `DESIGN.md` exists, it takes precedence; never
-invent a style source or write a new `DESIGN.md` as part of page generation.
+separate inputs. Apply a project `DESIGN.md` only when it belongs to the work;
+a shared storage location alone does not establish ownership. Preserve an existing
+work’s direction during maintenance unless restyling is requested. A new independent
+work can resolve its own direction without a project spec. Do not invent a style
+source or write a new `DESIGN.md` as part of page generation.
 
 When the selected style defines `content-modes`, record the chosen mode in
 `BREACH_PROVENANCE` as `content_mode`. A content mode changes treatment inside

@@ -45,8 +45,11 @@ project specification, not to every artifact or to each reference layer.
 - Truthful content, data meaning and required functionality survive aesthetic
   changes. Fix a concrete legibility or interaction defect locally while keeping
   the direction; these requirements prescribe no universal palette or layout.
-- Explicit user choices govern the requested scope. Read DESIGN.md to distinguish
-  fixed brand constraints from defaults, legacy tokens and per-artifact choices.
+- Explicit user choices govern the requested scope. Determine the work’s ownership
+  before applying a DESIGN.md; storage under a shared directory alone is insufficient.
+  Maintain an existing work’s established direction unless restyling is requested;
+  new independent works resolve their own direction. Read an applicable DESIGN.md to
+  distinguish fixed brand constraints from defaults, legacy tokens and per-artifact choices.
   Preserve fixed constraints unless the request authorizes changing them. An
   explicit restyle authorizes an artifact-scoped override, not a project rewrite.
 - Within those constraints, the resolved artifact direction governs expressive
