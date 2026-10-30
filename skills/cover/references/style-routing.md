@@ -95,6 +95,10 @@ contact_sheet; existing manifests without them remain valid and unclassified.
 of one sample into a catalog-wide ban. The agent checks content fit: what visual
 action carries the message, and what would be lost if removed? A single valid
 candidate can be selected with a brief rationale; no mandatory approval round.
+When the agent must choose a direction, compare task-relevant alternatives,
+including an unfamiliar option where suitable; do not choose by habit or recent
+reuse. State the differentiating fit in the existing brief or delivery. Reuse is
+valid when justified; do not force rotation or impose the catalog on user-led work.
 For ambiguity, inspect the differentiating feature or show a bounded choice
 when user preference changes the result. If the requested direction is new,
 define it from evidence; do not force it into the nearest existing ID.
