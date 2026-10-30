@@ -138,6 +138,8 @@ def build_index(args) -> int:
             fhash = eh.hashlib.sha256(f"{runtime}:{path}".encode()).hexdigest()[:16]
             chunk_index = 0
             for turn_index, turn in enumerate(result.get("turns", [])):
+                if eh.automation_context(turn):
+                    continue
                 text = (turn.get("text") or "").strip()
                 if len(text) < MIN_CHUNK_CHARS:
                     continue

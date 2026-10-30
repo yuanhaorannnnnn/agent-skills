@@ -69,6 +69,22 @@ def truncate_text(text: str, max_tokens: int) -> str:
     return text[:head_chars].rstrip() + marker + text[-tail_chars:].lstrip()
 
 
+def truncate_around_match(text: str, offset: int, length: int, max_tokens: int) -> str:
+    """Keep the indexed passage when compressing an oversized turn."""
+    if estimate_tokens(text) <= max_tokens:
+        return text
+    max_chars = max_tokens * 3
+    marker = "\n...[turn truncated to handoff budget]...\n"
+    body_chars = max_chars - 2 * len(marker)
+    if body_chars <= 0:
+        body_chars = max_chars
+        marker = ""
+    center = offset + min(length, max(0, len(text) - offset)) // 2
+    start = max(0, min(len(text) - body_chars, center - body_chars // 2))
+    end = min(len(text), start + body_chars)
+    return (marker if start else "") + text[start:end] + (marker if end < len(text) else "")
+
+
 def _focus_terms(focus: str | None) -> list[str]:
     if not focus:
         return []
@@ -103,38 +119,171 @@ def _decompress_zstd(path: Path) -> str | None:
     return None
 
 
-def focus_score(path: Path, focus: str | None) -> int:
-    """Return a focus score for a session file via streaming full-file scan.
+def keyword_occurrences(term: str, text: str) -> int:
+    """Match structured identifiers on token boundaries, not as prefixes."""
+    if re.search(r"[0-9_./:+-]", term):
+        pattern = (r"(?<![a-z0-9_./:+-])" + re.escape(term) +
+                   r"(?![a-z0-9_]|[./:+-](?=[a-z0-9_]))")
+        return sum(1 for _ in re.finditer(pattern, text))
+    return text.count(term)
 
-    Reads the entire file in chunks to avoid missing focus terms in the
-    middle of long sessions. This is intentionally scalar — the file must
-    be read eventually for extraction, so the marginal cost is low.
-    zstd-compressed sessions are decompressed first (the raw bytes would
-    never match focus terms).
-    """
+
+def focus_score(path: Path, focus: str | None, runtime: str) -> int:
+    """Score only the same conversation turns eligible for handoff."""
     terms = _focus_terms(focus)
     if not terms:
         return 0
-    score = 0
+    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude, "dsh": parse_dsh}
     try:
-        if str(path).endswith(".zstd"):
-            data = _decompress_zstd(path)
-            if data is None:
-                return 0
-            lowered = data.lower()
-            for term in terms:
-                score += lowered.count(term) * max(1, len(term))
-            return score
-        with open(path, "rb") as f:
-            chunk = f.read(1_000_000)
-            while chunk:
-                data = chunk.decode("utf-8", errors="ignore").lower()
-                for term in terms:
-                    score += data.count(term) * max(1, len(term))
-                chunk = f.read(1_000_000)
+        turns = parsers[runtime](path)["turns"]
+        return sum(keyword_occurrences(term, turn["text"].lower()) * max(1, len(term))
+                   for turn in turns for term in terms)
     except Exception:
         return 0
-    return score
+
+
+# Grammatical scaffolding does not describe the subject of a history search.
+KEYWORD_STOPWORDS = frozenset({
+    "为什么", "怎么", "如何", "是否", "怎样", "什么", "哪些", "先前",
+    "已经", "我们", "用户", "这个", "那个", "the", "and", "for",
+    "how", "what", "why", "does", "was", "were", "with", "can",
+})
+
+
+def keyword_tokens(focus: str) -> tuple[list[str], str]:
+    """Tokenize query only; identifiers remain intact and the fallback is offline."""
+    parts = re.findall(r"[a-z0-9_./:+-]+|[\u4e00-\u9fff]+", focus.lower())
+
+    def split(cut):
+        tokens = []
+        for part in parts:
+            if re.fullmatch(r"[\u4e00-\u9fff]+", part):
+                words = [x for x in cut(part) if len(x) > 1 and x not in KEYWORD_STOPWORDS]
+                if not words and 1 < len(part) <= 3 and part not in KEYWORD_STOPWORDS:
+                    words = [part]
+                tokens.extend(words)
+            elif part not in KEYWORD_STOPWORDS:
+                tokens.append(part)
+        return list(dict.fromkeys(tokens)) or ([focus.strip().lower()] if focus.strip() else [])
+
+    try:
+        import jieba
+        jieba.setLogLevel("ERROR")
+        return split(lambda text: jieba.cut(text, HMM=False)), "jieba"
+    except Exception:
+        return split(lambda text: [text]), "literal_fallback"
+
+
+def automation_context(turn: dict) -> dict | None:
+    """Recognize the scheduler's four-line wrapper without indexing its prompt."""
+    if turn.get("role") != "user":
+        return None
+    lines = turn.get("text", "").splitlines()
+    prefixes = ("Automation: ", "Automation ID: ", "Automation memory: ", "Last run: ")
+    if len(lines) < 4 or not all(lines[i].startswith(p) for i, p in enumerate(prefixes)):
+        return None
+    name, identifier = lines[0][len(prefixes[0]):].strip(), lines[1][len(prefixes[1]):].strip()
+    if not name or not re.fullmatch(r"[a-zA-Z0-9_.-]+", identifier):
+        return None
+    return {"name": name, "id": identifier}
+
+
+def rank_keyword_candidates(candidates: list[dict], focus: str) -> dict:
+    """Score allowed turns and tightly bounded adjacent question/answer pairs."""
+    tokens, tokenizer = keyword_tokens(focus)
+    parsers = {"codex": parse_codex, "pi": parse_pi, "claude": parse_claude, "dsh": parse_dsh}
+    docs = {}
+    failed = 0
+    for c in candidates:
+        key = (str(c["path"]), c["runtime"])
+        if key in docs:
+            continue
+        try:
+            turns = parsers[c["runtime"]](c["path"])["turns"]
+            entries = []
+            context = None
+            for turn in turns:
+                info = automation_context(turn)
+                if info:
+                    context = info
+                    entries.append(("automation", "", info["id"].lower()))
+                    continue
+                role = turn["role"]
+                if role == "user":
+                    context = None
+                text = turn["text"].lower()
+                identifier = context["id"].lower() if role == "assistant" and context else None
+                entries.append((role, text, identifier))
+            docs[key] = entries
+        except Exception:
+            docs[key] = None
+            failed += 1
+    def contains(term, text, identifier):
+        if identifier == term:
+            return True
+        return keyword_occurrences(term, text) > 0
+
+    valid_docs = [turns for turns in docs.values() if turns is not None]
+    count = len(valid_docs)
+    frequency = {t: sum(any(contains(t, text, identifier) for _, text, identifier in turns) for turns in valid_docs) for t in tokens}
+    distinctive = [t for t in tokens if frequency[t] <= count / 2]
+    active = distinctive or tokens
+    mixed_script = bool(re.search(r"[\u4e00-\u9fff]", focus))
+    mandatory = [t for t in distinctive if re.fullmatch(r"[a-z0-9_./:+-]+", t)
+                 and (mixed_script or re.search(r"[0-9_./:+-]", t))]
+    needed = min(2, len(active))
+    weights = {t: math.log((count + 1) / (frequency[t] + 1)) + 1 for t in active}
+    context_terms = [t for t in tokens if t not in active]
+    rare = {t for t in active if frequency[t] <= max(1, count / 5)}
+    for c in candidates:
+        c.pop("keyword_ordinal", None)
+        c.pop("keyword_ordinals", None)
+        c.pop("keyword_match", None)
+        c.pop("keyword_context_matches", None)
+        entries = docs[(str(c["path"]), c["runtime"])] or []
+        score = 0.0
+        best = []
+        context_matches = 0
+        match_kind = None
+        for ordinal, (role, text, identifier) in enumerate(entries):
+            if role == "automation":
+                continue
+            found = {t for t in active if contains(t, text, identifier)}
+            if len(found) >= needed and all(t in found for t in mandatory):
+                value = sum(weights[t] for t in found)
+                extra = sum(contains(t, text, identifier) for t in context_terms)
+                if (value, extra) > (score, context_matches):
+                    score, context_matches, best, match_kind = value, extra, [ordinal], "turn"
+        for ordinal in range(len(entries) - 1):
+            role_a, text_a, id_a = entries[ordinal]
+            role_b, text_b, id_b = entries[ordinal + 1]
+            if role_a != "user" or role_b != "assistant":
+                continue
+            left = {t for t in active if contains(t, text_a, id_a)}
+            right = {t for t in active if contains(t, text_b, id_b)}
+            found = left | right
+            # Both sides must contribute different rare terms; this prevents
+            # common words from joining unrelated adjacent messages.
+            if (len(found) >= needed and all(t in found for t in mandatory)
+                    and (left - right) & rare and (right - left) & rare):
+                value = sum(weights[t] for t in found)
+                extra = sum(contains(t, text_a, id_a) or contains(t, text_b, id_b) for t in context_terms)
+                if (value, extra) > (score, context_matches):
+                    score, context_matches, best, match_kind = value, extra, [ordinal, ordinal + 1], "adjacent"
+        # An interrupted run can still be found by its exact ID even when it
+        # produced no assistant turn; this is metadata, not a result.
+        if not best and len(tokens) == 1:
+            if any(role == "automation" and identifier == tokens[0] for role, text, identifier in entries):
+                score, match_kind = weights.get(tokens[0], 1.0), "metadata"
+        c["focus_score"] = round(score, 6)
+        if match_kind:
+            if best:
+                c["keyword_ordinal"] = best[0]
+                c["keyword_ordinals"] = best
+            c["keyword_match"] = match_kind
+            c["keyword_context_matches"] = context_matches
+    return {"tokenizer": tokenizer, "tokens": tokens, "active_terms": active, "mandatory_terms": mandatory,
+            "sessions": count, "parse_failed": failed}
 
 
 # -- zvec retriever ---------------------------------------------------------
@@ -210,6 +359,7 @@ def budget_turns(
         )
         if score > 0
     ]
+    focused = [i for i, turn in enumerate(turns) if turn.get("keyword_hit") or turn.get("semantic_hit")] + focused
 
     decision_scores = [
         (decision_score(turn["text"]), index)
@@ -232,11 +382,22 @@ def budget_turns(
             continue
         turn_budget = min(per_turn_budget, remaining)
         original = turns[index]
-        clipped_text = truncate_text(original["text"], turn_budget)
+        offset = original.get("semantic_offset")
+        if isinstance(offset, int) and 0 <= offset < len(original["text"]):
+            clipped_text = truncate_around_match(original["text"], offset, 600, turn_budget)
+        else:
+            clipped_text = truncate_text(original["text"], turn_budget)
         candidate = dict(original)
         candidate["text"] = clipped_text
         if clipped_text != original["text"]:
             candidate["text_truncated"] = True
+            if isinstance(offset, int) and 0 <= offset < len(original["text"]):
+                marker_size = len("\n...[turn truncated to handoff budget]...\n")
+                capacity = turn_budget * 3 - 2 * marker_size
+                if capacity <= 0:
+                    capacity = turn_budget * 3
+                if capacity < min(600, len(original["text"]) - offset):
+                    candidate["semantic_passage_truncated"] = True
         cost = estimate_tokens(clipped_text)
         if cost > remaining:
             continue
@@ -278,7 +439,14 @@ def _load_zvec_metadata(index_path: Path) -> dict[str, dict]:
             except json.JSONDecodeError:
                 continue
             doc_id = meta.get("id")
-            if doc_id:
+            preview = meta.get("text_preview") or ""
+            lines = preview.splitlines() if isinstance(preview, str) else []
+            # Old sidecars truncate previews, sometimes before the fourth header.
+            automation_preview = (meta.get("role") == "user" and len(lines) >= 3
+                                  and lines[0].startswith("Automation: ")
+                                  and lines[1].startswith("Automation ID: ")
+                                  and lines[2].startswith("Automation memory: "))
+            if doc_id and not automation_preview:
                 metadata[doc_id] = meta
     return metadata
 
@@ -434,6 +602,14 @@ def find_zvec_candidates(source_dirs: list[str], runtimes: list[str], focus: str
     return candidates
 
 
+def _session_stamp(path: Path) -> str | None:
+    try:
+        stat = path.stat()
+        return f"{stat.st_dev}:{stat.st_ino}:{stat.st_size}:{stat.st_mtime_ns}"
+    except OSError:
+        return None
+
+
 def _mtime(path: Path) -> float:
     try:
         return path.stat().st_mtime
@@ -490,7 +666,7 @@ def find_codex_candidates(cwd: str, focus: str | None = None, include_archived: 
                                 "path": jsonl,
                                 "session_cwd": sc,
                                 "cwd_precision": len(sc),
-                                "focus_score": focus_score(jsonl, focus),
+                                "focus_score": focus_score(jsonl, focus, "codex"),
                                 "mtime": _mtime(jsonl),
                             })
                         break
@@ -544,8 +720,7 @@ def extract_codex_transcript(text: str) -> list[dict]:
 
 
 def extract_all_text_from_jsonl(path: Path) -> tuple[bool, str]:
-    """Extract all text blocks from a Codex JSONL, returning (has_transcript, combined_text)."""
-    has_transcript = False
+    """Read transcript wrappers from user input, never from tool output."""
     all_texts = []
     with open(path, encoding="utf-8", errors="ignore") as f:
         for line in f:
@@ -553,19 +728,18 @@ def extract_all_text_from_jsonl(path: Path) -> tuple[bool, str]:
                 d = json.loads(line.strip())
             except json.JSONDecodeError:
                 continue
-            # Check for TRANSCRIPT in raw JSON string of this line
-            line_str = json.dumps(d)
-            if ">>> TRANSCRIPT" in line_str:
-                has_transcript = True
-            # Extract text from content blocks regardless of type
             payload = d.get("payload") or {}
-            content = payload.get("content") or []
-            for block in content:
-                text = block.get("text") or ""
-                if text:
+            if d.get("type") == "response_item" and payload.get("role") == "user":
+                for block in payload.get("content") or []:
+                    if isinstance(block, dict) and block.get("type") == "input_text":
+                        text = block.get("text") or ""
+                        if ">>> TRANSCRIPT" in text:
+                            all_texts.append(text)
+            elif d.get("type") == "event_msg" and payload.get("type") == "user_message":
+                text = payload.get("message") or ""
+                if isinstance(text, str) and ">>> TRANSCRIPT" in text:
                     all_texts.append(text)
-
-    return has_transcript, "\n".join(all_texts)
+    return bool(all_texts), "\n".join(all_texts)
 
 
 def parse_codex(path: Path) -> dict:
@@ -629,7 +803,7 @@ def find_pi_candidates(cwd: str, focus: str | None = None) -> list[dict]:
     for f in sessions_dir.glob("*.jsonl"):
         candidates.append({
             "path": f,
-            "focus_score": focus_score(f, focus),
+            "focus_score": focus_score(f, focus, "pi"),
             "mtime": _mtime(f),
             "size": f.stat().st_size if f.exists() else 0,
         })
@@ -724,7 +898,7 @@ def find_claude_candidates(cwd: str, focus: str | None = None) -> list[dict]:
             candidates.append({
                 "path": candidate,
                 "turns": _count_turns(candidate),
-                "focus_score": focus_score(candidate, focus),
+                "focus_score": focus_score(candidate, focus, "claude"),
                 "mtime": _mtime(candidate),
                 "index_match": 1,
             })
@@ -738,7 +912,7 @@ def find_claude_candidates(cwd: str, focus: str | None = None) -> list[dict]:
             candidates.append({
                 "path": jsonl,
                 "turns": turns,
-                "focus_score": focus_score(jsonl, focus),
+                "focus_score": focus_score(jsonl, focus, "claude"),
                 "mtime": _mtime(jsonl),
                 "index_match": 0,
             })
@@ -860,7 +1034,7 @@ def find_dsh_candidates(cwd: str, focus: str | None = None) -> list[dict]:
         candidates.append({
             "path": jsonl,
             "session_id": session_dir.name,
-            "focus_score": focus_score(jsonl, focus),
+            "focus_score": focus_score(jsonl, focus, "dsh"),
             "mtime": _mtime(jsonl),
         })
     candidates.sort(key=lambda x: (x["focus_score"], x["mtime"]), reverse=True)
@@ -993,7 +1167,7 @@ def main() -> int:
     parser.add_argument("--session", help="Session ID (UUID/filename stem); lookup in runtime dirs, bypass discovery")
     parser.add_argument("--archived", action="store_true", help="Include archived Codex sessions in search (explicit --session always searches both stores)")
     parser.add_argument("--focus", help="Topic used to rank candidate sessions and guide compression")
-    parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="Candidate retriever. auto uses zvec for focused queries when an index is available, then falls back to keyword.")
+    parser.add_argument("--retriever", choices=("auto", "keyword", "zvec"), default="auto", help="auto combines local semantic candidates with keyword search, and falls back to keyword; zvec is the legacy feature-hash index.")
     parser.add_argument("--max-tokens", type=positive_int, default=DEFAULT_MAX_TOKENS, help=f"Hard cap for extracted handoff turns (default: {DEFAULT_MAX_TOKENS})")
     parser.add_argument("--json", action="store_true", help="Output raw JSON (default: human-readable)")
     args = parser.parse_args()
@@ -1067,7 +1241,8 @@ def main() -> int:
         candidate_finders = {"codex": find_codex_candidates, "pi": find_pi_candidates, "claude": find_claude_candidates, "dsh": find_dsh_candidates}
 
         all_candidates = []
-        if args.focus and args.retriever in ("auto", "zvec"):
+        legacy_auto = args.retriever == "auto" and os.environ.get("PASSDOWN_DISABLE_SEMANTIC") == "1"
+        if args.focus and (args.retriever == "zvec" or legacy_auto):
             try:
                 all_candidates = find_zvec_candidates(source_dirs, runtimes_to_scan, args.focus, include_archived=args.archived)
             except Exception as exc:
@@ -1090,13 +1265,18 @@ def main() -> int:
         # auto retrieval so opting in does not depend on an index rebuild.
         if all_candidates and args.retriever == "auto" and args.archived and "codex" in runtimes_to_scan:
             known = {c["path"] for c in all_candidates}
+            archived_candidates = []
             for src_dir in source_dirs:
-                for c in find_codex_candidates(src_dir, args.focus, include_archived=True):
-                    if c["path"] not in known and is_archived_codex_path(c["path"]) and c["focus_score"] > 0:
+                for c in find_codex_candidates(src_dir, None, include_archived=True):
+                    if c["path"] not in known and is_archived_codex_path(c["path"]):
                         c.update(runtime="codex", source_cwd=src_dir)
-                        all_candidates.append(c)
+                        archived_candidates.append(c)
                         known.add(c["path"])
-                        retriever_used = "zvec+keyword"
+            rank_keyword_candidates(archived_candidates, args.focus)
+            for c in archived_candidates:
+                if c["focus_score"] > 0:
+                    all_candidates.append(c)
+                    retriever_used = "zvec+keyword"
 
         if not all_candidates:
             # Scan every dir × runtime combination using the legacy keyword/mtime retriever.
@@ -1105,13 +1285,60 @@ def main() -> int:
                 for rt in runtimes_to_scan:
                     try:
                         kwargs = {"include_archived": args.archived} if rt == "codex" else {}
-                        rt_candidates = candidate_finders[rt](src_dir, args.focus, **kwargs)
+                        rt_candidates = candidate_finders[rt](src_dir, None, **kwargs)
                         for c in rt_candidates:
                             c["runtime"] = rt
                             c["source_cwd"] = src_dir
                         all_candidates.extend(rt_candidates)
                     except Exception:
                         continue
+
+        keyword_status = None
+        if args.focus and retriever_used == "keyword" and all_candidates:
+            keyword_status = rank_keyword_candidates(all_candidates, args.focus)
+
+        semantic_status = None
+        if args.focus and args.retriever == "auto" and not legacy_auto and all_candidates:
+            # The worker is isolated so a model crash or timeout cannot break handoff.
+            request = {"focus": args.focus, "candidates": [
+                {"path": str(c["path"]), "runtime": c["runtime"], "mtime": c.get("mtime", 0)}
+                for c in all_candidates
+            ]}
+            try:
+                worker = subprocess.run(
+                    [sys.executable, str(Path(__file__).with_name("semantic_index.py"))],
+                    input=json.dumps(request), capture_output=True, text=True, timeout=60, check=True,
+                )
+                semantic_status = json.loads(worker.stdout)
+                by_path = {str(c["path"]): c for c in all_candidates}
+                valid_hits = []
+                stale_hits = 0
+                lexical_hits = any(c.get("focus_score", 0) > 0 for c in all_candidates)
+                for hit in semantic_status.get("matches", []):
+                    c = by_path.get(hit["path"])
+                    if c is None:
+                        continue
+                    if hit.get("source_stamp") and _session_stamp(c["path"]) != hit["source_stamp"]:
+                        stale_hits += 1
+                        continue
+                    valid_hits.append(hit)
+                    c["semantic_source_stamp"] = hit.get("source_stamp")
+                    c["semantic_score"] = hit["score"]
+                    c["semantic_ordinal"] = hit["ordinal"]
+                    c["semantic_offset"] = hit.get("offset")
+                    c["semantic_unverified"] = True
+                    # A candidate, not proof of relevance; source is parsed below.
+                    if not lexical_hits:
+                        c["focus_score"] = 1
+                semantic_status["matches"] = valid_hits
+                if stale_hits:
+                    semantic_status["stale_hits"] = stale_hits
+                    retriever_fallback = "semantic_source_changed"
+                if valid_hits:
+                    retriever_used = "semantic+keyword"
+            except (OSError, subprocess.SubprocessError, ValueError, KeyError) as exc:
+                retriever_fallback = "semantic_error:" + type(exc).__name__
+                semantic_status = {"error": retriever_fallback}
 
         if not all_candidates:
             rt_list = ",".join(runtimes_to_scan)
@@ -1121,7 +1348,7 @@ def main() -> int:
 
         # With focus active, rank by focus score first; otherwise recency wins.
         if args.focus:
-            all_candidates.sort(key=lambda c: (c.get("focus_score", 0), c.get("mtime", 0)), reverse=True)
+            all_candidates.sort(key=lambda c: (c.get("focus_score", 0), c.get("keyword_context_matches", 0), c.get("mtime", 0)), reverse=True)
         else:
             all_candidates.sort(key=lambda c: c.get("mtime", 0), reverse=True)
         candidates = all_candidates
@@ -1150,6 +1377,7 @@ def main() -> int:
 
     # Extract from all matched sessions
     all_turns = []
+    automation_contexts = []
     modes = set()
     total_lines = 0
     for sp in session_paths:
@@ -1164,11 +1392,30 @@ def main() -> int:
             rt = rt.split(",", 1)[0].strip()
         result = parsers.get(rt, parsers["claude"])(sp)
         smtime = _mtime(sp)
+        session_turns = []
         for idx, t in enumerate(result["turns"]):
+            info = automation_context(t)
+            if info:
+                automation_contexts.append({"session_file": str(sp), "source_ordinal": idx, **info})
             t["session_file"] = str(sp)
             t["session_mtime"] = smtime
             t["session_ordinal"] = idx
-        all_turns.extend(result["turns"])
+            semantic_match = next((m for m in matched if m.get("path") == sp and m.get("semantic_ordinal") == idx), None)
+            if semantic_match and (not semantic_match.get("semantic_source_stamp") or
+                                   _session_stamp(sp) == semantic_match["semantic_source_stamp"]):
+                t["semantic_hit"] = True
+                if isinstance(semantic_match.get("semantic_offset"), int):
+                    t["semantic_offset"] = semantic_match["semantic_offset"]
+            elif semantic_match:
+                retriever_fallback = "semantic_source_changed"
+                if isinstance(semantic_status, dict):
+                    semantic_status["matches"] = [hit for hit in semantic_status.get("matches", [])
+                                                  if hit.get("path") != str(sp)]
+                    semantic_status["stale_hits"] = semantic_status.get("stale_hits", 0) + 1
+            if any(m.get("path") == sp and idx in m.get("keyword_ordinals", []) for m in matched):
+                t["keyword_hit"] = True
+            session_turns.append(t)
+        all_turns.extend(session_turns)
         modes.add(result["mode"])
         total_lines += result["total_lines"]
 
@@ -1186,6 +1433,11 @@ def main() -> int:
             turns.append(t)
 
     turns, budget_stats = budget_turns(turns, args.focus, args.max_tokens)
+    for context in automation_contexts:
+        selected = next((t for t in turns if t.get("session_file") == context["session_file"]
+                         and t.get("session_ordinal") == context["source_ordinal"]), None)
+        context["instruction_status"] = ("omitted" if selected is None else
+                                         "truncated" if selected.get("text_truncated") else "complete")
     total_words = sum(len(t["text"].split()) for t in turns)
     total_tokens = sum(estimate_tokens(t["text"]) for t in turns)
 
@@ -1202,6 +1454,9 @@ def main() -> int:
         "source_cwd": ", ".join(source_dirs) if not (args.file or args.session) else str(session_path),
         "focus": args.focus,
         "retriever": retriever_used,
+        "semantic_status": locals().get("semantic_status"),
+        "automation_contexts": automation_contexts,
+        "keyword_status": locals().get("keyword_status"),
         "include_archived": bool(args.archived or args.session or args.file),
         "multi_session": multi_session,
         "matched_sessions": len(session_paths),
@@ -1236,6 +1491,12 @@ def main() -> int:
         else:
             print(f"source cwd:   {output['source_cwd'] or '-'}")
         print(f"focus:        {output['focus'] or '-'}")
+        if output.get("keyword_status"):
+            print(f"keyword:      {output['keyword_status']}")
+        if output.get("automation_contexts"):
+            print(f"automations:  {output['automation_contexts']}")
+        if output.get("semantic_status"):
+            print(f"semantic:     {output['semantic_status']} (candidates require source review)")
         if output['multi_session']:
             print(f"matched:      {output['matched_sessions']} sessions (focus hit)")
             for sf in output['session_files']:

@@ -32,6 +32,45 @@ For same-directory handoff, run:
 python3 <skill-dir>/scripts/extract_handoff.py --focus "<topic>" --json
 ```
 
+For a focused search, `auto` combines keyword matches with up to three local
+semantic candidates. Keyword matches are scored on parsed user/assistant turns,
+not tool calls, tool outputs, or other raw JSONL fields. It ranks by query
+terms and their frequency within the permitted session scope; common terms
+cannot by themselves dominate a multi-term query. Multiple distinctive terms normally need one turn; adjacent user-to-assistant
+turns can also match when each contributes a different rare term. This narrow
+rule can still miss wording spread across more turns or join unrelated adjacent
+statements, so read both turns. A recognized four-line automation wrapper is
+excluded from candidate scoring and embeddings, but its full instruction is
+included in handoff turns so task restrictions remain visible. Its task name
+and ID remain in `automation_contexts`, and the ID can identify its actual
+assistant results; an ID-only match may represent a run without a result. Before
+acting on an automation handoff, if `instruction_status` is `truncated` or
+`omitted`, read the original session to recover the complete task restrictions.
+The
+local optional `jieba` package segments Chinese queries; if unavailable, a
+literal fallback is used and is reported in `keyword_status.tokenizer`. Inspect
+`semantic_status.matches` even when keyword results
+exist; for a plausible candidate, read its original session and verify relevance.
+The returned `ordinal` and character `offset` locate the matched passage within
+the parsed source turn; when using `--session` or `--file`, check the source
+passage directly if the handoff reports truncation. When
+`semantic_passage_truncated` is true, the token budget was too small for the
+whole matched passage and the original must be checked before drawing a conclusion. Semantic-only candidates do not enter a
+keyword-matched handoff automatically; when there are no keyword hits, extracted
+semantic candidates remain unverified. The model and private, disposable session index are local;
+no transcript text is stored in the index. Semantic scores are **not** proof of
+relevance: read the returned source turns and reject unrelated candidates. The
+JSON `semantic_status` reports fresh versus in-scope sessions and sampled long
+sessions; incomplete coverage means a miss cannot establish that no relevant
+conversation exists. Indexing advances incrementally on focused calls and may
+sample long sessions. A changed session is re-indexed; failure or a missing model
+falls back to the existing retrieval. Set `PASSDOWN_EMBEDDING_MODEL_PATH` to a
+local multilingual-e5-small model to override the default model location, and
+`PASSDOWN_SEMANTIC_STATE_DIR` to relocate the private index. Set
+`PASSDOWN_DISABLE_SEMANTIC=1` to restore the legacy automatic retriever, or use
+`--retriever keyword` for keyword-only search. `--retriever zvec` remains the
+legacy character-feature index, not the semantic model.
+
 Codex search excludes archived conversations by default. Add `--archived` to
 include both `~/.codex/sessions` and `~/.codex/archived_sessions` (not archive-only).
 An explicit `--session <id>` searches both stores without requiring the flag;
@@ -102,7 +141,7 @@ The extractor handles:
 - Claude Code project JSONL
 - DSH zstd-compressed session JSONL
 - focus-ranked candidate selection
-- optional zvec-backed candidate retrieval for focused queries
+- local semantic candidates plus keyword search for focused queries; optional legacy zvec retrieval
 
 The extractor enforces `--max-tokens` before returning JSON. When compressing
 the selected turns into the final handoff, keep:

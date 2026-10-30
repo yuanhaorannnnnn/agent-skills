@@ -1,5 +1,6 @@
 import json
 import os
+
 import subprocess
 import sys
 import tempfile
@@ -49,6 +50,53 @@ def write_zstd_jsonl(path: Path, rows):
 
 
 class PassdownExtractorTest(unittest.TestCase):
+    def setUp(self):
+        # Existing cases explicitly exercise the legacy fallback.
+        env = mock.patch.dict(os.environ, {"PASSDOWN_DISABLE_SEMANTIC": "1"})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def test_auto_semantic_candidates_are_unverified_and_source_read(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            path = self.make_codex(home, False, "semantic.jsonl")
+            result = {"matches": [{"path": str(path), "score": 0.87, "ordinal": 0}],
+                      "scope_sessions": 1, "fresh_sessions": 1}
+            completed = subprocess.CompletedProcess([], 0, stdout=json.dumps(result), stderr="")
+            with mock.patch.dict(os.environ, {"PASSDOWN_DISABLE_SEMANTIC": "0"}), mock.patch.object(extract_handoff.subprocess, "run", return_value=completed):
+                code, out, err = self.run_main_json(["--former", "codex", "--dir", "/project", "--focus", "different", "--json"])
+            self.assertEqual(code, 0, err)
+            payload = json.loads(out)
+            self.assertEqual(payload["retriever"], "semantic+keyword")
+            self.assertTrue(payload["candidates"][0]["semantic_unverified"])
+            self.assertTrue(payload["turns"][0]["semantic_hit"])
+
+    def test_semantic_middle_evidence_is_retained_in_handoff(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            path = self.make_codex(home, False, "semantic-long.jsonl")
+            body = "a" * 13800 + " apple EVIDENCE_IN_MIDDLE " + "b" * 13800
+            write_jsonl(path, [
+                {"type":"session_meta", "payload":{"cwd":"/project"}},
+                {"type":"response_item", "payload":{"role":"user", "content":[{"type":"input_text", "text":body}]}},
+            ])
+            result = {"matches":[{"path":str(path), "score":0.9, "ordinal":0, "offset":13800}], "scope_sessions":1, "fresh_sessions":1}
+            completed = subprocess.CompletedProcess([], 0, stdout=json.dumps(result), stderr="")
+            with mock.patch.dict(os.environ, {"PASSDOWN_DISABLE_SEMANTIC":"0"}), mock.patch.object(extract_handoff.subprocess, "run", return_value=completed):
+                code, out, err = self.run_main_json(["--former","codex","--dir","/project","--focus","apple","--json"])
+            self.assertEqual(code, 0, err)
+            payload = json.loads(out)
+            self.assertIn("EVIDENCE_IN_MIDDLE", payload["turns"][0]["text"])
+            self.assertTrue(payload["turns"][0]["text_truncated"])
+
+    def test_changed_semantic_source_is_not_returned_as_a_hit(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, "home", return_value=Path(home)):
+            path = self.make_codex(home, False, "stale.jsonl")
+            result = {"matches":[{"path":str(path), "score":0.9, "ordinal":0, "offset":0, "source_stamp":"old"}], "scope_sessions":1, "fresh_sessions":1}
+            completed = subprocess.CompletedProcess([], 0, stdout=json.dumps(result), stderr="")
+            with mock.patch.dict(os.environ, {"PASSDOWN_DISABLE_SEMANTIC":"0"}), mock.patch.object(extract_handoff.subprocess, "run", return_value=completed):
+                code, out, err = self.run_main_json(["--former","codex","--dir","/project","--focus","absent","--json"])
+            self.assertEqual(code, 1)
+            self.assertIn("No session found matching focus", err)
+
     def run_main_json(self, argv):
         stdout = StringIO()
         stderr = StringIO()

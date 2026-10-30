@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          python3 -m pip install --upgrade pip pyyaml markdown-it-py
+          python3 -m pip install --upgrade pip pyyaml markdown-it-py pytest numpy jieba zstandard
 
       - name: Install into runtime dirs
         run: node scripts/install.mjs install
@@ -42,4 +42,4 @@ jobs:
         run: python3 -m unittest discover -s skills/acquisition/tests -p 'test_*.py'
 
       - name: Skill tests (passdown)
-        run: python3 -m unittest discover -s skills/passdown/tests -p 'test_*.py'
+        run: python3 -m pytest -q skills/passdown/tests
