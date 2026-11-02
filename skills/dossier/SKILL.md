@@ -114,6 +114,8 @@ Gate 校验材料与来源引用、包内路径、索引身份冲突；不检查
 
 建档/更新默认交付材料包与路径。调档默认调用 [Breach Archive](../breach/references/archive-mode.md)：由 dossier 完成定位，将已登记 manifest、身份索引与包外输出路径交给 breach，不重新调查或修改原档。输出默认位于当前工作仓库 `.proposal/archive/<dossier-id>/index.html`，附独立渲染回执；已有派生版本需保留时另选版本目录。交付 HTML 展示入口，同时保留原档链接与证据状态。
 
+调档视觉参考可查阅 [寒战1994人物档案页](references/cold-war-1994-visual.md)；它是参考材料，不改变现有模板、材料顺序、内容或证据状态。
+
 渲染使用现有材料、顺序、关系、来源和缺口，不补造事实。遵守 breach 的校验和浏览器检查，核对源包、来源及身份索引在渲染前后不变。用户指定仅原文/路径或禁止 HTML 时只读返回材料；档案未找到、有歧义、缺标准 manifest/登记、校验失败或渲染依赖不可用时，说明原因并交付可读原档（若有），不迁移、补字段、刷新hash、另建或注册档案来绕过限制。默认展示授权只涵盖包外派生产物。
 
 建档/更新遵守共享 [Canon output contract](../../references/canon-output-contract.md)，登记持久结果；调档不写 update card。每次实际执行结束按共享 [telemetry 契约](../../references/skill-telemetry.md)记录本地 outcome，仅记录 skill/runtime/trigger/outcome、artifact/gate 等允许元数据，不记录查询、人物或材料正文。

@@ -150,6 +150,150 @@
       "sha256": "384097422f1c66ff43da2952980d334682fe312800383daed162f79996e49c39",
       "use": "人物简报：首行缩进、窄行距、灰色复制底纹",
       "derivation": "pdftoppm page rasterization; no retouching"
+    },
+    {
+      "file": "cold-war-1994-person.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 9 张静帧；仅作视觉参考",
+      "sha256": "a60b84b1c6b1cf425debb8eb602943908dfa295e36c1e47c005ec30117209b16",
+      "use": "蔡元祺人物照片、字段与红色标题条"
+    },
+    {
+      "file": "cold-war-1994-record.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 17 张静帧；仅作视觉参考",
+      "sha256": "d5e39527bc66fc474754eeb1bc64eba902894d1ddfc4332be9d75809270e17bc",
+      "use": "潘隽亨人物照片与档案字段"
+    },
+    {
+      "file": "cold-war-1994-group.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 23 张静帧；仅作视觉参考",
+      "sha256": "9b35e933dbd9a711c3da5a1f162fe7fba7463f6d285216324b7d6af862a57ab8",
+      "use": "三合会分组标题"
+    },
+    {
+      "file": "cold-war-1994-folder.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 2 张静帧；仅作视觉参考",
+      "sha256": "8171764a00580d15fbdcdd53ceb81052bcff1541401f5db99679f133c4ae02d6",
+      "use": "实体档案封套"
+    },
+    {
+      "file": "cold-war-1994-agency-cover.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 5 张静帧；仅作视觉参考",
+      "sha256": "e3f943ac71276665f70d4dbd69150054c97eb9febe4547ef545a65c5422921a0",
+      "use": "情报机构封面"
+    },
+    {
+      "file": "cold-war-1994-access-page.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 6 张静帧；仅作视觉参考",
+      "sha256": "4a08c49205635d7a6b4fab03d8e2604ae3e0b0bcbf7e5e65aab94c4d298c0b76",
+      "use": "档案标识与日期"
+    },
+    {
+      "file": "cold-war-1994-police-section.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 7 张静帧；仅作视觉参考",
+      "sha256": "63d8f05df7c1f74915105381d9edb69f094826736b94ce23215ce9e2e6f37e1f",
+      "use": "警队分组标题"
+    },
+    {
+      "file": "cold-war-1994-police-choi.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 9 张静帧；仅作视觉参考",
+      "sha256": "a60b84b1c6b1cf425debb8eb602943908dfa295e36c1e47c005ec30117209b16",
+      "use": "蔡元祺人物页"
+    },
+    {
+      "file": "cold-war-1994-police-lee.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 12 张静帧；仅作视觉参考",
+      "sha256": "85eb83e634e4f89d9f33e535935eeb8ce1f924f8a83c051a0b49f292c33dff65",
+      "use": "李文彬人物页"
+    },
+    {
+      "file": "cold-war-1994-lee-family.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 14 张静帧；仅作视觉参考",
+      "sha256": "917ba2eb491b45406c52875d18352ed2b626ab9bf5bd824b3d102e285449f569",
+      "use": "李树棠人物页"
+    },
+    {
+      "file": "cold-war-1994-family-section.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 16 张静帧；仅作视觉参考",
+      "sha256": "b1dc23c8883119d532c78aa9f113e1f671cb0af0270bfcd078c64262d28b0b31",
+      "use": "潘兆虎家族分组标题"
+    },
+    {
+      "file": "cold-war-1994-family-poon.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 17 张静帧；仅作视觉参考",
+      "sha256": "d5e39527bc66fc474754eeb1bc64eba902894d1ddfc4332be9d75809270e17bc",
+      "use": "潘隽亨人物页"
+    },
+    {
+      "file": "cold-war-1994-family-poon-pair.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 19 张静帧；仅作视觉参考",
+      "sha256": "bc33de036185165bc99eac421e56f23594c85d8d2eb12c46f71f65b1cc5e6aee",
+      "use": "潘氏人物并置页"
+    },
+    {
+      "file": "cold-war-1994-family-couple.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 20 张静帧；仅作视觉参考",
+      "sha256": "1903ef1cb301ebb08978ae035b4e75753dc498cc035635363443205225c1e9ff",
+      "use": "人物双页并置"
+    },
+    {
+      "file": "cold-war-1994-triad-section.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 23 张静帧；仅作视觉参考",
+      "sha256": "9b35e933dbd9a711c3da5a1f162fe7fba7463f6d285216324b7d6af862a57ab8",
+      "use": "三合会分组标题"
+    },
+    {
+      "file": "cold-war-1994-triad-yuen.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 24 张静帧；仅作视觉参考",
+      "sha256": "6a184f221804cbd3ffc298c451b5f81e2c331bfb25a2e1e5e2964a474c78f4ca",
+      "use": "阮若兰人物页"
+    },
+    {
+      "file": "cold-war-1994-triad-fong.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 26 张静帧；仅作视觉参考",
+      "sha256": "44edcd06d2da7e74087a7f6554a08af834debf83168df9b6da80aea2c725df4d",
+      "use": "方氏人物并置页"
+    },
+    {
+      "file": "cold-war-1994-year.jpg",
+      "source": "/home/yhr/coldwar-2026-11-02_11.36.20.mp4",
+      "source_sha256": "961797992a2b0c612169b391805cc97a04e43e38d54fcd9d17dd72962541f2ae",
+      "derivation": "用户录屏按每 2 秒采样的第 29 张静帧；仅作视觉参考",
+      "sha256": "6ab85fccfec75cb21602b6d0a26b0c02c7fdf8d757adbf3e7b1648162cf23c51",
+      "use": "年份标题页"
     }
   ]
 }

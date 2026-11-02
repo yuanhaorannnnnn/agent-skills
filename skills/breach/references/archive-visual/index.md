@@ -13,6 +13,34 @@ Archive模式的精选视觉参考，随Breach一起保存。修改封套先看�
 | [user-identity-card.png](user-identity-card.png) | 证件：照片、印刷字段、手写字段与骑缝印 |
 | [user-soviet-decree.png](user-soviet-decree.png) | 正式文书：抬头、留白、签署区 |
 
+## 寒战1994：用户提供的片头资料页参考
+
+用户提供录屏自影片约 05:01 开始；以下是录屏内的静帧，按单页资料学习，不借鉴电影展示顺序。仅作视觉参考，不作为卷宗内容或生成作品的图片。
+
+- [人物档案](cold-war-1994-person.jpg) — 照片、字段和标题条。
+- [人物资料](cold-war-1994-record.jpg) — 照片与文书的并置。
+- [分组标题](cold-war-1994-group.jpg) — 三合会分组的标题和色条。
+
+### 逐主题画面
+
+按用户录屏每 2 秒采样并逐张核对；保留画面原始内容与黑边。编号为抽样帧序号，不是影片时间码。
+
+- [实体档案封套](cold-war-1994-folder.jpg) — 抽样帧 2
+- [情报机构封面](cold-war-1994-agency-cover.jpg) — 抽样帧 5
+- [档案标识与日期](cold-war-1994-access-page.jpg) — 抽样帧 6
+- [警队分组标题](cold-war-1994-police-section.jpg) — 抽样帧 7
+- [蔡元祺人物页](cold-war-1994-police-choi.jpg) — 抽样帧 9
+- [李文彬人物页](cold-war-1994-police-lee.jpg) — 抽样帧 12
+- [李树棠人物页](cold-war-1994-lee-family.jpg) — 抽样帧 14
+- [潘兆虎家族分组标题](cold-war-1994-family-section.jpg) — 抽样帧 16
+- [潘隽亨人物页](cold-war-1994-family-poon.jpg) — 抽样帧 17
+- [潘氏人物并置页](cold-war-1994-family-poon-pair.jpg) — 抽样帧 19
+- [人物双页并置](cold-war-1994-family-couple.jpg) — 抽样帧 20
+- [三合会分组标题](cold-war-1994-triad-section.jpg) — 抽样帧 23
+- [阮若兰人物页](cold-war-1994-triad-yuen.jpg) — 抽样帧 24
+- [方氏人物并置页](cold-war-1994-triad-fong.jpg) — 抽样帧 26
+- [年份标题页](cold-war-1994-year.jpg) — 抽样帧 29
+
 ## 使用边界与维护
 
 - 用户明确认可苏联封套的补贴签与长期调阅层次；当前正文用白/灰白纸。外观偏好不能升级为档案事实。
