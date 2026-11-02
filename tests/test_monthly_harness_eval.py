@@ -189,6 +189,45 @@ class MonthlyEvalTests(unittest.TestCase):
             self.assertEqual(summary['status'], 'missing')
             self.assertIn('未测', '\n'.join(monthly.telemetry_lines(summary)))
 
+    def test_anomaly_cohorts_references_and_later_pass_are_only_clues(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'events.jsonl'
+            def row(timestamp, outcome, **extra):
+                return {'timestamp': timestamp, 'skill': 'execute', 'outcome': outcome, **extra}
+            path.write_text('\n'.join(json.dumps(e) for e in [
+                row('2026-10-01T00:00:00+08:00', 'blocked', route='direct',
+                    steps={'validation': 'blocked', 'review': 'pending'}, artifacts=['/PRIVATE/task']),
+                row('2026-10-01T01:00:00+08:00', 'pass', route='direct', steps={'review': 'pending'}),
+                row('2026-10-01T02:00:00+08:00', 'error', route='direct', gate='gate-code'),
+                row('2026-10-03T00:00:00+08:00', 'pass', artifacts=['/PRIVATE/task'], steps={'review': 'pass'}),
+                row('2026-10-04T00:00:00+08:00', 'blocked', artifacts=['/PRIVATE/late']),
+                row('2026-11-01T02:00:00+08:00', 'pass', artifacts=['/PRIVATE/late']),
+                row('2026-11-01T04:00:00+08:00', 'pass', artifacts=['/PRIVATE/future']),
+                row('2026-10-05T00:00:00+08:00', 'error', artifacts=['/PRIVATE/future']),
+                row('2026-10-06T00:00:00', 'blocked'),
+            ]) + '\nnot-json\n')
+            summary = monthly.collect_telemetry(datetime(2026, 11, 1, 3, tzinfo=ZoneInfo('Asia/Shanghai')), path)
+            data = summary['anomalies']['execute']
+            self.assertEqual((data['events'], data['without_reference']), (5, 1))
+            self.assertEqual((data['later_pass_clue'], data['no_later_pass_clue']), (2, 3))
+            self.assertEqual(data['groups'][0], {'date': '2026-10-01', 'route': 'direct', 'events': 3})
+            rendered = json.dumps(summary, ensure_ascii=False) + '\n'.join(monthly.telemetry_lines(summary))
+            self.assertNotIn('/PRIVATE', rendered)
+            self.assertIn('不能称已恢复', rendered)
+
+    def test_anomaly_same_time_or_another_skill_is_not_recovery_clue(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'events.jsonl'
+            events = [
+                {'timestamp': '2026-10-01T00:00:00+08:00', 'skill': 'execute', 'outcome': 'error', 'artifacts': ['/same']},
+                {'timestamp': '2026-10-01T00:00:00+08:00', 'skill': 'execute', 'outcome': 'pass', 'artifacts': ['/same']},
+                {'timestamp': '2026-10-02T00:00:00+08:00', 'skill': 'breach', 'outcome': 'pass', 'artifacts': ['/same']},
+                {'timestamp': '2026-10-03T00:00:00+08:00', 'skill': 'execute', 'outcome': 'pass', 'artifacts': ['/same'], 'steps': {'review': 'pending'}},
+            ]
+            path.write_text('\n'.join(json.dumps(e) for e in events))
+            summary = monthly.collect_telemetry(datetime(2026, 11, 1, tzinfo=ZoneInfo('Asia/Shanghai')), path)
+            self.assertEqual(summary['anomalies']['execute']['later_pass_clue'], 0)
+
     def test_eval_failure_report_still_includes_saved_telemetry(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)

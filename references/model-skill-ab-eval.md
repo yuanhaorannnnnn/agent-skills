@@ -106,6 +106,17 @@ Only aggregate validated metadata; do not send raw events, user text, or source
 content. Telemetry failure does not erase the eval result. Do not refresh the
 saved monthly snapshot during reruns or reinterpret absent records as no use.
 
+For each skill, count anomaly events once when outcome is blocked/error or a
+recorded step is blocked/error/pending. Summarize Shanghai date + route groups
+as concentrations, not confirmed batches or common causes. Count events with no
+recorded artifact or gate reference. A later clean pass from the same skill with
+an exactly matching local artifact path, observed by snapshot time, is only a
+follow-up clue: shared paths can refer to different tasks, and missing steps are
+unobserved. Neither this clue nor its absence establishes recovery state.
+Never include the paths or raw event data in the snapshot or email; verification
+of an actual recovery requires the underlying task evidence. Use the frozen
+summary for the email; display the largest groups and state the rest are in it.
+
 The runner never sends mail; the automation handles Gmail and
 failed/discrepant-case reruns. Run `codify`, `go-nogo`, `conops`, `sanitize`, and `execute` using the existing
 runner and each skill's `evals/evals.json`. Read case counts from the current eval files; Conops also includes a saved-file workflow case with artifact checks.

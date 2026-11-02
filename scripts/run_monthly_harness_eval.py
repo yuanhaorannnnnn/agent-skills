@@ -12,12 +12,13 @@ import random
 import shutil
 import subprocess
 import sys
+from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from run_skill_ab_eval import run_arm
-from skill_telemetry import DEFAULT_PATH, report_events
+from skill_telemetry import DEFAULT_PATH, OUTCOMES, ROUTES, STEPS, report_events
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -54,10 +55,66 @@ def collect_telemetry(now: datetime, path: Path) -> dict:
             return summary
         for skill in TELEMETRY_SKILLS:
             summary["skills"][skill] = report_events(path, skill, start, end)
+        summary["anomaly_observed_through"] = local.isoformat()
+        summary["anomalies"] = telemetry_anomalies(path, start, end, local)
     except (OSError, UnicodeError):
         summary["status"] = "unavailable"
         summary["skills"] = {}
     return summary
+
+
+def telemetry_anomalies(path: Path, start: datetime, end: datetime, cutoff: datetime) -> dict:
+    """Aggregate only metadata; a shared artifact is a follow-up clue, not proof of recovery."""
+    events = []
+    with path.open(encoding="utf-8") as stream:
+        for line in stream:
+            try:
+                event = json.loads(line)
+                if not isinstance(event, dict):
+                    continue
+                skill = event.get("skill")
+                if skill not in TELEMETRY_SKILLS or event.get("outcome") not in OUTCOMES:
+                    continue
+                stamp = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
+                if stamp.tzinfo is None or not start <= stamp <= cutoff:
+                    continue
+                steps = event.get("steps")
+                steps = steps if isinstance(steps, dict) else {}
+                abnormal = event["outcome"] in ("blocked", "error") or any(
+                    step in STEPS[skill] and state in ("blocked", "error", "pending")
+                    for step, state in steps.items())
+                artifacts = event.get("artifacts")
+                artifacts = {v for v in artifacts if isinstance(v, str) and v.startswith("/")} if isinstance(artifacts, list) else set()
+                gate = event.get("gate")
+                has_ref = bool(artifacts or (isinstance(gate, str) and gate.strip()) or
+                               (isinstance(event.get("artifacts"), list) and any(
+                                   isinstance(v, str) and v.strip() for v in event["artifacts"])))
+                events.append((skill, stamp, event, abnormal, artifacts, has_ref))
+            except (ValueError, KeyError, TypeError, AttributeError):
+                continue
+    latest_pass = {}
+    for skill, stamp, event, abnormal, artifacts, _ in events:
+        if event["outcome"] == "pass" and not abnormal:
+            for artifact in artifacts:
+                key = (skill, artifact)
+                latest_pass[key] = max(stamp, latest_pass.get(key, stamp))
+    result = {}
+    for skill in TELEMETRY_SKILLS:
+        rows = [e for e in events if e[0] == skill and start <= e[1] < end and e[3]]
+        groups = Counter()
+        possible = 0
+        for _, stamp, event, _, artifacts, _ in rows:
+            route = event.get("route")
+            route = route if isinstance(route, str) and route in ROUTES[skill] else "unobserved"
+            groups[(stamp.astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d"), route)] += 1
+            possible += any(latest_pass.get((skill, ref), stamp) > stamp for ref in artifacts)
+        result[skill] = {
+            "events": len(rows), "without_reference": sum(not e[5] for e in rows),
+            "later_pass_clue": possible, "no_later_pass_clue": len(rows) - possible,
+            "groups": [{"date": day, "route": route, "events": count}
+                       for (day, route), count in sorted(groups.items(), key=lambda item: (-item[1], item[0]))],
+        }
+    return result
 
 
 def telemetry_lines(summary: dict) -> list[str]:
@@ -80,6 +137,22 @@ def telemetry_lines(summary: dict) -> list[str]:
             if data[key]:
                 # Vocabularies are validated by report_events; no task/source text.
                 details.append(f"\n{skill} {label}：" + "；".join(f"{k} × {v}" for k, v in sorted(data[key].items())))
+    if "anomalies" in summary:
+        lines += ["", "### 异常与后续线索", "",
+                  "| Skill | 异常事件 | 无引用 | 后续 pass 线索 | 无线索 |",
+                  "|---|---:|---:|---:|---:|"]
+        group_lines = []
+        for skill, data in summary["anomalies"].items():
+            lines.append(f"| {skill} | {data['events']} | {data['without_reference']} | "
+                         f"{data['later_pass_clue']} | {data['no_later_pass_clue']} |")
+            if data["groups"]:
+                top = data["groups"][:3]
+                groups = "；".join(f"{g['date']} {g['route']} × {g['events']}" for g in top)
+                group_lines.append(f"- {skill} 同日同路由聚集（最多列 3 组）：{groups}；其余 {len(data['groups'])-len(top)} 组。")
+        lines += [""] + group_lines + ["", f"后续线索观察截至：{summary['anomaly_observed_through']}。",
+                  "异常按事件去重：outcome 为 blocked/error，或任一步骤为 blocked/error/pending。",
+                  "同日同路由仅是聚集线索，不代表同一批次或共同原因；完整分组见冻结快照。",
+                  "后续 pass 线索：截至快照时，同一 skill 的相同本地 artifact 引用出现更晚且未记录异常步骤的 pass；缺失步骤未观察，共享路径可能指向不同任务，需人工核实，不能称已恢复。无线索不等于未恢复；无引用只表示未记录引用，不检查文件存在性。"]
     lines += details
     invalid = max((data["invalid_lines"] for data in summary["skills"].values()), default=0)
     timestamps = sum(data["invalid_timestamps"] for data in summary["skills"].values())
