@@ -33,6 +33,14 @@ the initial idea ineffective; do not silently switch to the reference's skin.
 There is no requirement to visit all three libraries. Images and films use their
 own framing and narrative structure, not an HTML layout lookup.
 
+Layout, artwork and design-case references are revisable hypotheses, not a fixed
+layout → style → example pipeline. An artwork can change information relationships
+as well as appearance; real content and key operations can in turn change which
+reference choices are useful. In the existing brief, connect the relationship
+actually observed in a reference to a concrete design decision, its visible effect
+in the sample, and the relevant tradeoff. Do not freeze the first layout before
+testing whether it supports the direction.
+
 For each reference actually used, note its exact path/URL, the observed choice,
 what is adapted and any relevant inspection limit in the existing brief/evidence.
 A source may serve more than one role; do not count it twice. Original decisions
@@ -152,6 +160,14 @@ just the accent color. Distinctiveness is judged on the work, not on a filled
 checklist, token count, catalog match or structure gate. Do not guarantee globally
 unique style or mistake deliberate ugliness/complexity for originality.
 
+For an expressive product direction, also consider what remains when its decorative
+layer is removed. If viewing, reading and operation relationships are unchanged,
+explain the layer's intended role or revise the translation before claiming that
+the direction shapes the product. Decoration can legitimately convey atmosphere
+or identity; this is a diagnostic question, not a requirement that every artistic
+choice change functionality. A rejected sample does not reject its entire style
+family.
+
 ## DESIGN.md extension
 
 Preserve unaffected `colors`, `typography`, and component tokens; explicitly
@@ -230,5 +246,10 @@ Neither review substitutes for the other. “No errors” is not aesthetic appro
 
 When comparing alternatives, use the same content and deliverable constraints;
 vary the artistic choices deliberately. Judge real samples, not adjective lists.
+Choose requested samples that challenge the direction with available product
+content and key operations, rather than only the easiest hero or ideal data.
+Use truthful missing-image, long-content or other relevant states; do not invent
+assets or data to make the direction work. A static concept establishes only the
+composition and states it shows, not unimplemented interactions or user acceptance.
 Record `not-run` when no sample was produced, and distinguish author self-review
 from user acceptance. Do not make extra samples mandatory for ordinary specs.
