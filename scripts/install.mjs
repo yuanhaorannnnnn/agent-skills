@@ -35,7 +35,7 @@ function ensureRuntimeDir(runtimeDir) {
 }
 
 function isSkillEnabled(enabledMap, name) {
-  return !(enabledMap.has(name) && enabledMap.get(name) === false);
+  return enabledMap.get(name) === true;
 }
 
 function buildEnabledMap(manifest) {
@@ -102,7 +102,7 @@ function installIntoRuntime(runtimeDir, enabledMap) {
       continue;
     }
     if (!isSkillEnabled(enabledMap, name)) {
-      skipped.push(`${name} (disabled in manifest)`);
+      skipped.push(`${name} (not enabled in manifest)`);
       continue;
     }
     const targetLink = path.join(runtimeDir, name);
