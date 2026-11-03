@@ -86,6 +86,19 @@ skills:
                 self.assertFalse((runtime / "codify").exists())
                 self.assertTrue((runtime / "neutralize").is_symlink())
 
+    def test_install_removes_unlisted_repo_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            for runtime_parts in RUNTIME_DIRS:
+                runtime = home.joinpath(*runtime_parts)
+                runtime.mkdir(parents=True)
+                (runtime / "netease-mail").symlink_to(SKILLS_DIR / "netease-mail")
+
+            result = self._run_install(home)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for runtime_parts in RUNTIME_DIRS:
+                self.assertFalse((home.joinpath(*runtime_parts) / "netease-mail").is_symlink())
+
 
 if __name__ == "__main__":
     unittest.main()
