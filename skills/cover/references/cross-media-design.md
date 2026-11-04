@@ -26,12 +26,20 @@ questions; none is a compulsory style menu or a complete template for the work.
 
 The producing agent owns the resolved artifact direction and the final result.
 It reads project constraints, establishes the reader task and content, then
-states a subject-specific visual idea. It studies references only for unresolved
-decisions, composes the content structure, and derives concrete tokens and medium
+states a subject-specific visual idea. It studies the selected visual reference
+and any other references needed for unresolved decisions, composes the content structure, and derives concrete tokens and medium
 behavior together. Revisit the composition when real content or interaction makes
 the initial idea ineffective; do not silently switch to the reference's skin.
 There is no requirement to visit all three libraries. Images and films use their
 own framing and narrative structure, not an HTML layout lookup.
+
+For a recurring series, retain its user-selected visual reference and direction
+until the user changes it. For a new independent everyday work, select and inspect
+a specific real visual reference suited to the content and medium, unless the
+user specifies otherwise; do not make the user pick layout and style in separate
+rounds. Study the reference as a whole and identify the work, the relationships
+adapted, and material departures in the existing delivery. Do not claim that a
+generated concept proves the final artifact has achieved the same quality.
 
 Layout, artwork and design-case references are revisable hypotheses, not a fixed
 layout → style → example pipeline. An artwork can change information relationships
@@ -45,8 +53,8 @@ For each reference actually used, note its exact path/URL, the observed choice,
 what is adapted and any relevant inspection limit in the existing brief/evidence.
 A source may serve more than one role; do not count it twice. Original decisions
 are labelled as such, with their content rationale, rather than attributed to a
-reference. Cover's 2–4-source synthesis rule applies when creating/updating a
-project specification, not to every artifact or to each reference layer.
+reference. Cover may use one primary source for a project specification; additional
+sources must answer specific unresolved questions.
 
 ### Conflict resolution
 
@@ -145,6 +153,15 @@ across the work, not just a decorative hero. For video, give the movement,
 editing and sound choices a relationship to the script. A family name plus
 colors is insufficient for either medium.
 
+When learning from a concrete work, inspect how its elements relate: the dominant
+axis, overlap and depth of color fields, scale, type placement, density and empty
+space. Translate the relationships as an integrated composition, and let actual
+content participate where appropriate; a disconnected motif or palette swap is
+not evidence of fidelity. Color temperature and texture are choices, not proxies
+for quality. Compare the rendered result with the reference and disclose meaningful
+departures and any unverified rendering or medium constraints. Do not require
+every artifact to use the same shapes, palette, texture or level of visual drama.
+
 The caller passes this resolved direction along with the project constraints to
 the HTML renderer or video producer. For images, pass the user's prompt and any
 explicitly requested constraints. A tool's convenient
@@ -208,8 +225,9 @@ them. Never invent universal timing/BPM/transition defaults for a painting style
 
 Retain `.design/evidence.json`'s `references_studied`, `adaptations`, and
 `wholesale_copy` fields. References may be exact DESIGN paths, artwork URLs, or
-specific film URLs. Select 2–4 distinct sources for synthesis, without pretending
-multiple frames from one film are independent sources. Optional
+specific film URLs. Record at least one genuinely inspected primary source; add
+other sources when useful without pretending multiple frames from one film are
+independent sources. Optional
 `reference_observations` can record source, asset/frame/timecode, inspection
 level (`text`, `frames`, `sequence`, `audio`), observed choice, and proposed
 adaptation. Describe creator claims separately from direct observation.

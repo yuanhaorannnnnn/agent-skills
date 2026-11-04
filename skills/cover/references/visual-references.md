@@ -1,7 +1,8 @@
 # Artist and film references
 
 Use for art-led or motion-facing design. This is a discovery pool: study the
-specific work before selecting 2–4 references for a project. Do not combine the
+specific work before selecting a primary reference for a project. Add others only
+for specific unresolved questions. Do not combine the
 whole pool or turn a successful brand into a universal default.
 
 ## Adding and selecting references

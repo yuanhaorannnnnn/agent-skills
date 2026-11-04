@@ -13,9 +13,12 @@ the user requests a redesign.
 
 ## Core Rule
 
-Don't copy a reference DESIGN.md — adapt it. References provide the design
-vocabulary (color families, type scales, spacing rhythms, component patterns);
-your job is to remix them for the user's specific product, audience, and tone.
+Study one strong, concrete reference as a whole before pursuing originality.
+Carry its composition, hierarchy, typography, color relationships and rhythm
+into a coherent product visual language. Strong resemblance is a valid learning
+goal; adapt only where real content, use, or project constraints require it.
+Identify the source and material departures. Do not pass off another project's
+DESIGN.md or protected brand assets as the product's own.
 
 ## Art direction before tokens
 
@@ -70,7 +73,9 @@ Do not route from brand names or palette keywords alone. Preserve uncertainty
 when observations are insufficient; adding references does not require a new skill.
 
 
-Study 2–4 focused references selected for the project's task and artistic direction.
+Study one primary reference selected for the project's task and artistic direction.
+Add references only when they answer a specific unresolved question; preserve
+the primary reference's overall visual coherence rather than mixing for novelty.
 For UI references use the awesome-design-md index; for artworks/films use the
 reference-selection guide. A style catalog is a discovery pool, not 29 inputs
 to blend. Existing project DESIGN.md can be one reference during an update.
@@ -84,10 +89,11 @@ Read selected specifications in full; inspect artworks directly and films at the
 level needed for the claim. Record frame-only, sequence, audio, and creator-credit
 evidence separately. Do not infer motion timing or sound from stills.
 
-### Step 3: Synthesize
+### Step 3: Form the product language
 
 Produce a DESIGN.md around the resolved visual thesis. Derive tokens and
-medium rules from it, adapting the useful choices from each inspected reference.
+medium rules from it, learning the primary reference's choices together and
+adapting them to actual product needs.
 Preserve project constraints outside the requested change; record which defaults
 are replaced and why. Do not average reference styles or let website tokens
 overrule the selected art direction.
@@ -177,8 +183,8 @@ functional correctness and fidelity, without adding aesthetic defaults.
 
 ## What Not To Do
 
-- Don't copy a reference DESIGN.md wholesale — always adapt.
-- Keep the synthesis to 2–4 studied references; the discovery library can be larger.
+- Don't represent another product's DESIGN.md or brand assets as your own.
+- Don't add or combine references merely to satisfy a count or appear original.
 - Don't include implementation code (CSS, JSX, etc.) — DESIGN.md is a spec, not code.
 - Don't prescribe exact component markup — describe the visual properties
   (border radius, shadow, padding) not the HTML structure.

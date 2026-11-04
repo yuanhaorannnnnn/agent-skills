@@ -25,19 +25,10 @@ def check_reference_count(ep):
         d = json.loads(Path(ep).read_text())
         refs = d.get("references_studied", [])
         ok = (isinstance(refs, list) and all(isinstance(r, str) and r.strip() for r in refs)
-              and len({r.strip() for r in refs}) == len(refs) and len(refs) >= 2)
-        return ok, f"references: {len(refs)} studied (need >=2 distinct nonempty source strings)" + (" OK" if ok else " FAIL")
+              and len({r.strip() for r in refs}) == len(refs) and len(refs) >= 1)
+        return ok, f"references: {len(refs)} studied (need >=1 distinct nonempty source string)" + (" OK" if ok else " FAIL")
     except Exception as e:
         return False, f"evidence: error {e} FAIL"
-
-def check_max_refs(ep):
-    try:
-        d = json.loads(Path(ep).read_text()) if Path(ep).exists() else {}
-        refs = d.get("references_studied", [])
-        ok = len(refs) <= 4
-        return ok, f"max refs: {len(refs)}" + (" OK" if ok else f" WARN ({len(refs)}>4, synthesis quality may drop)")
-    except Exception:
-        return True, "max refs: skip OK"
 
 def check_no_wholesale_copy(ep):
     try:
@@ -58,7 +49,6 @@ def main():
     checks = [
         ("1.design_md", check_design_md(args.design)),
         ("2.ref_count", check_reference_count(args.evidence)),
-        ("3.max_refs", check_max_refs(args.evidence)),
         ("4.no_copy", check_no_wholesale_copy(args.evidence)),
     ]
 

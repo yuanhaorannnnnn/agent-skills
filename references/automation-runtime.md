@@ -2,6 +2,10 @@
 
 任务 prompt 持有业务范围、收件人、预算和执行时刻；本文件只定义共享机制，不授予任何新增发送或写入权限。所有业务日期、周/月窗口和用户指定时刻统一 Asia/Shanghai（UTC+08:00）。不能把服务器UTC小时当北京时间。调度变更通过 automation_update，并将实际 next_run_nominal_at/next_run_at 转为东八区核验；不直接改 scheduler 数据库。
 
+## 定期视觉成果
+
+仅当任务实际需要视觉设计时，沿用用户选定的系列方向和具体参考；新建系列先选并观察一个适合内容与媒介的真实参考，整体学习其构图、字级和节奏，记录来源与适配，不强制把版式和风格拆开混搭。具体规则由 Cover / Breach 或该成果的生成 skill 承担；适配邮件客户端与实际内容，渲染和设备未验证时明确记录。视觉改版只影响新产物，不更改已经冻结的 prepared/pending，也不构成发送或恢复暂停任务的授权。
+
 ## 本地状态与业务结果
 
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。

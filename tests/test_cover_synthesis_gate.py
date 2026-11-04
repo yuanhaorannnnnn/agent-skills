@@ -27,7 +27,7 @@ class CoverGateTests(unittest.TestCase):
             return result.returncode, json.loads(result.stdout)
 
     def test_legacy_and_film_references_remain_valid(self):
-        for refs in (["a/DESIGN.md", "b/DESIGN.md"],
+        for refs in (["a/DESIGN.md"], ["a/DESIGN.md", "b/DESIGN.md"],
                      ["https://example.org/film", "project/DESIGN.md"]):
             code, result = self.run_gate({"references_studied": refs, "wholesale_copy": False})
             self.assertEqual(code, 0)
@@ -41,16 +41,16 @@ class CoverGateTests(unittest.TestCase):
             self.assertEqual(result["verdict"], "blocked")
 
     def test_invalid_or_duplicate_sources_do_not_count(self):
-        for refs in ("ab", [], ["a"], ["a", "a"], ["a", " a "], ["a", ""], ["a", {}], None):
+        for refs in ("ab", [], ["a", "a"], ["a", " a "], ["a", ""], ["a", {}], None):
             with self.subTest(refs=refs):
                 code, result = self.run_gate({"references_studied": refs, "wholesale_copy": False})
                 self.assertEqual(code, 1)
                 self.assertEqual(result["verdict"], "blocked")
 
-    def test_extra_references_are_warning_not_failure(self):
+    def test_additional_distinct_references_are_allowed(self):
         code, result = self.run_gate({"references_studied": list("abcde"), "wholesale_copy": False})
         self.assertEqual(code, 0)
-        self.assertTrue(any("max_refs" in f for f in result["failed"]))
+        self.assertEqual(result["failed"], [])
 
     def test_missing_design_tokens_block(self):
         code, _ = self.run_gate({"references_studied": ["a", "b"], "wholesale_copy": False}, "# Empty")

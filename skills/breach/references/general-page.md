@@ -112,6 +112,16 @@ Read [the shared reference collaboration rules](../../cover/references/cross-med
 before resolving a new page's design. Breach owns the artifact brief and final
 implementation; a new project DESIGN.md is not a prerequisite.
 
+For a recurring artifact, continue its user-selected visual direction and sample
+until the user requests a change; adapt it to the current content and medium.
+For a new independent everyday artifact, choose and inspect a concrete visual
+reference for that work, unless the user specifies another direction. Learn its
+composition, typography, hierarchy and rhythm together: do not make layout and
+style separate user choices to be combined mechanically. Identify the source,
+what was adapted and material differences in the existing brief or delivery.
+The artifact must be reviewed as rendered HTML, not an image-generated mockup;
+if rendering cannot be checked, disclose that gap rather than claim acceptance.
+
 1. Determine which project or existing work owns the artifact. Read its applicable
    DESIGN.md if present; a shared storage directory or ancestor alone does not establish
    ownership. When maintaining an existing work, preserve its established direction

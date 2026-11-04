@@ -507,8 +507,7 @@ def build_html(
             continue
         body += f'''
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 14px 0;">
-          <tr><td width="4" style="background:{color};border-radius:2px;"></td>
-          <td style="padding-left:10px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:17px;font-weight:800;color:#141414;">{emoji} {title} · {len(rows)} 条</td></tr>
+          <tr><td style="border-top:2px solid #191919;padding-top:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:20px;font-weight:800;color:#191919;">{emoji} {title} <span style="font-size:12px;color:#777;font-weight:400;"> / {len(rows)} 条</span></td></tr>
         </table>'''
         for post, media, sensitive in rows:
             number += 1
@@ -548,7 +547,7 @@ def build_html(
                 <td width="34" valign="top" style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:14px;font-weight:800;color:{color};">{number:03d}</td>
                 <td style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;">
                   {author_html}
-                  <div style="font-size:15px;line-height:1.7;color:#222;border-left:3px solid #ececec;padding-left:12px;margin-top:8px;">{text_html}</div>
+                  <div style="font-size:15px;line-height:1.7;color:#222;margin-top:8px;">{text_html}</div>
                   {media_html}
                   <div style="margin-top:8px;"><a href="{url}" style="font-size:12px;color:#1a73e8;text-decoration:none;">看原帖 →</a></div>
                 </td>
@@ -565,14 +564,14 @@ def build_html(
 <html lang="zh-CN">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>X 瞎看 · {date_label}</title></head>
-<body style="margin:0;padding:0;background:#f2f2ef;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f2f2ef;">
+<body style="margin:0;padding:0;background:#f1f1f1;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f1f1;">
 <tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);">
-  <tr><td style="background:#141414;padding:30px 26px 24px 26px;">
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:12px;letter-spacing:2px;color:#9a9a9a;text-transform:uppercase;">Weekly Likes Digest</div>
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:30px;line-height:1.2;font-weight:800;color:#fff;margin-top:8px;">X 瞎看 <span style="color:#ffd43b;">·</span> {date_label}{part_label}</div>
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:13px;line-height:1.6;color:#b9b9b9;margin-top:10px;">{scope_label} · 按实际内容分组 · 不加点评 · 视频只给链接</div>
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#fff;">
+  <tr><td style="background:#fff;padding:34px 26px 30px 26px;text-align:center;border-bottom:1px solid #ddd;">
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:11px;letter-spacing:2px;color:#777;text-transform:uppercase;">Weekly Likes Digest</div>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:38px;line-height:1.1;font-weight:800;letter-spacing:-2px;color:#171717;margin-top:8px;">X 瞎看</div>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:12px;line-height:1.6;color:#777;margin-top:8px;">{date_label}{part_label} · {scope_label}</div>
   </td></tr>
   <tr><td style="border-bottom:1px solid #ececec;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
     <td width="33.33%" align="center" style="padding:16px 8px;border-right:1px solid #ececec;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;"><div style="font-size:22px;font-weight:800;color:#141414;">{total_count}</div><div style="font-size:11px;color:#999;margin-top:2px;">本期新增</div></td>

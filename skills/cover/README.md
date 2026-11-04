@@ -13,7 +13,7 @@ of the result, its inputs, and the boundary around it.
 ```text
 product intent + audience + constraints
                  ↓
-reference vocabulary (2–4 inspected specifications or works)
+reference vocabulary (one inspected primary work, plus others when useful)
                  ↓
 project-specific visual thesis
                  ↓
@@ -116,8 +116,8 @@ python3 skills/cover/scripts/synthesis_gate.py \
   --evidence /absolute/path/to/.design/evidence.json
 ```
 
-The gate requires a nontrivial `DESIGN.md`, at least two distinct source strings,
-and explicit `wholesale_copy: false`; more than four references produce a warning.
+The gate requires a nontrivial `DESIGN.md`, at least one distinct source string,
+and explicit `wholesale_copy: false` for the design specification itself.
 It reports structural validity only. Artistic fidelity needs actual sample
 inspection, and user acceptance remains separate.
 
