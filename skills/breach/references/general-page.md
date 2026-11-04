@@ -25,6 +25,27 @@ before implementation. Static reading pages need no motion layer. Apply this
 reference only in General page; Discussion digest and Archive keep their own
 template contracts. Interaction rules supplement, not replace, project tokens.
 
+## Image-led visual exploration
+
+When supplied visual references and the reader task call for material realism,
+cinematic composition, archival atmosphere, or another image-led treatment,
+consider `imagegen` before HTML implementation. Generate a reference-informed
+concept or a reusable material asset, inspect it against the actual references,
+and translate its composition, texture, lighting and depth into the rendered
+page. The result may be used as a non-evidentiary background or as a design
+reference; do not flatten essential text or interactions into the image. The
+user's explicit direction and an existing work's identity take precedence.
+Skip generation when it adds little value, such as ordinary text or precise
+data visualization, or when the user declines it.
+
+Generated faces, documents, text, maps, relationships and marks are not source
+evidence. Use identifiable people, factual claims and source material only
+from verified inputs; identify simulated clippings or reconstructed artifacts.
+Record the generated asset/concept, actual reference roles and whether it was
+used in the page in provenance. Inspect the real HTML in its interactive states:
+a compelling concept image alone is not evidence that the implementation
+matches it. Preserve user-specified content and evidence contracts.
+
 ## Optional Chart Renderer
 
 In General page mode, `lieflat-charts` may render a chart module inside the

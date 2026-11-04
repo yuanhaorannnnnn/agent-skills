@@ -1,7 +1,7 @@
 ---
 name: breach
 description: |
-  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests, explicit structured discussion digests ("digest this thread"), `$breach --archive`, requests to render an existing dossier material package, or dossier retrieval handoffs for default archive display; ordinary reading, explanation, or text summaries do not automatically request HTML. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, full websites, or rendered video files.
+  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests; requests to create an investigation or evidence wall (调查墙、线索墙、证据墙、侦探墙) from materials; a cognitive map (认知地图、线索地图) described with photos, clippings, pins, connections, or an investigation-wall look; explicit structured discussion digests ("digest this thread"); `$breach --archive`; requests to render an existing dossier material package; or dossier retrieval handoffs for default archive display. A bare request for a cognitive/concept map, ordinary reading, explanation, or text summaries does not by itself request an investigation wall or HTML. Respect an explicitly requested output medium. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, full websites, or rendered video files.
 ---
 
 # Quick Page
@@ -66,6 +66,8 @@ Choose one artifact mode and read only its route:
 
 - `$breach --archive [manifest.json]` or render an existing dossier material package →
   [Archive](references/archive-mode.md). Require the dossier manifest and its identity catalog; the renderer runs dossier gate before rendering. An omitted input must resolve to one explicit registered package in context; otherwise ask for it. Reject raw documents or ad-hoc manifests; never standardize them inside breach. “调取XX的档案” first belongs to dossier for read-only lookup; dossier then calls Archive by default with the registered manifest, catalog and a separate output path. Breach does not perform the lookup or modify the source dossier.
+
+- Investigation/evidence wall from supplied materials, or a cognitive map explicitly described in that visual style → General page; default to interactive HTML when no medium is specified. Keep fact, allegation, inference and adaptation distinct; label relationship meanings and preserve source links and gaps. Apply the image-led exploration guidance when useful; image generation is not a substitute for verified evidence. A standalone request to retrieve an existing dossier still follows dossier → Archive unless the user asks for the wall presentation.
 
 - HTML status page, diagram, slide-like page, PR/incident page →
   [General page](references/general-page.md) for reference collaboration, scoped
