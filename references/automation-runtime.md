@@ -8,6 +8,10 @@
 
 ## 本地状态与业务结果
 
+### 本地预览的启动顺序
+
+`Browser is not available: iab` 表示当前调用未发现内置浏览器，不能直接判断为权限拒绝或永久不可用。桌面后台任务可能先于该对话的浏览器后端注册启动。先核对当前浏览器 inventory；缺少 iab 时继续原任务内不依赖浏览器的内容准备、保存产物和防重检查，再有限复查一次。可用 `open_in_codex` 请求在当前对话打开已授权的本地 HTTP 预览，但 `queued` 仅表示等待显示，不能记为浏览器已恢复；只有新 inventory、成功打开与真实交互才构成可用证据。仍不可用则保存进度与具体 gate，保留原验收，不机械重试、不自动放宽权限、不改用其他浏览器绕过明确拒绝。已有 file://、站点或操作拒绝时遵守其原边界，本段不提供绕过授权。
+
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。
 
 模型由任务或所属会话配置决定，直接执行任务业务，不进行运行前模型/provider检查，不因无法自证模型身份而中止。历史prompt、运行记忆中的模型前置条件已于2026-10-24取消；业务授权、来源校验、内容安全和投递防重仍按原任务执行。以实际run/thread ID为key使用run action，分别记录：
