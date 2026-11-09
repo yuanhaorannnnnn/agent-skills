@@ -146,6 +146,21 @@ class RoutingTests(unittest.TestCase):
 
 
 class FileAndStateTests(unittest.TestCase):
+    def test_subagent_parent_session_id_does_not_pollute_parent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, meta, count in [
+                ('parent', {'id': 'parent', 'session_id': 'parent', 'thread_source': 'user'}, 1),
+                ('child', {'id': 'child', 'session_id': 'parent', 'thread_source': 'subagent', 'parent_thread_id': 'parent'}, 3),
+            ]:
+                rows = [{'type': 'session_meta', 'payload': meta}] + [{'type': 'compacted', 'payload': {}}] * count
+                (root / f'{name}.jsonl').write_text('\n'.join(json.dumps(x) for x in rows) + '\n')
+            data = scan.aggregate(root)
+            self.assertEqual(data['parent']['thread_sources'], ['user'])
+            self.assertEqual(data['parent']['compactions'], 1)
+            self.assertEqual(data['child']['thread_sources'], ['subagent'])
+            self.assertEqual(data['child']['compactions'], 3)
+
     def test_rollouts_aggregate_sources_and_compactions_without_double_count(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

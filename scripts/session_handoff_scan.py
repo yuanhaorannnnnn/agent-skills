@@ -50,7 +50,8 @@ def scan_file(path: Path) -> dict[str, Any] | None:
                 row_type = row.get("type")
                 payload = row.get("payload") or {}
                 if row_type == "session_meta":
-                    session_id = payload.get("session_id") or payload.get("id") or session_id
+                    # Subagent session_id can name its parent; id names this thread.
+                    session_id = payload.get("id") or payload.get("session_id") or session_id
                     cwd = payload.get("cwd") or cwd
                     thread_source = payload.get("thread_source")
                     if isinstance(thread_source, str) and thread_source:
