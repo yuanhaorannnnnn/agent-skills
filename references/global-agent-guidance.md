@@ -32,6 +32,11 @@
 - 技能中的 `<skill-dir>` 是实际加载的 SKILL.md 所在目录，`<skills-root>` 是其父目录，不替换成猜测的 runtime 路径。
 - 上下文换会话：新建对话，用 passdown 并读其 rollover 规则；不 resume/fork 旧 transcript，`/compact` 不重置 Guardian。
 
+## 钉钉文档交付
+
+- 所有已授权的钉钉文档交付（普通对话、流程及定时任务）先读 `/home/yhr/.agents/repos/agent-skills/references/dingtalk-delivery-routing.md`。只有两个默认终点：个人推进或仅本人可见→“我的文档”；已有团队协作背景且适合知识库受众→“OASIS仿真产品开发”，在库内实时查找合适目录，不限定CARLA/具身两个目录。范围明确时自主选择，不逐次确认。
+- 明确私有/只读要求优先；按实际任务范围与用途判断，不按关键词。先查已有材料、优先更新主文档章节，保留人工内容、原链接与跨位置防重。该规则不新增消息通知授权，不触发历史材料批量公开或迁移。
+
 ## 邮件交付
 
 - 用户明确要求某个任务完成后发邮件时，读取 `/home/yhr/.agents/repos/agent-skills/references/automation-runtime.md` 的“按任务启用的完成邮件”，复用现有投递防重与回执机制。邮件含结果、关键限制、手机可读成果入口，草稿明确标识；邮件回复不自动触发 agent。没有该任务发送授权时仍在当前聊天交付。

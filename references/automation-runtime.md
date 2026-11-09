@@ -52,3 +52,7 @@ X Likes的pending.json负责条目/part消费；issues负责邮件发送。每�
 
 预算由原任务给出。普通连接器调用尽可能45秒超时；只有瞬时网络失败允许一次重试，认证、权限、余额失败停止该来源。Harness case/grade沿runner自己的240/300秒，不套45秒。调用层不能硬限时时如实记录，返回后检查总预算，不宣称已强制中断。
 开始、每条/part后和远端调用前检查总时长；到限保存partial/remaining。恢复读取事实checkpoint，已完成不回滚，未完成项保留精确gate。共享state.py不代替scheduler，也不提供系统推送保证。
+
+## 钉钉文档交付终点
+
+所有已授权的钉钉文档输出遵循 `/home/yhr/.agents/repos/agent-skills/references/dingtalk-delivery-routing.md`：先按实际协作范围选择“我的文档”或“OASIS仿真产品开发”知识库，再在目标内查找合适目录和已有文档。不是固定放个人空间，也不限两个业务目录。明确私有的周报草稿与只读同步保持原约束；路由本身不授权新增发送、通知或历史批量迁移。保留原有防重、人工内容和链接，逐份核验目标受众与权限。
