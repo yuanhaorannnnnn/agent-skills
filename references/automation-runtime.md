@@ -14,6 +14,8 @@
 
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。
 
+先在该 automation 的本轮产物目录实际写入输入 JSON，并回读确认可解析，再调用 `--input`；不要只在命令中引用尚未创建的 `/tmp/*.json`。运行状态写入失败时，保存原业务错误与写入错误，修复本地输入后只补记同一 run 的真实状态；不得因此重复 API 请求、发送、消费进度或其他业务副作用。
+
 模型由任务或所属会话配置决定，直接执行任务业务，不进行运行前模型/provider检查，不因无法自证模型身份而中止。历史prompt、运行记忆中的模型前置条件已于2026-10-24取消；业务授权、来源校验、内容安全和投递防重仍按原任务执行。以实际run/thread ID为key使用run action，分别记录：
 - business_status：running / completed / no_op / partial / blocked / failed。
 - notification_status：not_needed / pending / reported_in_chat / confirmed / unverified / failed。
