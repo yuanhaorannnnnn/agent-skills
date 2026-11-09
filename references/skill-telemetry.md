@@ -4,8 +4,10 @@ Record one local outcome event when a skill materially passes, blocks, skips, or
 errors. Telemetry measures workflow use and gate outcomes; it never stores the
 conversation.
 
+`<agent-skills-repo>` 指本 reference 所属仓库的真实根目录：先解析本文件的真实路径，再取 `references/` 的父目录。当前本机为 `/home/yhr/.agents/repos/agent-skills`。记录器在该仓库 `scripts/skill_telemetry.py`；先核对文件存在。不要由 skill 的加载路径拼接 `<skills-root>/.scripts`：runtime 的 symlink 布局与仓库的 `skills/` 布局不同，后者没有 `.scripts`。
+
 ```bash
-python3 <skills-root>/.scripts/skill_telemetry.py \
+python3 <agent-skills-repo>/scripts/skill_telemetry.py \
   --skill passdown \
   --runtime codex \
   --trigger explicit \
@@ -85,7 +87,7 @@ Example invocation **after actual work** (replace states and refs with observed
 results; never run this example merely to create a success event):
 
 ```bash
-python3 <skills-root>/.scripts/skill_telemetry.py \
+python3 <agent-skills-repo>/scripts/skill_telemetry.py \
   --skill breach --runtime codex --trigger implicit \
   --entry natural-language --outcome pass \
   --route discussion-digest --expected-route discussion-digest \
@@ -106,8 +108,8 @@ not independent attestation. Check linked gate/artifact evidence for stronger pr
 ## Read-only query
 
 ```bash
-python3 <skills-root>/.scripts/skill_telemetry.py --report --skill breach
-python3 <skills-root>/.scripts/skill_telemetry.py --report
+python3 <agent-skills-repo>/scripts/skill_telemetry.py --report --skill breach
+python3 <agent-skills-repo>/scripts/skill_telemetry.py --report
 ```
 
 Returns counts for outcomes, routes, entry forms, decisions, executed step states,
