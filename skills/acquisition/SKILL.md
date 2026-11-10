@@ -139,7 +139,7 @@ claim | evidence ref/位置 | evidence type | 条件或不确定性
 
 ## Query 写作门禁
 
-先读取 Wiki 根目录 `SCHEMA.md` 的 Query 阅读筛选规则；标题下保留唯一 `- [ ] 待归档：未通过三问筛选`。未勾选不表示读者认可；只有读者判断后才勾选，重写时保留已有勾选状态。
+先读取 Wiki 根目录 `SCHEMA.md` 的 Query 阅读筛选规则；标题下保留“已读”和“不保留在query”两个独立任务框。新笔记均未勾选；只有读者确认后才勾选，重写时保留已有状态。
 
 生成或实质重写 query 时，默认加载 `paperwork`，在写入前按其失效机制完成一次清理。该步骤属于 Acquisition 的默认 query 管线；用户不需要额外触发。只生成 raw archive 时跳过。
 
@@ -177,7 +177,8 @@ rating: {1-7}                             # 个人评分：7=改变人生，1=�
 
 # {标题}
 
-- [ ] 待归档：未通过三问筛选
+- [ ] 已读
+- [ ] 不保留在query
 
 ## 核心观点
 
@@ -232,7 +233,7 @@ rating: {1-7}                             # 个人评分：7=改变人生，1=�
 1. query basename 匹配 `^[0-9]{8}-[a-z0-9][a-z0-9-]*\.md$`
 2. basename 日期前缀等于 frontmatter `created` 去除连字符后的值
 3. `sources:` 和 `## 来源` 只引用 `raw/` 归档，不引用 `Clippings/`
-4. 标题下恰有一个符合 `SCHEMA.md` 的三问任务框；新笔记为未勾选，重写保留原状态
+4. 标题下恰有两个符合 `SCHEMA.md` 的阅读和筛选任务框；新笔记均未勾选，重写保留原状态
 5. `index.md`、`log.md` 和相关 wikilinks 使用最终文件名
 
 完成上述写入后刷新 vault catalog：
