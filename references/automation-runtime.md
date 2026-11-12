@@ -12,7 +12,16 @@
 
 ### 本地预览的启动顺序
 
-`Browser is not available: iab` 表示当前调用未发现内置浏览器，不能直接判断为权限拒绝或永久不可用。桌面后台任务可能先于该对话的浏览器后端注册启动。先核对当前浏览器 inventory；缺少 iab 时继续原任务内不依赖浏览器的内容准备、保存产物和防重检查，再有限复查一次。可用 `open_in_codex` 请求在当前对话打开已授权的本地 HTTP 预览，但 `queued` 仅表示等待显示，不能记为浏览器已恢复；只有新 inventory、成功打开与真实交互才构成可用证据。仍不可用则保存进度与具体 gate，保留原验收，不机械重试、不自动放宽权限、不改用其他浏览器绕过明确拒绝。已有 file://、站点或操作拒绝时遵守其原边界，本段不提供绕过授权。
+适用于普通对话和自动任务。恢复契约版本：`iab-owner-route-v2`（2026-11-12）。
+
+`Browser is not available: iab` 表示当前调用未发现内置浏览器，不能直接判断为权限拒绝或永久不可用。已观察到工具调用早于该对话的窗口归属绑定；2026-11-12 一例缺少绑定约197秒，窗口侧同步后后端仅用2毫秒就绪。时间经过本身不建立绑定；不能承诺固定等待即可修复。`Local browser access is unavailable for this chat`、站点拒绝和协议拒绝分别处理，不用本流程绕过。
+
+1. 用当前官方浏览器入口检查 inventory；没有入口时记录工具缺失，不假称调用失败。缺少 iab 时继续原任务内独立内容准备，保存实际产物和防重状态。
+2. 已有待验收产物时，可用 `open_in_codex` 在**调用对话自身**打开已授权且仍存活的本地 HTTP 预览，再用同一官方浏览器入口有限复查一次。该调用是正式打开请求，不是保证成功的初始化接口；`queued` 可能一直等待对话在原窗口显示。不得借用别的对话身份或后台 socket，不能把 queued、别的对话成功或日志中的 ready 当本任务验收。
+3. iab 出现后打开本任务实际页面，完成原定关键交互。分别记录 inventory、页面打开、交互结果；若出现 `Frame with the given id was not found` 等后续错误，单独记录页面/帧故障，不回写成 iab 未注册。仍不可用则保留产物及精确 gate，停止机械重试，保留原验收与预算。
+4. 后续自然续跑或新的实质恢复证据允许再次有限核验，不等用户重复提醒。治理侧按问题、版本与目标记录发送/接收/采用/效果；同版无新证据不催促，不恢复暂停/归档任务。
+
+排查时按同一 session 的失败、owner sync/captured route、backend startup ready 及最终工具回执关联。浏览器发现会探测其他会话的后端，单独一条 `No ChatGPT browser route...` 可能只是未匹配候选；成功 inventory 之后不能据此断言复发。应用侧根治需要在具有可信窗口归属的任务启动/接管路径完成绑定并等待就绪，保留会话隔离与权限检查；当前工作流只缓解提前退出，不代表客户端已修复。证据见 Canon `raw/update-cards/20261105-cross-thread-friction-pilot.md` 的 2026-11-12 根因续查。
 
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。
 
