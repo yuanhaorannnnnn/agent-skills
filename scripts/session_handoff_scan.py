@@ -35,6 +35,7 @@ def parse_ts(value: Any) -> datetime | None:
 
 def scan_file(path: Path) -> dict[str, Any] | None:
     session_id: str | None = None
+    inherited_parent_id: str | None = None
     cwd: str | None = None
     compacted_rows = 0
     compacted_events = 0
@@ -51,7 +52,16 @@ def scan_file(path: Path) -> dict[str, Any] | None:
                 payload = row.get("payload") or {}
                 if row_type == "session_meta":
                     # Subagent session_id can name its parent; id names this thread.
-                    session_id = payload.get("id") or payload.get("session_id") or session_id
+                    row_id = payload.get("id") or payload.get("session_id") or session_id
+                    if session_id and row_id != session_id:
+                        # Full-context forks can include the declared parent's header.
+                        if row_id != inherited_parent_id:
+                            thread_sources.add("conflicting-session-id")
+                        continue
+                    if session_id is None:
+                        session_id = row_id
+                        if payload.get("thread_source") == "subagent" and payload.get("session_id") != row_id:
+                            inherited_parent_id = payload.get("session_id")
                     cwd = payload.get("cwd") or cwd
                     thread_source = payload.get("thread_source")
                     if isinstance(thread_source, str) and thread_source:
@@ -145,6 +155,14 @@ def mark_stage(
     with state_lock(path):
         state = load_state(path)
         current = state["handled"].get(session_id, {})
+        if current.get("stage") == "cancelled" and stage != "cancelled":
+            raise ValueError("cancelled handoff cannot be reopened by a stage receipt")
+        if stage == "cancelled":
+            if not current.get("successor_thread_id") or successor is not None or not reason or not reason.strip():
+                raise ValueError("cancellation requires an existing successor and explicit user reason; cannot replace successor")
+            if current.get("stage") != "cancelled":
+                current["cancellation_previous_stage"] = current.get("stage")
+                current["cancellation_previous_reason"] = current.get("reason")
         if successor is None:
             successor = current.get("successor_thread_id")
         now = datetime.now(timezone.utc).isoformat()
@@ -217,9 +235,12 @@ def candidates(
     idle_cutoff = now - timedelta(minutes=min_idle_minutes)
     handled = state.get("handled", {})
     parents: dict[str, list[str]] = {}
+    cancelled_successors = set()
     for parent, value in handled.items():
         if value.get("successor_thread_id"):
             parents.setdefault(value["successor_thread_id"], []).append(parent)
+            if value.get("stage") == "cancelled":
+                cancelled_successors.add(value["successor_thread_id"])
     out: list[dict[str, Any]] = []
     for entry in by_id.values():
         if entry["compactions"] < threshold:
@@ -240,6 +261,12 @@ def candidates(
         record["handled"] = stage == "complete"
         record["handoff_stage"] = stage
         record["successor_thread_id"] = handoff.get("successor_thread_id") if handoff else None
+        if stage == "cancelled" or entry["session_id"] in cancelled_successors:
+            record["continuation_mode"] = "cancelled"
+            record["continuation_reason"] = "handoff-cancelled-by-user"
+            if skipped is not None:
+                skipped.append(record)
+            continue
         mode, reason = continuation(entry["session_id"], by_id, handled, parents)
         record["continuation_mode"] = mode
         record["continuation_reason"] = reason
@@ -271,13 +298,14 @@ def main() -> int:
     parser.add_argument("--mark-handled", metavar="SESSION_ID")
     parser.add_argument("--mark-successor", metavar="SESSION_ID")
     parser.add_argument("--mark-complete", metavar="SESSION_ID")
+    parser.add_argument("--mark-cancelled", metavar="SESSION_ID")
     parser.add_argument("--successor-thread-id")
     parser.add_argument("--set-continuation", metavar="SESSION_ID")
     parser.add_argument("--mode", choices=("handoff", "scheduler"))
     parser.add_argument("--reason")
     args = parser.parse_args()
 
-    mark_args = [args.mark_handled, args.mark_successor, args.mark_complete, args.set_continuation]
+    mark_args = [args.mark_handled, args.mark_successor, args.mark_complete, args.mark_cancelled, args.set_continuation]
     if sum(value is not None for value in mark_args) > 1:
         parser.error("use only one mark option")
     if args.set_continuation:
@@ -288,6 +316,12 @@ def main() -> int:
         return 0
     if args.mode:
         parser.error("--mode requires --set-continuation")
+    if args.mark_cancelled:
+        if not args.reason or not args.reason.strip() or args.successor_thread_id:
+            parser.error("--mark-cancelled requires --reason and uses only the existing successor")
+        mark_stage(args.state, args.mark_cancelled, "cancelled", None, args.reason)
+        print(f"cancelled handoff: {args.mark_cancelled}; source and successor retained")
+        return 0
     if args.mark_successor:
         if not args.successor_thread_id:
             parser.error("--mark-successor requires --successor-thread-id")

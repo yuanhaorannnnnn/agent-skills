@@ -146,6 +146,62 @@ class RoutingTests(unittest.TestCase):
 
 
 class FileAndStateTests(unittest.TestCase):
+    def test_late_receipt_cannot_overwrite_user_cancellation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'state.json'
+            initial = {'version': 2, 'handled': {'parent': {
+                'stage': 'cancelled', 'successor_thread_id': 'child',
+                'reason': 'user chose original thread'}}}
+            path.write_text(json.dumps(initial))
+            before = path.read_bytes()
+            for stage in ('complete', 'successor_created'):
+                with self.assertRaises(ValueError):
+                    scan.mark_stage(path, 'parent', stage, None, 'late receipt')
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_child_inherited_parent_header_keeps_child_ownership(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'child.jsonl'
+            rows = [
+                {'type': 'session_meta', 'payload': {'id': 'child', 'session_id': 'parent', 'thread_source': 'subagent'}},
+                {'type': 'session_meta', 'payload': {'id': 'parent', 'session_id': 'parent', 'thread_source': 'user'}},
+                {'type': 'compacted', 'payload': {}},
+            ]
+            path.write_text('\n'.join(json.dumps(x) for x in rows))
+            result = scan.scan_file(path)
+            self.assertEqual(result['session_id'], 'child')
+            self.assertEqual(result['thread_sources'], ['subagent'])
+            rows[1]['payload']['id'] = 'unrelated'
+            path.write_text('\n'.join(json.dumps(x) for x in rows))
+            result = scan.scan_file(path)
+            self.assertEqual(result['session_id'], 'child')
+            self.assertIn('conflicting-session-id', result['thread_sources'])
+
+    def test_cancelled_handoff_retains_both_endpoints_without_recovery(self):
+        records = {'parent': {'stage': 'cancelled', 'successor_thread_id': 'child', 'reason': 'user cancelled'}}
+        for include in (False, True):
+            found, skipped = RoutingTests().select([entry('parent'), entry('child', 'agent_created_thread'), entry('other')], records, include)
+            self.assertEqual([r['session_id'] for r in found], ['other'])
+            self.assertEqual({r['session_id'] for r in skipped}, {'parent', 'child'})
+            self.assertTrue(all(r['continuation_reason'] == 'handoff-cancelled-by-user' for r in skipped))
+
+    def test_cli_cancel_requires_reason_and_preserves_registered_successor(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'state.json'
+            initial = {'version': 2, 'other': {'keep': 1}, 'handled': {'parent': {'stage': 'successor_created', 'successor_thread_id': 'child', 'reason': 'created'}, 'other': {'stage': 'complete'}}}
+            path.write_text(json.dumps(initial)); before = path.read_bytes()
+            args = [sys.executable, str(SCRIPT), '--state', str(path), '--mark-cancelled', 'parent']
+            self.assertEqual(subprocess.run(args, capture_output=True).returncode, 2)
+            self.assertEqual(path.read_bytes(), before)
+            result = subprocess.run(args + ['--reason', 'user chose original thread'], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            after = scan.load_state(path)
+            self.assertEqual(after['handled']['parent']['stage'], 'cancelled')
+            self.assertEqual(after['handled']['parent']['successor_thread_id'], 'child')
+            self.assertEqual(after['handled']['parent']['cancellation_previous_stage'], 'successor_created')
+            self.assertEqual(after['handled']['other'], initial['handled']['other'])
+            self.assertEqual(after['other'], initial['other'])
+
     def test_subagent_parent_session_id_does_not_pollute_parent(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
