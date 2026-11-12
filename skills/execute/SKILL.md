@@ -42,6 +42,11 @@ description: |
 
 ## 共同流程
 
+当任务实际需要自主设计或重设计任何媒介的视觉作品时，读取
+[/home/yhr/.agents/skills/cover/references/cross-media-design.md](/home/yhr/.agents/skills/cover/references/cross-media-design.md)，
+按作品任务、参考和所选模块的契约形成方向并检查实际交付。保留用户指定、既有身份和局部修改范围；
+普通代码修改或不涉及视觉设计的任务无需读取，也不因此创建 `DESIGN.md`。
+
 ### 1. 判断是否需要 Canon task
 
 先读用户约束、相关文件和 dirty baseline。仅当任务是**单仓库、局部、可逆、当前对话内可完成的 direct 修改**，且没有直接关联的现有 Canon task、已批准的交付契约、委托、跨仓库依赖、公共接口或安全/数据边界变更、外部状态变更或明确的后续交接需求时，使用 local direct：不新建 Canon task，也不运行 `execution_gate.py`；完成后在当前回复列出改动和验证。

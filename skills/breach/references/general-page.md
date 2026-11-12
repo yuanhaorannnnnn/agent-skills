@@ -27,6 +27,11 @@ template contracts. Interaction rules supplement, not replace, project tokens.
 
 ## Image-led visual exploration
 
+For original imagery, apply the content-led imagery guidance in the shared
+cross-media contract: derive a specific visual idea from the work's content and
+evaluate the image in context. The user's prompt and selected direction remain
+authoritative; do not force a catalog style or generate images when unnecessary.
+
 When supplied visual references and the reader task call for material realism,
 cinematic composition, archival atmosphere, or another image-led treatment,
 consider `imagegen` before HTML implementation. Generate a reference-informed

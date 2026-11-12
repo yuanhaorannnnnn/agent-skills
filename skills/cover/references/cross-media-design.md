@@ -1,12 +1,81 @@
 # Cross-media design contract
 
-Use when defining a visual identity across pages, images, or video, or when a
-project explicitly needs motion or sound direction. Cover owns the design
-contract. Each renderer owns its artifact and validation. No video renderer is
-installed or invoked by this reference.
+Use for visual design across media, including product pages, software UI, other
+pages, illustrations, presentations, documents, charts, maps and video, as well
+as project identity and explicit motion or sound direction.
+Cover owns the shared design contract. Each producer owns its artifact and
+validation. No video renderer is installed or invoked by this reference.
+
+Apply shared judgment to the decisions actually within scope, alongside the
+producer's own rules. Explicit user instructions, established identity and
+selected specialized module contracts remain authoritative. Faithful edits or
+specified imagery do not require a new creative direction or outside references.
+For autonomous design, carry the content, visual idea and any observed reference
+into the produced artifact. Before delivery, inspect the actual result and its
+use context where available; revise concrete defects within scope and disclose
+uninspected aspects. A written plan, prompt or automated gate alone cannot prove
+the result follows the direction or achieves artistic quality.
+
+## Shared design judgment
+
+For each work involving autonomous design or redesign, carry the following
+through production and the existing delivery, at a depth appropriate to the
+work. Do not substitute a checklist or written explanation for the artifact:
+
+1. **Content to idea:** before making it, identify the specific content,
+   audience and purpose, then decide what visual relationship, composition or
+   behavior will express them. Apply the idea in the actual medium; decorative
+   polish alone does not establish a relationship to the subject.
+2. **Reference to choice:** inspect real references for unresolved decisions;
+   identify what was observed and how it informs a concrete choice for this
+   work. Follow explicitly supplied references or an established direction;
+   do not claim a reference was inspected if it was not.
+3. **Result and comparison:** inspect the actual output in its use context
+   when available. For a redesign, compare with the existing work in the
+   relevant views and behaviors: state the substantive change and whether
+   valued features were retained. Fix regressions within scope or disclose the
+   tradeoff. A palette, texture or minor layout adjustment alone is a refinement,
+   not evidence of a substantive redesign; report it accurately.
+4. **Workload and status:** for multiple works, inventory the scope first, then
+   work in small groups sized so each receives these decisions and checks;
+   continue through the authorized scope without introducing approval pauses.
+   Treat one or two at a time as a useful starting point, not a universal cap.
+   Clearly mark unmade work, incomplete redesigns and uninspected results as
+   such; do not count a draft, template rerender or minor edit as a completed
+   redesign. Report unavailable checks and unresolved quality concerns.
+
+Use the artifact and existing delivery for evidence, without requiring a new
+document, fixed number of variants, or approval. Faithful execution of an
+explicit visual direction, data contract or limited edit keeps its original
+scope and does not require a new idea or reference search.
+
+Treat these as complementary decisions, not a fixed sequence or a menu of
+artifact-specific exceptions:
+
+- **Work and use:** identify the audience, real content, tasks, medium and
+  applicable project identity; distinguish fixed brand choices from defaults.
+- **Expression and references:** proactively find and inspect references suited
+  to unresolved design decisions, including across disciplines when useful;
+  retain established directions for maintenance and honor user instructions.
+  Develop a distinctive, artistic and forward-looking direction appropriate to
+  the work. Translate observed relationships into concrete decisions and test
+  them with real content and key interactions; don't equate a style label,
+  reference, decoration or palette change with an achieved direction.
+- **Component contracts:** identify any selected module's actual scope and
+  contracts, including data, behavior, engine or visual identity. Decide
+  whether it fits; integrate around its constraints without extending those
+  constraints to the whole work. The specific rules below remain authoritative.
+
+These decisions can revise each other. Preserve user choices and existing
+identity as specified below; image generation remains prompt-led. For software
+UI, check representative real operating states and recurring tasks as well as
+visual expression. A product page and an application can share this judgment
+without sharing a layout or visual skin. Use the existing delivery for reference
+evidence and tradeoffs; do not add a mandatory document or approval step.
 
 For pages and video, resolve the direction through [Style routing](style-routing.md)
-when it is not already established. Image generation follows the user's prompt;
+when it is not already established and the applicable workflow calls for it.
+Image generation follows the user's prompt;
 do not impose a style family or route it through the catalog unless the user
 explicitly requests routing. Honor any style named in the prompt directly. A style is independent from the content format: a launch
 film, tutorial, or test report needs its own narrative structure even when it
@@ -152,6 +221,39 @@ For HTML, express the idea through composition, typography, imagery and behavior
 across the work, not just a decorative hero. For video, give the movement,
 editing and sound choices a relationship to the script. A family name plus
 colors is insufficient for either medium.
+
+### Content-led imagery
+
+When a work calls for an original illustration or visual asset, identify a
+specific relationship, tension, transformation or process in the actual
+content that is worth expressing. Form a visual proposition: what relates or
+changes in the image, what the viewer notices first, and how composition,
+material or action carries that meaning. Distinguish alternative content angles
+when useful; select a treatment for this subject and audience, rather than
+listing keywords or decorating a generic scene. A suggestive image need not be
+a literal diagram or enable readers to guess the subject without a caption.
+
+Choose references to answer a specific unresolved visual or practical question,
+not to dictate the entire image. Inspect the actual material, distinguish image
+observation from text description, and connect an observed relationship to a
+concrete choice and its tradeoff. An art movement is optional vocabulary, not
+the starting point or a substitute for an idea. Preserve an explicitly supplied
+image prompt or direction and the identity of an existing work; do not impose a
+style route on image generation.
+
+The user cites Anthropic's published work as a quality aspiration: its observed
+range of subject-specific visual ideas is a calibration reference, not a brand,
+palette, template, mandatory source or default style to copy. Other references
+may better fit a particular subject. Inspect the generated image on three axes:
+its relationship to the subject (including the useful test of whether it could
+fit an unrelated subject unchanged); its artistic composition as a whole; and
+its suitability in the actual layout, size and crop when available. An image
+can be expressive without literally explaining the subject. If it is beautiful
+but interchangeable, revise the proposition; if it is accurate but a lifeless
+diagram, reconsider the visual treatment. An uninspected context, a prompt or a
+passed gate does not establish success. Preserve truthful evidence and report
+unverified limits. Scale exploration to the work; do not require multiple
+generated variants, a new file or approval for routine work.
 
 When learning from a concrete work, inspect how its elements relate: the dominant
 axis, overlap and depth of color fields, scale, type placement, density and empty

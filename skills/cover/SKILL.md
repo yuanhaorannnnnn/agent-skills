@@ -13,12 +13,12 @@ the user requests a redesign.
 
 ## Core Rule
 
-Study one strong, concrete reference as a whole before pursuing originality.
-Carry its composition, hierarchy, typography, color relationships and rhythm
-into a coherent product visual language. Strong resemblance is a valid learning
-goal; adapt only where real content, use, or project constraints require it.
-Identify the source and material departures. Do not pass off another project's
-DESIGN.md or protected brand assets as the product's own.
+Study a strong, concrete reference as a whole and relate its observed choices to
+the product's content, use and visual direction. Adapt composition, hierarchy,
+typography, color relationships and rhythm where they help the work; do not
+default to resemblance or combine sources for novelty. Identify the source and
+material departures. Do not pass off another project's DESIGN.md or protected
+brand assets as the product's own.
 
 ## Art direction before tokens
 
