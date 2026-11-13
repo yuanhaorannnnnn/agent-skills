@@ -59,3 +59,8 @@
 - Headless 视觉验证：每版 artifact 合并所有 viewport/截图一次检查，仅发现具体视觉缺陷或后续改版才重跑。
 - Worktree 以 `git worktree list` 为准，统一 `<repo>/.worktrees/<safe-branch-name>`；Claude 的 WorktreeCreate/WorktreeRemove hooks 也指向这里，不长期用 `.claude/worktrees/`。本地 scratch 分支不推送；repair/tasking 指定的 `bugfix/*`、`feature/*` 等工作流分支过 gate 后可推送。
 - GitHub 操作跨 runtime/provider 默认用本机 `gh`；可用时不改走远端插件、Web connector 或 MCP wrapper。
+
+## 直接付费调用保护
+
+- 外部调用可能直接消耗现金、预付余额或可购买credits时，先读 `/home/yhr/.agents/repos/agent-skills/references/paid-usage-policy.md` 并执行预算预留。读操作也可能收费；未知价格/无限分页/无上界任务不得启动。按账号累计，禁止通过原二进制、其他MCP、HTTP、换聊天或重试绕过保护。
+- 账期预算必须剔除已确认异常后依据历史正常消费预测；正常集中使用不当异常。X充值由用户处理，任何服务不自动充值/升级。云端插件权限保持原样，预算规则不冒充硬限。
