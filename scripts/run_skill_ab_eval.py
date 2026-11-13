@@ -52,6 +52,17 @@ def run_arm(
     case: dict | None = None,
     timeout: int = 240,
 ) -> dict:
+    env = dict(os.environ)
+    if any(name in env for name in ("OPENAI_API_KEY", "CODEX_API_KEY", "OPENAI_BASE_URL")):
+        raise ValueError("harness requires ChatGPT subscription auth without API environment overrides")
+    try:
+        auth = json.loads(auth_file.read_text())
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        raise ValueError("harness could not verify ChatGPT subscription auth") from None
+    if not (isinstance(auth, dict) and auth.get("auth_mode") == "chatgpt"
+            and isinstance(auth.get("tokens"), dict) and auth["tokens"]
+            and auth.get("OPENAI_API_KEY") in (None, "")):
+        raise ValueError("harness requires ChatGPT subscription auth; API or unknown billing mode blocked")
     with tempfile.TemporaryDirectory(prefix=f"skill-ab-{arm}-") as tmp:
         root = Path(tmp)
         isolated_home = root / "home"
@@ -83,7 +94,6 @@ def run_arm(
                 (skills_root / "references").symlink_to(shared, target_is_directory=True)
             arm_prompt = f"Use the {skill_dir.name} skill for this request.\n\n{prompt}"
 
-        env = dict(os.environ)
         env["HOME"] = str(isolated_home)
         env["CODEX_HOME"] = str(isolated_codex)
         command = [

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import importlib.util
+import os
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -18,6 +20,46 @@ spec.loader.exec_module(runner)
 
 
 class SkillAbEvalTests(unittest.TestCase):
+    SUBSCRIPTION_AUTH = json.dumps({
+        "auth_mode": "chatgpt", "tokens": {"access_token": "test-only"}, "OPENAI_API_KEY": None,
+    })
+
+    def setUp(self):
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("OPENAI_API_KEY", "CODEX_API_KEY", "OPENAI_BASE_URL")}
+        self.env_patch = patch.dict(os.environ, env, clear=True)
+        self.env_patch.start()
+        self.addCleanup(self.env_patch.stop)
+
+    def test_api_unknown_and_invalid_auth_block_before_process_start(self):
+        invalid = ["{}", "[]", "not-json", json.dumps({"auth_mode": "api_key"}),
+                   json.dumps({"auth_mode": "chatgpt", "tokens": {}}),
+                   json.dumps({"auth_mode": "chatgpt", "tokens": ["test-only"]}),
+                   json.dumps({"auth_mode": "chatgpt", "tokens": {"access_token": "test-only"},
+                               "OPENAI_API_KEY": "test-only-api-key"})]
+        with tempfile.TemporaryDirectory() as tmp:
+            auth = Path(tmp) / "auth.json"
+            for payload in invalid:
+                auth.write_text(payload)
+                with self.subTest(payload=payload), patch.object(runner.subprocess, "Popen") as launch:
+                    with self.assertRaisesRegex(ValueError, "harness .*ChatGPT subscription auth"):
+                        runner.run_arm(Path("codex"), auth, REPO_ROOT / "skills/execute",
+                                       "test", "gpt-6.1-sol", "baseline")
+                    launch.assert_not_called()
+
+    def test_api_environment_overrides_block_before_process_start(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            auth = Path(tmp) / "auth.json"
+            auth.write_text(self.SUBSCRIPTION_AUTH)
+            for name in ("OPENAI_API_KEY", "CODEX_API_KEY", "OPENAI_BASE_URL"):
+                for value in ("", "test-only"):
+                    with self.subTest(name=name, value=value), patch.dict(os.environ, {name: value}), \
+                            patch.object(runner.subprocess, "Popen") as launch:
+                        with self.assertRaisesRegex(ValueError, "API environment overrides"):
+                            runner.run_arm(Path("codex"), auth, REPO_ROOT / "skills/execute",
+                                           "test", "gpt-6.1-sol", "baseline")
+                        launch.assert_not_called()
+
     def test_fixture_boundary_and_artifact_checks(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -38,7 +80,7 @@ class SkillAbEvalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             auth = root / "auth.json"
-            auth.write_text("{}")
+            auth.write_text(self.SUBSCRIPTION_AUTH)
             result = runner.run_arm(root / "absent", auth, REPO_ROOT / "skills/execute",
                                     "test", "gpt-6.1-sol", "baseline")
             self.assertEqual(result["returncode"], 127)
@@ -52,7 +94,7 @@ class SkillAbEvalTests(unittest.TestCase):
                             "Path(sys.argv[sys.argv.index('-o')+1]).write_text(str(len(sys.stdin.read())))\n")
             fake.chmod(0o755)
             auth = root / "auth.json"
-            auth.write_text("{}")
+            auth.write_text(self.SUBSCRIPTION_AUTH)
             result = runner.run_arm(fake, auth, REPO_ROOT / "skills/execute",
                                     "x" * 150000, "gpt-6.1-sol", "baseline")
             self.assertEqual(result["returncode"], 0)
@@ -65,7 +107,7 @@ class SkillAbEvalTests(unittest.TestCase):
             fake.write_text("#!/usr/bin/env python3\nimport time\ntime.sleep(5)\n")
             fake.chmod(0o755)
             auth = root / "auth.json"
-            auth.write_text("{}")
+            auth.write_text(self.SUBSCRIPTION_AUTH)
             result = runner.run_arm(fake, auth, REPO_ROOT / "skills" / "execute", "test", "gpt-6.1-sol", "baseline", timeout=1)
             self.assertEqual(result["returncode"], 124)
             self.assertEqual(result["error"], "timeout")
@@ -85,7 +127,7 @@ class SkillAbEvalTests(unittest.TestCase):
             )
             fake_codex.chmod(0o755)
             auth = root / "auth.json"
-            auth.write_text("{}")
+            auth.write_text(self.SUBSCRIPTION_AUTH)
             output = root / "result.json"
             result = subprocess.run(
                 [
