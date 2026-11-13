@@ -49,6 +49,7 @@
 ## 操作约束
 
 - 浏览器按任务分流：需要登录、复用已有登录状态或使用已有标签页时，使用 Chrome（`@Chrome`）；公开网页和本地预览使用 ChatGPT 内置浏览器（`@Browser`）。两者重叠时优先满足登录或已有标签页需求。用户本轮明确指定浏览器时遵从指定；Chrome 不可用时说明缺口，不静默切换到内置浏览器要求重新登录。
+- Codex 浏览器入口缺失或暂不可用且现有恢复仍失败时，可按 `/home/yhr/.agents/repos/agent-skills/references/omp-browser-fallback.md` 使用 OMP 备用入口；明确访问拒绝不得换入口绕过。已登录 Chrome 的扩展按用户选择保持启用，relay 仅在当前授权任务期间启动并在结束后停止。
 - 内置浏览器报 `Browser is not available: iab` 时，自动读取 `/home/yhr/.agents/repos/agent-skills/references/automation-runtime.md` 的“本地预览的启动顺序”，完成当前对话的有限恢复与真实页面核验，不等用户再次提醒；明确访问拒绝不适用此恢复流程。
 - 本地 HTML 首次预览优先启动仅监听 `127.0.0.1`、仅服务目标产物目录的 HTTP 服务，再用内置浏览器打开并验证画面和交互；保持服务在检查期间存活，结束后停止。`file://`、`chrome://` 的协议拒绝不等于文件权限不足或所有本地预览不可用；先区分 URL 策略、服务未启动、网络、文件系统和账号权限，不能据此建议放宽 Full Access/CDP。已明确拒绝的具体访问不得换入口绕过；独立测试页成功也不能代替原产物验收。
 - 只读检查先用当前 sandbox；`rg`、`sed -n`、`jq`、`wc`、`nl`、`find` 和普通读取不预先提权。仅本轮发生具体 sandbox/网络拒绝后才可申请 `require_escalated`，理由引用该失败。

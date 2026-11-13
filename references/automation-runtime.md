@@ -21,6 +21,8 @@
 3. iab 出现后打开本任务实际页面，完成原定关键交互。分别记录 inventory、页面打开、交互结果；若出现 `Frame with the given id was not found` 等后续错误，单独记录页面/帧故障，不回写成 iab 未注册。仍不可用则保留产物及精确 gate，停止机械重试，保留原验收与预算。
 4. 后续自然续跑或新的实质恢复证据允许再次有限核验，不等用户重复提醒。治理侧按问题、版本与目标记录发送/接收/采用/效果；同版无新证据不催促，不恢复暂停/归档任务。
 
+OMP 备用补充（`omp-browser-fallback-v1`，2026-11-13）：正式浏览器入口缺失或暂不可用，且上述有限恢复仍失败时，在当前任务已授权范围内按 [OMP 浏览器备用入口](omp-browser-fallback.md) 切换，不等用户再次提醒；明确访问拒绝、站点或协议拒绝不适用。保留原产物验收、预算和防重，记录实际调用版本、模式、工具事件、原任务结果与清理证据；备用任务成功不代表 Codex 原故障修复。用户已选择扩展保持启用，relay 仅任务期间运行；busy 不抢占。没有适用故障时等待自然工作，不制造测试或恢复旧业务。
+
 排查时按同一 session 的失败、owner sync/captured route、backend startup ready 及最终工具回执关联。浏览器发现会探测其他会话的后端，单独一条 `No ChatGPT browser route...` 可能只是未匹配候选；成功 inventory 之后不能据此断言复发。应用侧根治需要在具有可信窗口归属的任务启动/接管路径完成绑定并等待就绪，保留会话隔离与权限检查；当前工作流只缓解提前退出，不代表客户端已修复。证据见 Canon `raw/update-cards/20261105-cross-thread-friction-pilot.md` 的 2026-11-12 根因续查。
 
 工具位于本文件所属 agent-skills 仓库的 scripts 目录：`python3 <agent-skills-repo>/scripts/automation_state.py --directory <CODEX_HOME>/automations/<id> <action> --input <JSON文件>`。状态继续使用现有 reliability-state.json；不迁移或清空旧items/issues/months/facts。输入用JSON文件，禁止把HTML或业务文本拼进shell命令。
