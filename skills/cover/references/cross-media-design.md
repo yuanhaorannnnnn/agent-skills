@@ -18,6 +18,62 @@ the result follows the direction or achieves artistic quality.
 
 ## Shared design judgment
 
+When a user rejects the appearance of an autonomous visual design (for example,
+“不好看”, “太普通”, or “暖色不好看”), interpret the feedback in the full
+task context: naming a color or element does not by itself prescribe a palette
+swap or establish a general color preference. Inspect the current work and
+consider composition, type, imagery, color and their interaction as relevant.
+Explain the observed issue and a proposed direction grounded in actual references;
+pause for the user's feedback before making changes that depend on that direction.
+Do not present a superficial edit as a redesign. A precise request for a limited
+edit or an explicitly chosen direction remains authoritative and keeps its scope.
+
+When the user requests stepwise review, present the content idea, observed
+references and concrete choices, actual result and before/after comparison, and
+coverage/status at the agreed stages; wait for feedback before dependent work.
+The user may combine stages or authorize autonomous progress. This preference
+overrides default guidance against approval pauses; it does not impose extra
+creative exploration on faithful or explicitly scoped edits.
+
+For any visual creation or edit, including faithful local edits, use the existing
+delivery to give a concise read-only evidence hint when a material gap or
+version association needs clarification: what actual
+output or representative state was inspected; whether that observation can be
+associated with the delivered version; and which material views, states, resources
+or works were not covered. If the association or coverage is unverified, say so.
+Keep these as separate facts: a screenshot, local hash, search result or tool
+record alone does not prove the final delivery, complete coverage or quality.
+Where the delivery channel supports readback, compare the original bytes or
+same-algorithm digest of the object referenced by the actual delivery message
+or manifest with the inspected version. An old reference, draft, thumbnail or
+the same local path alone does not establish the current delivered object.
+For a mutable URL, this comparison covers only the time of readback; a match for
+one HTML file does not establish coverage of its scripts, data or other resources.
+When that readback is unavailable, keep the association unknown; do not upload
+or change delivery channels solely to manufacture a stronger status.
+Do not infer that an unrecorded check did not happen, or turn an unknown into a
+pass, exemption or automatic block. Follow the producer's medium-specific checks;
+this hint adds no new approval, file, reference search or creative exploration.
+
+At the end of a visual creation or edit, record one local self-reported telemetry
+event with `python3 /home/yhr/.agents/repos/agent-skills/scripts/visual_telemetry.py record`,
+using its closed-value options for medium, content idea, reference,
+inspection, delivery readback and coverage. Leave a field `unknown` when the
+fact is not known; `not_applicable` is for an actually inapplicable decision,
+not for an unobserved one. Use `reported_done` / `reported_match` only for the
+work actually performed, not for a prompt or a claimed plan.
+For `reference`, `reported_done` requires a reference actually inspected and a
+concrete choice informed by it; for `inspection`, it requires the actual result
+or relevant state to have been inspected. Use `mixed` for multiple media.
+For multiple works, summarize the authorized task conservatively: partial or
+unverified work must not be reported as fully completed. Duplicate records are
+possible; the recorder does not deduplicate tasks.
+The recorder stores no task content, file path, URL or image. Its failure is a warning and does not
+change the task outcome. It is not a hook or independent evidence: agents may
+omit it, and a report is not proof of attention, complete coverage or quality.
+To inspect only the recorded aggregate, use the same script with `report`;
+missing records are neither failures nor a count of all visual tasks.
+
 For each work involving autonomous design or redesign, carry the following
 through production and the existing delivery, at a depth appropriate to the
 work. Do not substitute a checklist or written explanation for the artifact:
@@ -38,14 +94,17 @@ work. Do not substitute a checklist or written explanation for the artifact:
    not evidence of a substantive redesign; report it accurately.
 4. **Workload and status:** for multiple works, inventory the scope first, then
    work in small groups sized so each receives these decisions and checks;
-   continue through the authorized scope without introducing approval pauses.
+   continue through the authorized scope without introducing approval pauses,
+   except when the user has requested staged review or a rejected direction
+   requires the feedback pause above.
    Treat one or two at a time as a useful starting point, not a universal cap.
    Clearly mark unmade work, incomplete redesigns and uninspected results as
    such; do not count a draft, template rerender or minor edit as a completed
    redesign. Report unavailable checks and unresolved quality concerns.
 
 Use the artifact and existing delivery for evidence, without requiring a new
-document, fixed number of variants, or approval. Faithful execution of an
+document, fixed number of variants, or approval beyond the feedback and
+user-requested review described above. Faithful execution of an
 explicit visual direction, data contract or limited edit keeps its original
 scope and does not require a new idea or reference search.
 
@@ -71,7 +130,8 @@ identity as specified below; image generation remains prompt-led. For software
 UI, check representative real operating states and recurring tasks as well as
 visual expression. A product page and an application can share this judgment
 without sharing a layout or visual skin. Use the existing delivery for reference
-evidence and tradeoffs; do not add a mandatory document or approval step.
+evidence and tradeoffs; do not add a mandatory document or approval step beyond
+the feedback and user-requested review described above.
 
 For pages and video, resolve the direction through [Style routing](style-routing.md)
 when it is not already established and the applicable workflow calls for it.
