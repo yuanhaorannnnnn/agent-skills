@@ -102,6 +102,13 @@ skills:
   calls:
   - paperwork
   handoffs: []
+- name: debrief
+  enabled: true
+  category: review
+  invocation: model
+  role: renderer
+  calls: []
+  handoffs: []
 - name: traceback
   enabled: true
   category: review

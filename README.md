@@ -104,6 +104,7 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 | `conops` | workflow | model | renderer | Technical design document for review |
 | `cover` | design | user | renderer | Create a cross-media DESIGN.md art direction and token spec |
 | `cartographic-recon` | design | user | orchestrator | Create and revise illustrated maps with geographic evidence and visual checks |
+| `debrief` | review | model | renderer | Explain completed work, code changes and verification evidence |
 | `dossier` | workflow | user | orchestrator | Three modes: create, retrieve, update; person creation and “查这个人” use the OSINT branch from links, IDs or names; retrieval keeps source dossiers read-only and defaults to a separate Breach Archive HTML |
 | `execute` | workflow | model | orchestrator | Run a task and leave a resumable record |
 | `go-nogo` | meta | model | discipline | Decide whether a new skill or tool is worth building |

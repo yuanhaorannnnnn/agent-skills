@@ -82,6 +82,7 @@ skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `
 | `conops` | workflow | model | renderer | 技术开发设计方案 |
 | `cover` | design | user | renderer | 设计规范（DESIGN.md） |
 | `cartographic-recon` | design | user | orchestrator | 地图侦察：地理核验、手绘地图与改图验收 |
+| `debrief` | review | model | renderer | 解释任务改动、关键代码与验证证据 |
 | `dossier` | workflow | user | orchestrator | 建档、调档、更新三个模式；人物在建档中走OSINT，支持链接、ID、名字，已有档案沿原ID调查更新；调档原档只读，默认由breach生成独立HTML展示 |
 | `execute` | workflow | model | orchestrator | 执行任务并留可恢复记录 |
 | `go-nogo` | meta | model | discipline | 判断该不该做、该不该建 skill |
