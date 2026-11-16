@@ -88,13 +88,15 @@ contact_sheet; existing manifests without them remain valid and unclassified.
    those remain, return `needs_context` and inspect the named work, author or
    historical source. Explicit selection remains supported, with
    `reference_refinement_required: true`; refine the branch in the artifact
-   brief before production. No mandatory approval round is added.
+   brief before production. No approval round beyond agreed staged review or a
+   feedback pause is added.
    Matching is exact and explainable, with no invented confidence percentage.
 
 `exclude_styles` is an artifact-specific constraint. Do not translate rejection
 of one sample into a catalog-wide ban. The agent checks content fit: what visual
 action carries the message, and what would be lost if removed? A single valid
-candidate can be selected with a brief rationale; no mandatory approval round.
+candidate can be selected with a brief rationale; honor agreed staged review and
+feedback pauses before dependent production.
 When the agent must choose a direction, compare task-relevant alternatives,
 including an unfamiliar option where suitable; do not choose by habit or recent
 reuse. State the differentiating fit in the existing brief or delivery. Reuse is

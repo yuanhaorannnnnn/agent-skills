@@ -1,7 +1,7 @@
 ---
 name: breach
 description: |
-  General HTML presentation layer for fast single-page designs, test reports, status pages, diagrams, or slide-like pages, plus dedicated structured discussion-digest and archive modes. Trigger on HTML artifact requests; requests to create an investigation or evidence wall (调查墙、线索墙、证据墙、侦探墙) from materials; a cognitive map (认知地图、线索地图) described with photos, clippings, pins, connections, or an investigation-wall look; explicit structured discussion digests ("digest this thread"); `$breach --archive`; requests to render an existing dossier material package; or dossier retrieval handoffs for default archive display. A bare request for a cognitive/concept map, ordinary reading, explanation, or text summaries does not by itself request an investigation wall or HTML. Respect an explicitly requested output medium. Content workflows such as conops remain the content owners. Not for native docs, decks, sheets, full websites, or rendered video files.
+  HTML presentation for standalone reports, status pages, diagrams and slide-like pages, with dedicated investigation-wall, structured discussion-digest and archive modes. Use for those HTML artifacts, an explicitly visual investigation/evidence wall, an explicit structured discussion digest, `$breach --archive`, or rendering a registered dossier package. A generic design request, a complete website or application, a bare cognitive map, ordinary reading or text summary does not by itself invoke Breach. Respect the requested medium; content workflows retain ownership. Not for native docs, decks, sheets or rendered video files.
 ---
 
 # Quick Page
@@ -28,7 +28,9 @@ mode or automatically produce HTML.
 
 - Native document, presentation, or spreadsheet requested → use the requested
   OpenAI Template or native artifact capability.
-- HTML page, HTML slide-like page, or discussion digest requested → use breach.
+- Standalone HTML report, status page, diagram, slide-like page, or structured
+  discussion digest → use breach; complete websites and applications use the
+  applicable site or application workflow.
 - Another workflow may define content and evidence first, then call breach only
   for HTML presentation. Approved prose need not be a persisted Markdown file.
 - For `conops` output `html` or `both`, use General page mode and preserve its

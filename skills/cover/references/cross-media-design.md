@@ -28,12 +28,24 @@ pause for the user's feedback before making changes that depend on that directio
 Do not present a superficial edit as a redesign. A precise request for a limited
 edit or an explicitly chosen direction remains authoritative and keeps its scope.
 
-When the user requests stepwise review, present the content idea, observed
+The user has requested stepwise review for work requiring an autonomous visual
+direction. Present the content idea, observed
 references and concrete choices, actual result and before/after comparison, and
 coverage/status at the agreed stages; wait for feedback before dependent work.
 The user may combine stages or authorize autonomous progress. This preference
 overrides default guidance against approval pauses; it does not impose extra
 creative exploration on faithful or explicitly scoped edits.
+
+In mixed tasks, resolve scope per decision: honor the supplied reference,
+specified image, direction or limited edit, and apply shared judgment and the
+agreed review to remaining consequential autonomous visual decisions. A named
+reference, color or shot does not exempt the entire work; do not search for
+additional references when the supplied material already answers the decisions.
+
+Match claims about references to the mode of observation. Search snippets alone
+do not constitute inspecting the work; source code or specifications may support
+structural decisions but do not by themselves show the visual result. State when
+the relevant visual, motion or audio evidence could not be directly observed.
 
 For any visual creation or edit, including faithful local edits, use the existing
 delivery to give a concise read-only evidence hint when a material gap or
@@ -211,7 +223,8 @@ sources must answer specific unresolved questions.
   approach. Direct user instructions for the figure remain authoritative.
 - Resolve ordinary design tradeoffs directly. Ask only when two explicit user
   requirements cannot both be met and the missing choice changes the result;
-  do not add routine style approval or require a new DESIGN.md for a one-off.
+  this does not override the agreed staged review or feedback pause above. Do not
+  add other routine style approval or require a new DESIGN.md for a one-off.
 
 ### Who writes and who consumes
 
@@ -269,7 +282,8 @@ artifact or film, the producing agent resolves a work-specific direction before
 production, even if a project already supplies tokens. Image generation follows
 the user's prompt without requiring a catalog family or extra art-direction step.
 Reuse the existing brief
-or conversation; no extra file, form, approval round or new style ID is required.
+or conversation; no extra file, form, approval round beyond agreed review, or
+new style ID is required.
 
 State the work's subject and intended effect, its central visual idea, the
 concrete signature choices and how they carry the content. Include what is
@@ -385,7 +399,8 @@ them. Never invent universal timing/BPM/transition defaults for a painting style
 
 ## Reference evidence
 
-Retain `.design/evidence.json`'s `references_studied`, `adaptations`, and
+When Cover creates or updates a reusable project specification, retain
+`.design/evidence.json`'s `references_studied`, `adaptations`, and
 `wholesale_copy` fields. References may be exact DESIGN paths, artwork URLs, or
 specific film URLs. Record at least one genuinely inspected primary source; add
 other sources when useful without pretending multiple frames from one film are
@@ -393,6 +408,8 @@ independent sources. Optional
 `reference_observations` can record source, asset/frame/timecode, inspection
 level (`text`, `frames`, `sequence`, `audio`), observed choice, and proposed
 adaptation. Describe creator claims separately from direct observation.
+For one-off work, use the existing brief, conversation or delivery to record
+relevant observations and limits; do not create this file solely for the work.
 
 Keep the film or artwork's original authorship distinct from a reposting account.
 Source URLs remain useful when assets cannot be bundled. Screenshots used to
@@ -403,8 +420,9 @@ study a reference are not automatically production assets or licensed footage.
 An available video skill or tool receives:
 
 - Content objective, audience, approved facts and requested deliverables.
-- Absolute project DESIGN.md path, resolved family, artifact-specific visual
-  idea/signature choices, inherited constraints and scoped override.
+- Project DESIGN.md path and resolved family when applicable; otherwise the
+  existing work brief. Include the artifact-specific visual idea/signature
+  choices, inherited constraints and scoped override without manufacturing files.
 - Exact reference URLs/assets with observations and inspection limits.
 - Production brief: delivery dimensions/timing/audio requirements known so far;
   unresolved requirements remain visible.

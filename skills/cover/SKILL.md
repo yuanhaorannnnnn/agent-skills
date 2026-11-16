@@ -1,7 +1,7 @@
 ---
 name: cover
 description: |
-  Create or update a project-specific DESIGN.md with a distinctive art direction and visual tokens for pages, images, and video. Trigger on "DESIGN.md", "视觉设计", "设计规范", "design spec", or "参考 XX 风格做设计". Not for a one-off mockup or video production.
+  Create or update a reusable, project-specific DESIGN.md with art direction and visual tokens for pages, images, and video. Use for a requested project visual identity, design system, design specification, or DESIGN.md. A one-off page, UI, image or video design, even with a supplied reference or style, does not by itself require Cover or a new DESIGN.md.
 ---
 
 # Visual Design
