@@ -173,6 +173,13 @@ skills:
   role: orchestrator
   calls: []
   handoffs: []
+- name: joint-ops
+  enabled: true
+  category: workflow
+  invocation: user
+  role: orchestrator
+  calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user
