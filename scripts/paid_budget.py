@@ -111,6 +111,23 @@ def service(policy, provider, now):
     return cfg, limits, observed, start, end
 
 
+def observed_today(cfg, now):
+    """A reconciled daily upper bound, counted only on its recorded date."""
+    daily = cfg.get('observed_day')
+    if daily is None:
+        return number('0')
+    if not isinstance(daily, dict) or set(daily) != {'date', 'units'}:
+        raise Denied('invalid observed daily spending')
+    try:
+        day = dt.date.fromisoformat(daily['date'])
+    except (TypeError, ValueError):
+        raise Denied('invalid observed daily date') from None
+    amount = number(daily['units'])
+    if day > now.date():
+        raise Denied('observed daily spending is in the future')
+    return amount if day == now.date() else number('0')
+
+
 def request(data):
     if not isinstance(data, dict) or set(data) != {'provider', 'task', 'operation', 'units'}:
         raise Denied('reserve requires only provider/task/operation/units')
@@ -147,6 +164,7 @@ def reserve(data, directory=DIRECTORY, now=None):
         if any(r['unit'] != cfg['unit'] for r in state['reservations'] if r['provider'] == data['provider']):
             raise Denied('provider unit changed; explicit ledger migration required')
         used = totals(state['reservations'], data['provider'], now, start, end, task_hash)
+        used['day'] += observed_today(cfg, now)
         for label, total, limit in [('task', used['task'], limits['task_limit']), ('day', used['day'], limits['daily_limit']), ('cycle', observed + used['cycle'], limits['cycle_limit'])]:
             if total + units > limit:
                 raise Denied(label + ' budget exceeded; no reservation made')
@@ -171,10 +189,12 @@ def status(directory=DIRECTORY, now=None):
         try:
             cfg, limits, observed, start, end = service(policy, name, now)
             used = totals(state['reservations'], name, now, start, end)
+            daily_observed = observed_today(cfg, now)
             if any(r['unit'] != cfg['unit'] for r in state['reservations'] if r['provider'] == name):
                 raise Denied('provider unit changed')
             result[name] = dict(status='current', unit=cfg['unit'], observed_spend=str(observed),
                                 reserved_cycle=str(used['cycle']), reserved_day=str(used['day']),
+                                observed_day=str(daily_observed), day_used=str(used['day'] + daily_observed),
                                 cycle_limit=str(limits['cycle_limit']), cycle_remaining=str(limits['cycle_limit']-observed-used['cycle']))
         except Denied as exc:
             result[name] = dict(status='blocked', reason=str(exc))

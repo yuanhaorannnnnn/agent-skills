@@ -61,6 +61,22 @@ class BudgetTest(unittest.TestCase):
         with self.assertRaises(g.Denied):
             self.reserve('1', task='issue-2026-W46', now=NOW+dt.timedelta(days=1))
 
+    def test_reconciled_daily_spend_counts_once_and_expires_next_day(self):
+        self.policy['services']['firecrawl']['observed_day'] = {'date': '2026-11-13', 'units': '19'}
+        self.save_policy()
+        self.reserve('1')
+        with self.assertRaises(g.Denied):
+            self.reserve('1', task='other')
+        self.assertEqual(g.status(self.p, NOW)['providers']['firecrawl']['day_used'], '20')
+        self.reserve('1', task='other', now=NOW + dt.timedelta(days=1))
+
+    def test_invalid_reconciled_daily_spend_fails_closed(self):
+        for value in [{'date': '2026-11-14', 'units': '1'}, {'date': 'bad', 'units': '1'}, {'units': '1'}]:
+            self.policy['services']['firecrawl']['observed_day'] = value
+            self.save_policy()
+            with self.subTest(value=value), self.assertRaises(g.Denied):
+                self.reserve()
+
     def test_cycle_boundary_and_future_cycle_denied(self):
         for when in [dt.datetime(2026,10,1,tzinfo=g.ZONE), g.instant('2026-11-26T07:34:50Z'), dt.datetime(2026,12,1,tzinfo=g.ZONE)]:
             with self.subTest(when=when), self.assertRaises(g.Denied):
