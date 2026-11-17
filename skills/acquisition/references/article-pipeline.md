@@ -1,5 +1,9 @@
 # Acquisition route: article pipeline
 
+对于不以 Wiki 摄入为目标的公众号图文采集，使用已安装的 `wechat-capture` skill，
+由调用方指定输出目录；不要把主页收藏自动写入 Wiki。Wiki 摄入继续遵循本管线的
+identity、raw、query 和索引契约。
+
 ## 文章管线
 
 ### Step A0-WeChat album discovery：公开专辑

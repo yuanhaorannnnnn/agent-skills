@@ -102,7 +102,7 @@ def installed_cli_python(command: str) -> str:
     return python_path
 
 
-def run_cli_in_staging(url: str, staging_dir: Path, command: str) -> None:
+def run_cli_in_staging(url: str, staging_dir: Path, command: str) -> str:
     python_path = installed_cli_python(command)
     launcher = "\n".join(
         [
@@ -125,6 +125,7 @@ def run_cli_in_staging(url: str, staging_dir: Path, command: str) -> None:
         detail = (completed.stderr or completed.stdout).strip().splitlines()[-1:]
         suffix = detail[0] if detail else f"exit code {completed.returncode}"
         raise RuntimeError(f"WeChat fallback extraction failed: {suffix}")
+    return completed.stdout
 
 
 def single_markdown_file(staging_dir: Path) -> Path:

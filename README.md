@@ -117,6 +117,7 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 | `tasking` | workflow | user | orchestrator | Four-stage requirement workflow (Yunxiao) |
 | `traceback` | review | model | discipline | Design → implementation → tests alignment gate |
 | `joint-ops` | workflow | user | orchestrator | Coordinate product development teams and delivery |
+| `wechat-capture` | media | user | adapter | Capture public WeChat articles outside Wiki ingestion |
 | `warroom` | workflow | user | orchestrator | War Room: multi-model route review; `--joint` invites external providers or agents (local DSH adapter) |
 | `x-likes-digest` | automation | user | adapter | Weekly digest of liked posts on X |
 

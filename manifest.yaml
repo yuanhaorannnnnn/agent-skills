@@ -180,6 +180,13 @@ skills:
   role: orchestrator
   calls: []
   handoffs: []
+- name: wechat-capture
+  enabled: true
+  category: media
+  invocation: user
+  role: adapter
+  calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user
