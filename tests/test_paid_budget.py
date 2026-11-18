@@ -61,6 +61,16 @@ class BudgetTest(unittest.TestCase):
         with self.assertRaises(g.Denied):
             self.reserve('1', task='issue-2026-W46', now=NOW+dt.timedelta(days=1))
 
+    def test_deepseek_limits_disabled_reservations_retained(self):
+        self.policy['services']['deepseek'] = dict(self.policy['services']['firecrawl'], unit='CNY')
+        self.save_policy()
+        result = self.reserve('1000', provider='deepseek')
+        self.assertIsNone(result['cycle_remaining'])
+        status = g.status(self.p, NOW)['providers']['deepseek']
+        self.assertFalse(status['limits_enforced'])
+        self.assertIsNone(status['cycle_limit'])
+        self.assertEqual(status['reserved_cycle'], '1000')
+
     def test_reconciled_daily_spend_counts_once_and_expires_next_day(self):
         self.policy['services']['firecrawl']['observed_day'] = {'date': '2026-11-13', 'units': '19'}
         self.save_policy()

@@ -106,7 +106,7 @@ def service(policy, provider, now):
     start, end = instant(cfg.get('cycle_start')), instant(cfg.get('cycle_end'))
     if not start <= now < end:
         raise Denied('budget cycle is not current; refresh account observation before spending')
-    if observed > limits['cycle_limit']:
+    if provider != 'deepseek' and observed > limits['cycle_limit']:
         raise Denied('observed spending already exceeds cycle budget')
     return cfg, limits, observed, start, end
 
@@ -166,7 +166,7 @@ def reserve(data, directory=DIRECTORY, now=None):
         used = totals(state['reservations'], data['provider'], now, start, end, task_hash)
         used['day'] += observed_today(cfg, now)
         for label, total, limit in [('task', used['task'], limits['task_limit']), ('day', used['day'], limits['daily_limit']), ('cycle', observed + used['cycle'], limits['cycle_limit'])]:
-            if total + units > limit:
+            if data['provider'] != 'deepseek' and total + units > limit:
                 raise Denied(label + ' budget exceeded; no reservation made')
         row = dict(id=f'{now.timestamp():.6f}-{os.getpid()}-{len(state["reservations"])}', provider=data['provider'],
                    unit=cfg['unit'], task_hash=task_hash, operation=data['operation'], units=str(units),
@@ -174,7 +174,7 @@ def reserve(data, directory=DIRECTORY, now=None):
         state['reservations'].append(row)
         atomic(directory / 'budget-state.json', state)
         return dict(reserved=True, reservation_id=row['id'], provider=row['provider'], operation=row['operation'],
-                    units=row['units'], unit=row['unit'], cycle_remaining=str(limits['cycle_limit']-observed-used['cycle']-units))
+                    units=row['units'], unit=row['unit'], cycle_remaining=None if data['provider'] == 'deepseek' else str(limits['cycle_limit']-observed-used['cycle']-units))
 
 
 def status(directory=DIRECTORY, now=None):
@@ -195,7 +195,7 @@ def status(directory=DIRECTORY, now=None):
             result[name] = dict(status='current', unit=cfg['unit'], observed_spend=str(observed),
                                 reserved_cycle=str(used['cycle']), reserved_day=str(used['day']),
                                 observed_day=str(daily_observed), day_used=str(used['day'] + daily_observed),
-                                cycle_limit=str(limits['cycle_limit']), cycle_remaining=str(limits['cycle_limit']-observed-used['cycle']))
+                                limits_enforced=name != 'deepseek', cycle_limit=None if name == 'deepseek' else str(limits['cycle_limit']), cycle_remaining=None if name == 'deepseek' else str(limits['cycle_limit']-observed-used['cycle']))
         except Denied as exc:
             result[name] = dict(status='blocked', reason=str(exc))
     return {'intercepts_network': False, 'providers': result}
