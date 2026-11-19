@@ -42,12 +42,9 @@ node scripts/install.mjs install
 node scripts/install.mjs doctor
 ```
 
-安装会为所有启用中的 skill 和共享 `.scripts` 创建符号链接：
-
-```text
-~/.agents/skills/
-~/.claude/skills/
-```
+安装会为所有启用中的 skill 和共享 `.scripts` 创建符号链接，只写入单一运行时目录
+`~/.agents/skills/`。旧版本在已弃用的 `~/.claude/skills/` 里留下的链接会在安装时清理，
+由其他来源管理的链接保持不动。
 
 后续更新：
 

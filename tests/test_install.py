@@ -11,6 +11,8 @@ INSTALL_SCRIPT = REPO_ROOT / "scripts" / "install.sh"
 SKILLS_DIR = REPO_ROOT / "skills"
 RUNTIME_DIRS = [
     (".agents", "skills"),
+]
+DEPRECATED_RUNTIME_DIRS = [
     (".claude", "skills"),
 ]
 
@@ -85,6 +87,25 @@ skills:
                 runtime = home.joinpath(*runtime_parts)
                 self.assertFalse((runtime / "codify").exists())
                 self.assertTrue((runtime / "neutralize").is_symlink())
+
+    def test_install_prunes_deprecated_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            retired = home.joinpath(".claude", "skills")
+            retired.mkdir(parents=True)
+            (retired / "codify").symlink_to(SKILLS_DIR / "codify")
+            (retired / ".scripts").symlink_to(SKILLS_DIR.parent / "scripts")
+            foreign = retired / "foreign-skill"
+            foreign.symlink_to("/some/other/path")
+
+            result = self._run_install(home)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for runtime_parts in DEPRECATED_RUNTIME_DIRS:
+                runtime = home.joinpath(*runtime_parts)
+                self.assertFalse((runtime / "codify").is_symlink())
+                self.assertFalse((runtime / ".scripts").is_symlink())
+            # links owned by other sources stay untouched
+            self.assertTrue(foreign.is_symlink())
 
     def test_install_removes_unlisted_repo_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

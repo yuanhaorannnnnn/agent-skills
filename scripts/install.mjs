@@ -12,10 +12,13 @@ const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
 const SCRIPTS_DIR = path.join(ROOT_DIR, 'scripts');
 const MANIFEST_PATH = process.env.AGENT_SKILLS_MANIFEST || path.join(ROOT_DIR, 'manifest.yaml');
 const HOME_DIR = process.env.HOME;
-const RUNTIME_DIRS = [
-  path.join(HOME_DIR, '.agents', 'skills'),
-  path.join(HOME_DIR, '.claude', 'skills'),
-];
+// Single runtime: the generic Agents directory. The Claude Code runtime was
+// retired on 2026-11-19; links previously created there are pruned on install
+// so the two runtimes cannot drift again.
+const RUNTIME_DIRS = [path.join(HOME_DIR, '.agents', 'skills')];
+
+// Retired runtimes: existing links that point into this repo are removed.
+const DEPRECATED_RUNTIME_DIRS = [path.join(HOME_DIR, '.claude', 'skills')];
 
 function loadManifest() {
   if (!fs.existsSync(MANIFEST_PATH)) return null;
@@ -127,6 +130,27 @@ function installIntoRuntime(runtimeDir, enabledMap) {
   return { installed, updated, skipped, missingSkillMd };
 }
 
+function pruneDeprecatedRuntime(runtimeDir) {
+  const pruned = [];
+  const entries = fs.existsSync(runtimeDir) ? fs.readdirSync(runtimeDir) : [];
+  for (const entry of entries) {
+    const linkPath = path.join(runtimeDir, entry);
+    let stat;
+    try {
+      stat = fs.lstatSync(linkPath);
+    } catch {
+      continue;
+    }
+    if (!stat.isSymbolicLink()) continue;
+    const target = fs.readlinkSync(linkPath);
+    if (target === SCRIPTS_DIR || target.startsWith(SKILLS_DIR + path.sep)) {
+      fs.unlinkSync(linkPath);
+      pruned.push(entry);
+    }
+  }
+  return pruned;
+}
+
 function cmdInstall() {
   const manifest = loadManifest();
   const enabledMap = buildEnabledMap(manifest);
@@ -144,6 +168,12 @@ function cmdInstall() {
     if (updated.length) console.log(`Updated:   ${updated.join(' ')}`);
     if (skipped.length) console.log(`Skipped:   ${skipped.join(' ')}`);
     if (missingSkillMd.length) console.log(`Missing SKILL.md: ${missingSkillMd.join(' ')}`);
+    console.log('');
+  }
+  for (const runtimeDir of DEPRECATED_RUNTIME_DIRS) {
+    const pruned = pruneDeprecatedRuntime(runtimeDir);
+    console.log(`Deprecated runtime: ${runtimeDir}`);
+    console.log(pruned.length ? `Pruned:    ${pruned.join(' ')}` : 'Pruned:    (nothing)');
     console.log('');
   }
   console.log('===================================');

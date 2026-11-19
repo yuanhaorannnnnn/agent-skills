@@ -15,7 +15,7 @@ For people building repeatable agent workflows: coding-agent users who want a ta
 
 Not a prompt dump. Every skill declares its trigger boundary, gates and artifacts. The repository ships contract tests plus a `doctor` that fails when the manifest, skill directories and installed links disagree.
 
-`manifest.yaml` is the source of truth for each skill's `enabled` flag, category, invocation mode, role, `calls` dependencies and `handoffs` ownership transfers, and it maps one-to-one onto `skills/*/SKILL.md`. A handoff starts a separate independent skill execution; it is not a call and cannot create user-to-user nesting. The installer symlinks the enabled set into the generic Agents directory and the Claude Code directory, so the source stays single.
+`manifest.yaml` is the source of truth for each skill's `enabled` flag, category, invocation mode, role, `calls` dependencies and `handoffs` ownership transfers, and it maps one-to-one onto `skills/*/SKILL.md`. A handoff starts a separate independent skill execution; it is not a call and cannot create user-to-user nesting. The installer symlinks the enabled set into the generic Agents directory, so the source stays single; the retired Claude Code directory is pruned rather than written.
 
 ## Install and verify in 30 seconds
 
@@ -52,12 +52,10 @@ node scripts/install.mjs install
 node scripts/install.mjs doctor
 ```
 
-The installer links every enabled skill plus the shared `.scripts` directory:
-
-```text
-~/.agents/skills/
-~/.claude/skills/
-```
+The installer links every enabled skill plus the shared `.scripts` directory into
+the single runtime directory `~/.agents/skills/`. Links that older installs created
+in the retired `~/.claude/skills/` runtime are pruned on every install; anything
+there owned by another source is left alone.
 
 Updating later:
 
