@@ -187,6 +187,20 @@ skills:
   role: adapter
   calls: []
   handoffs: []
+- name: aviation-analyst
+  enabled: true
+  category: media
+  invocation: user
+  role: adapter
+  calls: []
+  handoffs: []
+- name: my-dou
+  enabled: true
+  category: media
+  invocation: model
+  role: adapter
+  calls: []
+  handoffs: []
 metadata_schema:
   invocation:
   - user
