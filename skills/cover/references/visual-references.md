@@ -53,9 +53,9 @@ production-tool claims need their own sources if the project relies on them.
 ## Local research collection and evaluated samples
 
 For this user's reference collection, start at
-`/media/yhr/2T/files/wiki/queries/20261026-cross-media-visual-language-reference-library.md`.
+`/media/$USER/2T/files/wiki/queries/20261026-cross-media-visual-language-reference-library.md`.
 The source manifest is
-`/media/yhr/2T/files/wiki/raw/collections/20261026-visual-language/manifest.json`:
+`/media/$USER/2T/files/wiki/raw/collections/20261026-visual-language/manifest.json`:
 7 external videos (one reused), sampled frames, selected X API records, creator
 page snapshots, and 5 separately identified original samples. If unavailable,
 use the source URLs above; do not assume a portable installation contains media.

@@ -8,10 +8,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from project_artifacts import task_dir
 
-REQ_ROOT = Path("/media/yhr/2T/yunxiao/requirements")
+REQ_ROOT = Path(_DSH_ROOT) / "yunxiao/requirements"
 
 
 def check_state_phase(sp):
@@ -109,7 +111,7 @@ def check_yunxiao_status(sp):
 
 
 def check_canon(demand_id):
-    ok = Path(f"/media/yhr/2T/Canon/tasks/{demand_id}.md").exists()
+    ok = Path(f"{_DSH_ROOT}/Canon/tasks/{demand_id}.md").exists()
     return ok, (
         f"Canon task: {'found' if ok else 'missing'}"
         + (" OK" if ok else " FAIL")

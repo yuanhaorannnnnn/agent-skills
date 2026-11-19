@@ -43,7 +43,7 @@ description: |
 ## 共同流程
 
 当任务实际需要自主设计或重设计任何媒介的视觉作品时，读取
-[/home/yhr/.agents/skills/cover/references/cross-media-design.md](/home/yhr/.agents/skills/cover/references/cross-media-design.md)，
+[~/.agents/skills/cover/references/cross-media-design.md](~/.agents/skills/cover/references/cross-media-design.md)，
 按作品任务、参考和所选模块的契约形成方向并检查实际交付。保留用户指定、既有身份和局部修改范围；
 普通代码修改或不涉及视觉设计的任务无需读取，也不因此创建 `DESIGN.md`。
 
@@ -51,7 +51,7 @@ description: |
 
 先读用户约束、相关文件和 dirty baseline。仅当任务是**单仓库、局部、可逆、当前对话内可完成的 direct 修改**，且没有直接关联的现有 Canon task、已批准的交付契约、委托、跨仓库依赖、公共接口或安全/数据边界变更、外部状态变更或明确的后续交接需求时，使用 local direct：不新建 Canon task，也不运行 `execution_gate.py`；完成后在当前回复列出改动和验证。
 
-其他情况查询相关 Canon 页面，按 `/home/yhr/.agents/repos/agent-skills/references/canon-task-resolution.md` 解析或创建 task page；修改代码或委托前写入：
+其他情况查询相关 Canon 页面，按 `~/.agents/repos/agent-skills/references/canon-task-resolution.md` 解析或创建 task page；修改代码或委托前写入：
 
 - `## Goal`、`## Current State`、`## Next Step`、`## Key Decisions`
 - `## Tasks`、`## Progress`、`## Artifacts`
@@ -144,7 +144,7 @@ python3 <skill-dir>/scripts/execution_gate.py --mode goal --delegate --task <can
 python3 <skill-dir>/scripts/execution_gate.py --mode plan --route auto --task <canon-task> --goal <goal-md>
 ```
 
-代码或配置修改后，读取 `/home/yhr/.agents/repos/agent-skills/references/review-gate.md`，以当前 diff 和验证证据 review；持久路径再加入 task page。Blocker 未解除不得宣称完成。
+代码或配置修改后，读取 `~/.agents/repos/agent-skills/references/review-gate.md`，以当前 diff 和验证证据 review；持久路径再加入 task page。Blocker 未解除不得宣称完成。
 
 ## 调用方约束
 
@@ -154,12 +154,12 @@ python3 <skill-dir>/scripts/execution_gate.py --mode plan --route auto --task <c
 
 ## 输出契约
 
-遵守 `/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md` 与 `/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。Local direct 返回改动和验证结果；持久路径返回 `task_path`、持久化模式、`routing_mode`、`resolved_route`、执行者/委托状态、验证结果；只有 goal/plan 模式返回 `goal_path`。
+遵守 `~/.agents/repos/agent-skills/references/skill-output-contract.md` 与 `~/.agents/repos/agent-skills/references/canon-output-contract.md`。Local direct 返回改动和验证结果；持久路径返回 `task_path`、持久化模式、`routing_mode`、`resolved_route`、执行者/委托状态、验证结果；只有 goal/plan 模式返回 `goal_path`。
 
 ## Routing telemetry
 
 Emit one final local event following
-[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+[the shared routing contract](~/.agents/repos/agent-skills/references/skill-telemetry.md).
 Use actual executor `route=direct|delegate|unresolved`,
 `requested=auto|direct|delegate`, `persistence=local|task|goal|plan`.
 Explicit direct/delegate supplies `expected-route`; automatic choice leaves it

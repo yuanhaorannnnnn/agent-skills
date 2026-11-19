@@ -5,13 +5,16 @@ Usage:
   python3 clear_gate.py <bug-id> [--repo <path>] [--json]
 """
 
+import os
 import json, os, sys, subprocess, urllib.request
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from project_artifacts import task_dir
 
-BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
+BUG_ROOT = Path(_DSH_ROOT) / "yunxiao/bugs"
 
 
 def check_state_cleared(sp):
@@ -103,7 +106,7 @@ def main():
     args = ap.parse_args()
 
     sp = BUG_ROOT / args.bug_id / "state.json"
-    canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
+    canon_task = Path(f"{_DSH_ROOT}/Canon/tasks/{args.bug_id}.md")
     repo = Path(args.repo)
 
     checks = []

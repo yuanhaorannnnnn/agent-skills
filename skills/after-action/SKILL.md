@@ -61,11 +61,11 @@ When the user asks for case share, 分享, 培训, 复盘页面, or a page for o
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - after-action 文本是修复记录 artifact；长期根因、失败尝试、防错规则和复用模式优先沉淀到 Canon `incidents/` 或 `patterns/`。
-- 复杂修复完成后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-afteraction-<topic>.md`，引用修复记录、commit、日志和验证证据。
-- 如果调用者是 `repair Fix`，同时更新对应 `/media/yhr/2T/Canon/tasks/<bug-id>.md`。
+- 复杂修复完成后，创建或更新 `/media/$USER/2T/Canon/raw/update-cards/<date>-afteraction-<topic>.md`，引用修复记录、commit、日志和验证证据。
+- 如果调用者是 `repair Fix`，同时更新对应 `/media/$USER/2T/Canon/tasks/<bug-id>.md`。
 - 如果生成了 case share HTML，也把 breach 页面路径或 URL 作为 artifact ref 记录。
 
 ## Writing Rules

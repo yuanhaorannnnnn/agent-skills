@@ -134,7 +134,7 @@ if rendering cannot be checked, disclose that gap rather than claim acceptance.
    Separate fixed constraints from defaults and keep unrelated specifications out
    unless explicitly selected as references.
 2. When reading structure is unresolved, consult
-   `/media/yhr/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`
+   `/media/$USER/2T/files/wiki/raw/assets/thariqs.github.io/html-effectiveness/catalog.md`
    and a relevant HTML example. Borrow information grouping and spatial patterns,
    then adapt them to the content and direction. Existing or straightforward
    structures need no lookup; label an original layout honestly.

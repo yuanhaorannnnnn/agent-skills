@@ -39,7 +39,7 @@ Resolve the first available approved source:
 1. Canon task page § Artifacts: 'design_doc_path', 'fix_plan_path',
    'acceptance_checklist_path', or public contract.
 2. Project + branch -> Canon task page using
-   '/home/yhr/.agents/repos/agent-skills/references/canon-task-resolution.md'.
+   '~/.agents/repos/agent-skills/references/canon-task-resolution.md'.
 3. Explicit user-provided path.
 
 If no approved source exists, use 'mode: skipped'; record the reason in Canon.
@@ -103,7 +103,7 @@ Verdicts:
 
 ### 6. Promote durable state
 
-Follow '/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md'.
+Follow '~/.agents/repos/agent-skills/references/canon-output-contract.md'.
 
 Update the Canon task page with blockers, missing tests, boundary drift,
 waivers, skip reason, and absolute paths to all three artifacts. Create an

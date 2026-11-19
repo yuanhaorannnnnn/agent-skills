@@ -11,7 +11,7 @@ missing evidence, stale hashes, and inconsistent delivery states.
   "mode": "alignment",
   "task": {
     "id": "JHBN-0000",
-    "canon_task_path": "/media/yhr/2T/Canon/tasks/JHBN-0000.md"
+    "canon_task_path": "/media/$USER/2T/Canon/tasks/JHBN-0000.md"
   },
   "checked_at": "2026-07-22T11:30:00+08:00",
   "checked_commit": "<git HEAD>",

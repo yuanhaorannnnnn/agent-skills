@@ -9,9 +9,9 @@ Workflow skills are not just instructions. They create state transitions. Every 
 Use this contract together with:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
-/home/yhr/.agents/repos/agent-skills/references/review-gate.md
-/media/yhr/2T/Canon/SCHEMA.md
+~/.agents/repos/agent-skills/references/canon-output-contract.md
+~/.agents/repos/agent-skills/references/review-gate.md
+/media/$USER/2T/Canon/SCHEMA.md
 ```
 
 ## Required Surfaces
@@ -114,4 +114,4 @@ not contain task content.
 
 ## 钉钉文档交付终点
 
-所有已授权的钉钉文档输出遵循 `/home/yhr/.agents/repos/agent-skills/references/dingtalk-delivery-routing.md`：先按实际协作范围选择“我的文档”或“OASIS仿真产品开发”知识库，再在目标内查找合适目录和已有文档。不是固定放个人空间，也不限两个业务目录。明确私有的周报草稿与只读同步保持原约束；路由本身不授权新增发送、通知或历史批量迁移。保留原有防重、人工内容和链接，逐份核验目标受众与权限。
+所有已授权的钉钉文档输出遵循 `~/.agents/repos/agent-skills/references/dingtalk-delivery-routing.md`：先按实际协作范围选择“我的文档”或“OASIS仿真产品开发”知识库，再在目标内查找合适目录和已有文档。不是固定放个人空间，也不限两个业务目录。明确私有的周报草稿与只读同步保持原约束；路由本身不授权新增发送、通知或历史批量迁移。保留原有防重、人工内容和链接，逐份核验目标受众与权限。

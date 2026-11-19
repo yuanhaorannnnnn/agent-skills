@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+import os
 import json, os, sys, subprocess
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from project_artifacts import task_dir
 
-BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
+BUG_ROOT = Path(_DSH_ROOT) / "yunxiao/bugs"
 
 def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw).stdout.strip()
@@ -103,7 +106,7 @@ def main():
     checks.append(("6.yunxiao-status", (False, "yunxiao-status: SKIPPED — needs MCP auth")))
     checks.append(("7.owner", (False, "owner-check: SKIPPED — needs MCP auth")))
     checks.append(("8.state.json", check_state_json(sp)))
-    checks.append(("9.canon", check_canon(Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md"), args.bug_id)))
+    checks.append(("9.canon", check_canon(Path(f"{_DSH_ROOT}/Canon/tasks/{args.bug_id}.md"), args.bug_id)))
 
     # Fix: "3" must be in hard — fix_plan.json is Fix's primary source
     hard = {"0","2","3","4","5","8","9"}

@@ -29,7 +29,7 @@ description: |
 2. **为什么现在做？** — 什么变了？需求、排期、依赖、资源？
 3. **怎么算做完了？** — 可验证的终点。不是「传感器能跑」，是「按已批准工作负载、观测定义和误差预算验证点云输出；预算未定则明确待决」。
 
-未知项写入待决清单，继续能独立完成的设计；只有影响方案选择的必要信息才询问用户。涉及拟合、标定、经验规律或物理归因时，先读 `/home/yhr/.agents/repos/agent-skills/references/research-admission.md`，在提出参数搜索前完成观测与可辨识性准入。
+未知项写入待决清单，继续能独立完成的设计；只有影响方案选择的必要信息才询问用户。涉及拟合、标定、经验规律或物理归因时，先读 `~/.agents/repos/agent-skills/references/research-admission.md`，在提出参数搜索前完成观测与可辨识性准入。
 
 将影响方案选择的假设与已确认要求区分，并指出什么证据会改变选择。执行后更新已批准方案时，保留原要求、变更理由和用户批准依据；未获批准的范围/验收调整仍为提议，不因实现已完成而倒写成原定目标。普通探索和方向同步不因此新增正式方案文档。
 
@@ -40,7 +40,7 @@ dev-design 通常在代码开发之前执行，因此代码不是主要输入源
 
 1. **当前对话中的设计讨论** — 所有方案决策、trade-off、参数取舍都在这里。
    这是最丰富的信息源，不要只依赖文件而忽略对话。
-2. `/media/yhr/2T/Canon/tasks/<task>.md` — Canon task page 中的 § Plan / § Findings /
+2. `/media/$USER/2T/Canon/tasks/<task>.md` — Canon task page 中的 § Plan / § Findings /
    § Decisions / § Artifacts。包含架构决策、约束和 artifact 路径。
 3. `.planning/conversations/<id>/` — runtime scratch buffer（spec / task_plan /
    findings / progress）。历史参考，不作为 durable truth。
@@ -109,12 +109,12 @@ HTML 保留所选内容与证据边界，用语义标题、列表和表格组织
 
 ### Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - 按项目规则解析位置的方案文档是评审 artifact，仍保存在当前工作仓库。
 - 方案中的长期事实进入 Canon：需求/任务状态、方案决策、接口约束、风险、评审结论、后续任务。
-- 生成方案后，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-conops-<topic>.md`，把方案文档作为 absolute-path artifact ref。
-- 若由 `tasking Orient` 调用，优先更新 `/media/yhr/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。
+- 生成方案后，创建或更新 `/media/$USER/2T/Canon/raw/update-cards/<date>-conops-<topic>.md`，把方案文档作为 absolute-path artifact ref。
+- 若由 `tasking Orient` 调用，优先更新 `/media/$USER/2T/Canon/tasks/<demand-id>.md`；独立方案则更新对应 project/task/decision 页面。
 
 ---
 

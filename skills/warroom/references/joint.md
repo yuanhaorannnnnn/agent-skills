@@ -56,7 +56,7 @@ python3 <skill-dir>/scripts/dsh_agent.py follow-up \
 python3 <skill-dir>/scripts/dsh_agent.py cancel --job /absolute/scratch/new-review/job.json
 ```
 
-`--endpoint <path>` 是 adapter 的可选全局参数，放在子命令前；默认使用 `$HOME/.dsh/agents-anywhere/bridge/endpoint.json`。只连接 owner-only 发现文件声明的 loopback endpoint，令牌不打印。端点改变后每次调用重新发现；不猜端口、不读桌面 Cookie、不绕过鉴权。
+`--endpoint <path>` 是 adapter 的可选全局参数，放在子命令前；默认使用 `~/.dsh/agents-anywhere/bridge/endpoint.json`。只连接 owner-only 发现文件声明的 loopback endpoint，令牌不打印。端点改变后每次调用重新发现；不猜端口、不读桌面 Cookie、不绕过鉴权。
 
 - inspect 只握手和读取模型/权限/preset 目录，不调用模型、不读取现有会话。选择精确 provider/model（及可用 effort），用目录返回的 selection ID；主持 agent 负责最新版、别名及实际可用性判断。
 - start 必须能选 `read-only` 和 `minimal`；不以 workspace-write/full-access 替代。job 父目录必须尚不存在，脚本创建独立工作目录。IDs 在投递前持久化；超时不得盲目重新 start，先查同一 job 状态。只读配置在 Bridge 中于 prompt 准入前应用；后续调用再核对实际模型和权限，没有通过就停止。

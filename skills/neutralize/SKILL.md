@@ -64,7 +64,7 @@ Machine-readable evidence (`.agent-state/neutralize-gate.json`):
 
 ## Rule Sources
 
-- Canon `/media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}` — primary source for durable context, known failure modes, reusable fixes. Query first.
+- Canon `/media/$USER/2T/Canon/{projects,tasks,decisions,patterns,incidents}` — primary source for durable context, known failure modes, reusable fixes. Query first.
 - Canon overrides `.agent-state/` when both exist. Code overrides Canon when they conflict — Canon captures intent, code captures current reality.
 - `.agent-state/MEMORY.md` and `.agent-state/rules/mistakes.md` — compatibility fallback only.
 
@@ -74,7 +74,7 @@ Machine-readable evidence (`.agent-state/neutralize-gate.json`):
 For bug fixes that produce code or durable lessons, follow the shared workflow output contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 Small local fixes may stop at validation. Complex fixes, repeated mistake patterns, build failures, and cross-project lessons must promote evidence to Canon before handoff.
@@ -88,8 +88,8 @@ Small local fixes may stop at validation. Complex fixes, repeated mistake patter
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - Ordinary small fixes do not need Canon updates.
-- Complex root causes, repeated mistake patterns, build failures, and cross-project lessons should create/update `/media/yhr/2T/Canon/raw/update-cards/<date>-neutralize-<topic>.md`, `incidents/`, or `patterns/`.
+- Complex root causes, repeated mistake patterns, build failures, and cross-project lessons should create/update `/media/$USER/2T/Canon/raw/update-cards/<date>-neutralize-<topic>.md`, `incidents/`, or `patterns/`.
 - Validation logs, commits, screenshots, and local reports stay as artifact refs; do not copy them into Canon by default.

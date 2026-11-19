@@ -67,7 +67,7 @@ git push origin <base_branch>
 ## Canon promotion
 
 - 更新 Canon task page：记录合入分支、构建产物、最终状态 关闭。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-clear.md`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-clear.md`。
 
 ## 更新 state.json
 
@@ -79,7 +79,7 @@ git push origin <base_branch>
   "clear_build_artifact": "carlaue5:202606XXXXXX",
   "deliverable_urls": ["http://..."],
   "comment_ids": ["<Intake>", "<Closeout>", "<Clear>"],
-  "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-clear.md"
+  "canon_update_card_path": "/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-clear.md"
 }
 ```
 

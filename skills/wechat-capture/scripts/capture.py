@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Capture public WeChat articles into caller-selected directories."""
+import os
 import argparse
 import hashlib
 import json
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 import re
 import shutil
 import subprocess
@@ -12,7 +15,7 @@ import tempfile
 import uuid
 from urllib.parse import urlsplit
 
-SCRIPTS = Path('/home/yhr/.agents/repos/agent-skills/skills/acquisition/scripts')
+SCRIPTS = Path(__file__).resolve().parents[3] / 'skills' / 'acquisition' / 'scripts'
 sys.path.insert(0, str(SCRIPTS))
 import ingest_wechat_article as adapter
 import discover_wechat_album as albums

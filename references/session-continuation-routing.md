@@ -19,7 +19,7 @@
 用户明确把某次运行转为长期人工推进时，可在原交接状态中设置覆盖：
 
 ```bash
-python3 /home/yhr/.agents/repos/agent-skills/scripts/session_handoff_scan.py \
+python3 ~/.agents/repos/agent-skills/scripts/session_handoff_scan.py \
   --set-continuation <完整session-id> --mode handoff --reason '<用户明确指令依据>'
 ```
 

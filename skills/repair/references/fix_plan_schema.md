@@ -39,7 +39,7 @@ Intake Phase 输出契约——Fix Agent 只读这份 JSON，不读自由格式 
   ],
   "attachments": [
     {
-      "path": "/media/yhr/2T/yunxiao/bugs/<bug-id>/screenshot.png",
+      "path": "/media/$USER/2T/yunxiao/bugs/<bug-id>/screenshot.png",
       "type": "screenshot | log | video",
       "description": "说明"
     }

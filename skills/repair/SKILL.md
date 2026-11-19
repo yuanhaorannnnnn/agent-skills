@@ -21,7 +21,7 @@ description: |
 
 ## 全局约定
 
-- **缺陷目录**: `/media/yhr/2T/yunxiao/bugs/<bug-id>/` — Phase 0 原始材料和
+- **缺陷目录**: `/media/$USER/2T/yunxiao/bugs/<bug-id>/` — Phase 0 原始材料和
   `state.json` 的存放位置。`detail.md`、附件和其他 raw 输入只读；`state.json`
   仅允许按下方 mode 字段表 scoped write
 - **产物目录**: `<artifact-dir>/` — 所有 Intake 生成的产物（`root-cause.md`、`fix_plan.json`、breach HTML）写入当前 repo 的此路径
@@ -39,7 +39,7 @@ description: |
 repair modes must satisfy the shared workflow output contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 Each mode must leave a resumable handoff: `state.json`, Canon task page, update card, and mode-specific artifacts (`root-cause.md` + `fix_plan.json`, breach page, `fix_gate.json`, monitor state, commit/MR, or Closeout comment).
@@ -68,12 +68,12 @@ Each mode must leave a resumable handoff: `state.json`, Canon task page, update 
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - `<bug_root>/state.json` 是 Phase 0/repair 阶段门控文件，`<artifact-dir>/` 是修复方案 artifact 目录。
-- 缺陷长期状态写入 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录根因、修复分支、验证证据、交付物、云效状态和下一步。
+- 缺陷长期状态写入 Canon task page：`/media/$USER/2T/Canon/tasks/<bug-id>.md`，记录根因、修复分支、验证证据、交付物、云效状态和下一步。
 - `root-cause.md`、breach HTML、validation task、commit/MR、镜像 HTTP 链接、after-action/codify 产物都作为 Canon artifact refs。
-- 每个 mode 完成后创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-<mode>.md`。
+- 每个 mode 完成后创建或更新 `/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-<mode>.md`。
 - repair 全流程不修改负责人；Canon 也只记录 owner/validator 信息，不把它当作状态修改动作。
 
 ## State 更新边界

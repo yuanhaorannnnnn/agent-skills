@@ -11,7 +11,7 @@ description: 读取 X/Twitter 账号新增的 Likes，按当周实际内容生�
 
 - X 侧只读：只读 `liked_tweets`，不得点赞、取消点赞、发帖、书签或修改任何 X 状态。
 - 凭据只由 `xurl` 的 OAuth 配置管理；不得输出 token、secret 或授权头。
-- 不写 `/media/yhr/2T/files/wiki`，不执行 git、catalog、index 或 log。
+- 不写 `/media/$USER/2T/files/wiki`，不执行 git、catalog、index 或 log。
 - 收件人固定为 Gmail `me`；不抄送、不转发给其他人。
 - 用户已确认的内容规则：按当周实际内容分组，不设固定分类比例；不加点评；视频只给链接，不嵌缩略图；不过滤条目。
 - 安全边界：敏感、成人或明显冒犯条目仍保留在周报中，但邮件正文不复述其文本或媒体，只显示“⚠️ 敏感内容，点开原帖查看”加链接。

@@ -5,8 +5,11 @@ Usage:
   python3 report_gate.py <report.md> [--json]
 """
 
+import os
 import json, sys
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
 REQUIRED_SECTIONS = [
     "Abstract", "Related Work", "Method", "Implementation", "Evaluation", "Conclusion",
@@ -27,7 +30,7 @@ def check_sections(p):
 
 def check_evidence_cited(p):
     text = Path(p).read_text() if Path(p).exists() else ""
-    has_canon = "/media/yhr/2T/Canon/tasks/" in text
+    has_canon = f"{_DSH_ROOT}/Canon/tasks/" in text
     has_planning = ".planning/" in text or ".agent-state/" in text
     has_commit = "commit" in text.lower()
     ok = has_canon or has_planning or has_commit

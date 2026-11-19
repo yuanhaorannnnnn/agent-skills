@@ -26,7 +26,7 @@ Like tmux attach for coding agents. Read a previous agent's raw JSONL session lo
 passdown transfers context, not workspace ownership. For durable context and artifacts, follow the shared Canon contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
+~/.agents/repos/agent-skills/references/canon-output-contract.md
 ```
 
 ## Historical artifact recall
@@ -180,8 +180,8 @@ Relevant artifacts:
 - /absolute/source/.planning/... — runtime plan, referenced only
 - /absolute/source/.proposal/... — proposal/report artifact, referenced only
 - /absolute/source/.agent-state/... — runtime recap, referenced only
-- /media/yhr/2T/Canon/tasks/... — durable task page when present
-- /media/yhr/2T/Canon/raw/update-cards/... — ingest/update card when present
+- /media/$USER/2T/Canon/tasks/... — durable task page when present
+- /media/$USER/2T/Canon/raw/update-cards/... — ingest/update card when present
 ```
 
 Do not read or inline large artifacts unless needed for the immediate next step. Prefer an index first.
@@ -234,7 +234,7 @@ untouched and state why.
 If the handoff establishes durable context, create or update a Canon update card under:
 
 ```text
-/media/yhr/2T/Canon/raw/update-cards/
+/media/$USER/2T/Canon/raw/update-cards/
 ```
 
 Promote stable facts into Canon task/project/decision/pattern/incident pages only when the durable target is clear. If not clear, keep the update card as the ingest bridge.

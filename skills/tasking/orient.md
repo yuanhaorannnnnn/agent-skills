@@ -4,7 +4,7 @@
 
 1. 确认当前在项目代码仓库根目录下
 2. 检查 worktree：`git diff --quiet && git diff --cached --quiet`，不通过则停止并提示用户处理未提交修改（不自动 stash）。未跟踪文件（`??`）不计为 dirty。
-3. 确认 `/media/yhr/2T/yunxiao/requirements/<demand-id>/` 存在且包含 `state.json` 和 `detail.md`
+3. 确认 `/media/$USER/2T/yunxiao/requirements/<demand-id>/` 存在且包含 `state.json` 和 `detail.md`
 
 ## 分支管理
 
@@ -75,8 +75,8 @@
 ### Canon promotion
 
 - **方案 artifact**: `<artifact-dir>/<demand-id>-design.md` — repo-local 方案文档
-- 创建或更新 Canon task page：`/media/yhr/2T/Canon/tasks/<demand-id>.md`，记录需求摘要、base/feature branch、方案 artifact、待确认问题和下一阶段 `Briefing`。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-orient.md`，链接 `design_doc_path`、需求目录和代码分析证据。
+- 创建或更新 Canon task page：`/media/$USER/2T/Canon/tasks/<demand-id>.md`，记录需求摘要、base/feature branch、方案 artifact、待确认问题和下一阶段 `Briefing`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-orient.md`，链接 `design_doc_path`、需求目录和代码分析证据。
 
 ## 完成检查
 

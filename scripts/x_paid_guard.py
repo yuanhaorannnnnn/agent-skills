@@ -10,6 +10,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 import re
 import subprocess
 import sys
@@ -18,8 +20,8 @@ from decimal import Decimal, InvalidOperation
 from urllib.parse import parse_qs, urlsplit
 from zoneinfo import ZoneInfo
 
-REAL_BINARY = '/home/yhr/.local/libexec/xurl-real'
-DIRECTORY = Path('/home/yhr/.codex/paid-usage-guard')
+REAL_BINARY = str(Path.home() / '.local' / 'libexec' / 'xurl-real')
+DIRECTORY = Path.home() / '.codex' / 'paid-usage-guard'
 SHANGHAI = ZoneInfo('Asia/Shanghai')
 
 

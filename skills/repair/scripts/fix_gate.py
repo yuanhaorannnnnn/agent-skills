@@ -5,13 +5,16 @@ Usage:
   python3 fix_gate.py <bug-id> [--repo <path>] [--json]
 """
 
+import os
 import json, os, sys, subprocess
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from project_artifacts import task_dir
 
-BUG_ROOT = Path("/media/yhr/2T/yunxiao/bugs")
+BUG_ROOT = Path(_DSH_ROOT) / "yunxiao/bugs"
 
 def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw).stdout.strip()
@@ -148,7 +151,7 @@ def main():
         ok = actual == expected
         return ok, f"branch: expected={expected} actual={actual}" + (" OK" if ok else " FAIL")
 
-    canon_task = Path(f"/media/yhr/2T/Canon/tasks/{args.bug_id}.md")
+    canon_task = Path(f"{_DSH_ROOT}/Canon/tasks/{args.bug_id}.md")
 
     checks = []
     checks.append(("0.worktree", check_worktree_clean(repo)))

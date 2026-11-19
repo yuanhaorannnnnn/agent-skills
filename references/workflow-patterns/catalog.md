@@ -7,7 +7,7 @@ This is a pattern-selection reference, not a skill and not a runtime. It helps a
 Source seed:
 
 ```text
-/media/yhr/2T/files/wiki/raw/clippings/A harness for every task dynamic workflows in Claude Code 适用于各种任务的工具：Claude Code 中的动态工作流.md
+/media/$USER/2T/files/wiki/raw/clippings/A harness for every task dynamic workflows in Claude Code 适用于各种任务的工具：Claude Code 中的动态工作流.md
 ```
 
 ## Core Distinction

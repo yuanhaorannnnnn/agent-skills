@@ -6,7 +6,7 @@ Use this contract when a skill produces or updates durable context.
 
 ```text
 repo-local .agent-state / .planning / .research / .proposal = runtime execution buffers
-/media/yhr/2T/Canon = durable cross-project memory graph
+/media/$USER/2T/Canon = durable cross-project memory graph
 ```
 
 Follow project document ownership and layout rules first. Tracked project documents (for example CARLA `Docs/`) remain the project source of truth; Canon records cross-project context, decisions and artifact references without replacing them. For projects retaining runtime scratchpads, do not delete them; promote durable facts into Canon. Explicitly authorized migrations may retire old directories.
@@ -50,8 +50,8 @@ raw/update-cards/  ingest bridge from runtime input to durable graph
 Schema and workflow references:
 
 ```text
-/media/yhr/2T/Canon/SCHEMA.md
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+/media/$USER/2T/Canon/SCHEMA.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 ## Required Behavior
@@ -67,7 +67,7 @@ When a skill finishes work that changes durable knowledge or requires later hand
 Self-contained, reversible single-repository edits that finish in the current conversation need no new task page or update card. Otherwise, if a durable answer is non-empty, create or update a Canon update card under:
 
 ```text
-/media/yhr/2T/Canon/raw/update-cards/
+/media/$USER/2T/Canon/raw/update-cards/
 ```
 
 Then merge stable facts into the relevant Canon pages when the durable target is clear.

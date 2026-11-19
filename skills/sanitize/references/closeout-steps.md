@@ -9,7 +9,7 @@
 从 Canon task page 获取关联文件范围：
 
 ```text
-/media/yhr/2T/Canon/tasks/<task-id>.md
+/media/$USER/2T/Canon/tasks/<task-id>.md
 ```
 
 匹配规则：
@@ -30,7 +30,7 @@
 提交前读取共享质量门：
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/review-gate.md
+~/.agents/repos/agent-skills/references/review-gate.md
 ```
 
 如果当前 diff 已在 `repair Fix`、`tasking Engage` 或 `execute` 中通过等价 Review Gate，可记录证据后跳过重复 review。否则用 Canon task page、当前 diff、验证摘要执行 review。
@@ -51,7 +51,7 @@
 更新对应的 Canon task page 的 § Progress、§ Artifacts、§ Evidence 和 § Timeline：
 
 ```text
-/media/yhr/2T/Canon/tasks/<task-id>.md
+/media/$USER/2T/Canon/tasks/<task-id>.md
 ```
 
 追加到 § Progress：
@@ -91,7 +91,7 @@ blocked → commit 缺失 / 未 push / Canon 未更新。pass → 收尾完成�
 对有长期价值的收尾，创建或更新：
 
 ```text
-/media/yhr/2T/Canon/raw/update-cards/YYYYMMDD-<task-or-branch>-wrapup.md
+/media/$USER/2T/Canon/raw/update-cards/YYYYMMDD-<task-or-branch>-wrapup.md
 ```
 
 Update card 至少记录：
@@ -112,7 +112,7 @@ Update card 至少记录：
 ## 收尾完成
 
 - **Git**: 已提交并推送 `<commit-hash>`
-- **Canon Task Page**: 已更新 /media/yhr/2T/Canon/tasks/<task>.md
+- **Canon Task Page**: 已更新 /media/$USER/2T/Canon/tasks/<task>.md
 - **Canon**: 已写 update card / 无 durable 更新 / Canon 不可用
 
 ### 提交详情

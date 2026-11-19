@@ -11,7 +11,7 @@ description: |
 Read the shared Canon contract before finalizing meaningful work:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md
+~/.agents/repos/agent-skills/references/canon-output-contract.md
 ```
 
 ## Mode Routing
@@ -74,7 +74,7 @@ or marks the task done.
 sanitize is the final commit/push/Canon promotion gate and follows the shared workflow output contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 Closeout consumes prior implementation, validation, Review Gate, and traceback
@@ -105,7 +105,7 @@ For Closeout mode, read [the scoped Git and Canon steps](references/closeout-ste
 ## Routing telemetry
 
 Emit one final local event following
-[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+[the shared routing contract](~/.agents/repos/agent-skills/references/skill-telemetry.md).
 Use `route=closeout|report|both|unresolved`; set `expected-route` only from clear
 user/caller intent. Record `publish=none|commit|push` for the highest **completed**
 Git action, never the planned action. Report-only must have `publish=none`.

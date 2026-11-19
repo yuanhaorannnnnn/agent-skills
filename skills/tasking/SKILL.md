@@ -24,7 +24,7 @@ description: |
 
 ## 全局约定
 
-- **需求文档目录**: `/media/yhr/2T/yunxiao/requirements/<demand-id>/`
+- **需求文档目录**: `/media/$USER/2T/yunxiao/requirements/<demand-id>/`
 - **state.json**: 每个需求的状态文件，Phase 0 创建，各 phase 更新
 - **phase 值**: `new` → `plan` → `review` → `dev` → `test` → `done`
 - **不确定点**: 列出向用户确认，不要假设
@@ -42,7 +42,7 @@ description: |
 tasking modes must satisfy the shared workflow output contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 Each mode must leave a clear phase gate in `state.json`, a Canon task/update-card entry, and durable artifact refs for design docs, review pages, goal.md, deliverables, and status changes.
@@ -69,12 +69,12 @@ Each mode must leave a clear phase gate in `state.json`, a Canon task/update-car
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - `state.json`、`<runtime-dir>/`、`<artifact-dir>/` 是阶段门控和执行缓存，不是长期 source of truth。
-- 每个需求应在 Canon 中有持久任务页：`/media/yhr/2T/Canon/tasks/<demand-id>.md`，记录当前阶段、关键决策、负责人流转、交付物和下一步。
+- 每个需求应在 Canon 中有持久任务页：`/media/$USER/2T/Canon/tasks/<demand-id>.md`，记录当前阶段、关键决策、负责人流转、交付物和下一步。
 - 方案文档、知识库 URL、评审日程、`goal.md`、交付物 URL 都作为 Canon artifact refs 记录，默认只引用绝对路径或 URL，不复制文件。
-- 每个 mode 完成后，如果产生了新事实，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-<mode>.md`，再把稳定事实合并到 task/project/workflow 页面。
+- 每个 mode 完成后，如果产生了新事实，创建或更新 `/media/$USER/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-<mode>.md`，再把稳定事实合并到 task/project/workflow 页面。
 - 如果 Canon 暂不可用，先完成 Yunxiao/state.json 的阶段动作，并在最终回复中明确 Canon promotion 未完成。
 
 ## 项目材料路径优先

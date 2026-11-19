@@ -32,8 +32,8 @@ cd agent-skills
 python3 -m venv .venv-netease-mail
 .venv-netease-mail/bin/python -m pip install 'mcp==1.26.0' 'keyring==25.7.0'
 
-mkdir -p "$HOME/.agents/skills"
-ln -s "$PWD/skills/netease-mail" "$HOME/.agents/skills/netease-mail"
+mkdir -p "~/.agents/skills"
+ln -s "$PWD/skills/netease-mail" "~/.agents/skills/netease-mail"
 
 codex mcp add netease-mail -- \
   "$PWD/.venv-netease-mail/bin/python" \

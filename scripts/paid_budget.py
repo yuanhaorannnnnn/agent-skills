@@ -13,11 +13,13 @@ import hashlib
 import json
 import os
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 import re
 import tempfile
 from zoneinfo import ZoneInfo
 
-DIRECTORY = Path('/home/yhr/.codex/paid-usage-guard')
+DIRECTORY = Path.home() / '.codex' / 'paid-usage-guard'
 ZONE = ZoneInfo('Asia/Shanghai')
 
 

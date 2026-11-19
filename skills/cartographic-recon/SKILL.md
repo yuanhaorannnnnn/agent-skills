@@ -82,7 +82,7 @@ description: >
 ## 持久化与复用
 
 地图与来源留在任务输出目录。明确需要跨会话继续时，按
-[Canon 契约](/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md)保存任务状态和
+[Canon 契约](~/.agents/repos/agent-skills/references/canon-output-contract.md)保存任务状态和
 绝对产物引用；单次完成的地图无需新建 Canon task。地图生成不自动触发 Wiki 摄入、
 云端发布或外部发送。记录 skill outcome telemetry 时只使用
-[telemetry 契约](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md)允许的元数据。
+[telemetry 契约](~/.agents/repos/agent-skills/references/skill-telemetry.md)允许的元数据。

@@ -11,10 +11,12 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 import sqlite3
 import sys
 
-MODEL = Path(os.environ.get('PASSDOWN_EMBEDDING_MODEL_PATH', '/media/yhr/2T/files/wiki/.research/wiki-semantic/model'))
+MODEL = Path(os.environ.get('PASSDOWN_EMBEDDING_MODEL_PATH', os.path.join(_DSH_ROOT, 'files/wiki/.research/wiki-semantic/model')))
 STATE = Path(os.environ.get('PASSDOWN_SEMANTIC_STATE_DIR', str(Path.home() / '.agents/passdown-semantic')))
 MAX_CHUNKS = 160
 MAX_NEW_SESSIONS = 4

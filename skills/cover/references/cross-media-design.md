@@ -68,7 +68,7 @@ pass, exemption or automatic block. Follow the producer's medium-specific checks
 this hint adds no new approval, file, reference search or creative exploration.
 
 At the end of a visual creation or edit, record one local self-reported telemetry
-event with `python3 /home/yhr/.agents/repos/agent-skills/scripts/visual_telemetry.py record`,
+event with `python3 ~/.agents/repos/agent-skills/scripts/visual_telemetry.py record`,
 using its closed-value options for medium, content idea, reference,
 inspection, delivery readback and coverage. Leave a field `unknown` when the
 fact is not known; `not_applicable` is for an actually inapplicable decision,

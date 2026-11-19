@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Orient gate checker — pass/blocked/ready/warn."""
 
+import os
 import json, os, sys, subprocess
 from pathlib import Path
+
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from project_artifacts import task_dir
 
-REQ_ROOT = Path("/media/yhr/2T/yunxiao/requirements")
+REQ_ROOT = Path(_DSH_ROOT) / "yunxiao/requirements"
 
 def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw).stdout.strip()
@@ -43,7 +46,7 @@ def check_design_doc(sp):
         return False, f"design_doc: error {e} FAIL"
 
 def check_canon(demand_id):
-    ok = Path(f"/media/yhr/2T/Canon/tasks/{demand_id}.md").exists()
+    ok = Path(f"{_DSH_ROOT}/Canon/tasks/{demand_id}.md").exists()
     return ok, f"Canon task: {'found' if ok else 'missing'}" + (" OK" if ok else " FAIL")
 
 def check_human_confirmed(sp):

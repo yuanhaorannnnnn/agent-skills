@@ -10,8 +10,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
 
-CANON_TASKS = Path("/media/yhr/2T/Canon/tasks")
+
+CANON_TASKS = Path(_DSH_ROOT) / "Canon" / "tasks"
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> str:
@@ -146,7 +148,7 @@ def canon_update_card_suggestion(
     repo_root: Path, task_page: Path | None
 ) -> dict:
     """Return Canon paths that should be considered after wrapup."""
-    canon_root = Path("/media/yhr/2T/Canon")
+    canon_root = Path(_DSH_ROOT) / "Canon"
     branch = run(["git", "branch", "--show-current"], cwd=repo_root)
     slug_source = (task_page.stem if task_page else
                    branch or repo_root.name)

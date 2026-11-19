@@ -8,9 +8,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts/material_recall.py"
-CANON = "/media/yhr/2T/Canon"
-SKILLS = "/home/yhr/.agents/repos/agent-skills"
-WIKI = "/media/yhr/2T/files/wiki"
+CANON = "/media/user/2T/Canon"
+SKILLS = "/home/user/.agents/repos/agent-skills"
+WIKI = "/media/user/2T/files/wiki"
 
 
 class MaterialRecallTests(unittest.TestCase):
@@ -26,9 +26,9 @@ class MaterialRecallTests(unittest.TestCase):
   title: Skill System Five-Principles Hardening
   status: historical
   date: 2026-08-10
-  source_path: /home/yhr/.agents/repos/agent-skills/.proposal/skill-system-five-principles-hardening/goal.md
-  task_path: /media/yhr/2T/Canon/tasks/skill-system-five-principles-hardening.md
-  update_card: /media/yhr/2T/Canon/raw/update-cards/20260810-skill-five-principles-hardening.md
+  source_path: /home/user/.agents/repos/agent-skills/.proposal/skill-system-five-principles-hardening/goal.md
+  task_path: /media/user/2T/Canon/tasks/skill-system-five-principles-hardening.md
+  update_card: /media/user/2T/Canon/raw/update-cards/20260810-skill-five-principles-hardening.md
   original_terms: ["Model-complementary", "Open to optimization", "Workflow-grounded", "Observable/evaluable", "Stable contract"]
   aliases: ["自建 skill system 五原则", "自建 harness", "模型能力解耦"]
   alias_note: 整组关联记忆线索，需核对原文。
@@ -37,8 +37,8 @@ class MaterialRecallTests(unittest.TestCase):
   title: Intent Harness Six Operating Principles
   status: historical
   date: 2026-08-27
-  source_path: /media/yhr/2T/files/wiki/.proposal/intent-harness/index.html
-  update_card: /media/yhr/2T/Canon/raw/update-cards/20260827-breach-intent-harness.md
+  source_path: /media/user/2T/files/wiki/.proposal/intent-harness/index.html
+  update_card: /media/user/2T/Canon/raw/update-cards/20260827-breach-intent-harness.md
   original_terms: ["来源开放", "证据先于结论", "渐进承诺", "人类确认", "干净交接", "可度量"]
   aliases: ["Intent 六原则", "intent 来源开放", "渐进承诺"]
   alias_note: 别名是检索线索。
@@ -121,7 +121,7 @@ class MaterialRecallTests(unittest.TestCase):
     def test_missing_source_field_cannot_pass_link_check(self):
         text = self.index.read_text(encoding="utf-8")
         text = text.replace(
-            "  source_path: /home/yhr/.agents/repos/agent-skills/.proposal/skill-system-five-principles-hardening/goal.md\n",
+            "  source_path: /home/user/.agents/repos/agent-skills/.proposal/skill-system-five-principles-hardening/goal.md\n",
             "",
             1,
         )

@@ -11,7 +11,7 @@ implementation files.
 From the current workspace:
 
 ```bash
-python3 /home/yhr/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
+python3 ~/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
   --focus "your task or topic" --json
 ```
 
@@ -23,13 +23,13 @@ Useful variations:
 
 ```bash
 # Search another workspace and identify one runtime explicitly
-python3 /home/yhr/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
+python3 ~/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
   --former codex --dir /absolute/source/workspace --focus "your task" --json
 
 # Select one known session, or read one session file directly
-python3 /home/yhr/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
+python3 ~/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
   --session SESSION_UUID --json
-python3 /home/yhr/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
+python3 ~/.agents/repos/agent-skills/skills/passdown/scripts/extract_handoff.py \
   --file /absolute/session.jsonl --former claude --json
 ```
 

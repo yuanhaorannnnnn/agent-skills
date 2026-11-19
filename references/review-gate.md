@@ -5,7 +5,7 @@ Shared quality gate for code-producing workflows. Use it after implementation an
 Read with the workflow output contract:
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/skill-output-contract.md
+~/.agents/repos/agent-skills/references/skill-output-contract.md
 ```
 
 ## When To Run

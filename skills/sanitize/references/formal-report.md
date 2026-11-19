@@ -6,7 +6,7 @@ implementation and validation evidence.
 
 ## Source Priority
 
-1. `/media/yhr/2T/Canon/tasks/<task>.md`
+1. `/media/$USER/2T/Canon/tasks/<task>.md`
 2. linked commits, test/build results, reports, logs, and artifacts
 3. `.planning/conversations/` and `.agent-state/conversations/` as historical
    secondary evidence

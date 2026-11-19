@@ -29,6 +29,8 @@ import os
 import sys
 from pathlib import Path
 
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
+
 
 def resolve_task_page(cwd: Path) -> str | None:
     """Resolve likely Canon task page from branch or project name."""
@@ -39,10 +41,10 @@ def resolve_task_page(cwd: Path) -> str | None:
             cwd=cwd, text=True, capture_output=True
         ).stdout.strip()
         if branch:
-            return f"/media/yhr/2T/Canon/tasks/ (project={cwd.name}, branch={branch})"
+            return f"{_DSH_ROOT}/Canon/tasks/ (project={cwd.name}, branch={branch})"
     except Exception:
         pass
-    return f"/media/yhr/2T/Canon/tasks/ (project={cwd.name})"
+    return f"{_DSH_ROOT}/Canon/tasks/ (project={cwd.name})"
 
 
 def print_reminder(message: str) -> None:

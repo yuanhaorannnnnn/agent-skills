@@ -21,10 +21,10 @@ metadata:
 
 ```bash
 python <skill-dir>/scripts/source_identity.py \
-  --wiki-root /media/yhr/2T/files/wiki --url "SOURCE_URL"
+  --wiki-root /media/$USER/2T/files/wiki --url "SOURCE_URL"
 
 python <skill-dir>/scripts/source_identity.py \
-  --wiki-root /media/yhr/2T/files/wiki --file "Clippings/FILE.md"
+  --wiki-root /media/$USER/2T/files/wiki --file "Clippings/FILE.md"
 ```
 
 脚本统一比较 `canonical_url` 和正文 `content_sha256`，覆盖手机书签、PC clipping、
@@ -239,8 +239,8 @@ rating: {1-7}                             # 个人评分：7=改变人生，1=�
 完成上述写入后刷新 vault catalog：
 
 ```bash
-python3 /media/yhr/2T/files/wiki/.scripts/build_collection_catalog.py \
-  --vault /media/yhr/2T/files/wiki
+python3 /media/$USER/2T/files/wiki/.scripts/build_collection_catalog.py \
+  --vault /media/$USER/2T/files/wiki
 ```
 
 catalog 刷新失败不回滚已完成的摄入；明确报告失败，并保留 query/raw/index/log 作为已完成产物。不得静默留下 stale catalog。
@@ -282,16 +282,16 @@ raw/ 是图书馆——永久留存，不因是否写了笔记而增删。query/
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
-- 旧内容 wiki `/media/yhr/2T/files/wiki` 仍是文章、视频、PDF、剪藏的内容库和 raw archive；不要把这些 raw assets 复制到 Canon。
-- 当摄入内容影响本地项目、流程、决策、事故或可复用模式时，创建 `/media/yhr/2T/Canon/raw/update-cards/<date>-acquisition-<slug>.md`，把 wiki 笔记和 raw 路径作为 artifact refs。
+- 旧内容 wiki `/media/$USER/2T/files/wiki` 仍是文章、视频、PDF、剪藏的内容库和 raw archive；不要把这些 raw assets 复制到 Canon。
+- 当摄入内容影响本地项目、流程、决策、事故或可复用模式时，创建 `/media/$USER/2T/Canon/raw/update-cards/<date>-acquisition-<slug>.md`，把 wiki 笔记和 raw 路径作为 artifact refs。
 - Canon 只保存跨项目长期结论、关联和 artifact refs；`queries/`、`raw/`、`concepts/` 继续由旧内容 wiki 管理。
 
 ## Routing telemetry
 
 Emit one final local event following
-[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+[the shared routing contract](~/.agents/repos/agent-skills/references/skill-telemetry.md).
 Routes: `article`, `wechat-article`, `wechat-album`, `video`, `pdf`, `clippings`,
 `local-markdown`, `chart-handoff`, `deduplicated`, `unresolved`.
 Record actual `identity`, `delivery`, and `fetch` decisions using its closed

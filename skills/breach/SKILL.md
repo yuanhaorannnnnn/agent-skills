@@ -124,16 +124,16 @@ source material directory. Default output paths by context:
 
 When invoked by another skill (e.g., repair), the caller provides the output
 path; breach accepts it and writes there. Never write HTML into
-`/media/yhr/2T/yunxiao/` or other Phase 0 scraped data directories.
+`/media/$USER/2T/yunxiao/` or other Phase 0 scraped data directories.
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - HTML 页面是 artifact，仍写在调用者指定的 `.proposal/`、`.research/`、`queries/` 或其他 repo-local 路径。
 - Discussion digest 的 JSON 是可审计中间产物；决议、争议和 action items 可提升到 Canon `decisions/`、`tasks/`、`patterns/` 或 update-card。
 - breach 不主动复制 HTML 到 Canon；Canon 默认只记录 absolute path、HTTP URL、页面类型和它支持的 task/decision/incident。
-- 如果页面承载长期结论，创建或更新 `/media/yhr/2T/Canon/raw/update-cards/<date>-breach-<topic>.md`，或让调用方 skill 负责 promotion。
+- 如果页面承载长期结论，创建或更新 `/media/$USER/2T/Canon/raw/update-cards/<date>-breach-<topic>.md`，或让调用方 skill 负责 promotion。
 
 ## Agent-Specific
 
@@ -146,7 +146,7 @@ path; breach accepts it and writes there. Never write HTML into
 
 At entry, retain the trigger category and entry form. After the final local
 verdict, emit **one** event following
-[the shared routing contract](/home/yhr/.agents/repos/agent-skills/references/skill-telemetry.md).
+[the shared routing contract](~/.agents/repos/agent-skills/references/skill-telemetry.md).
 Use `route=general-page|discussion-digest|archive|native-handoff|inline-answer|unresolved`.
 A route is the branch actually entered, even if it later fails. Record
 `content-profile=default|eli5`, `prose=author|faithful`, and the selected style

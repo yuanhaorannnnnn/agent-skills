@@ -6,7 +6,7 @@
 
 **远程 URL**：curl 下载
 ```bash
-curl -sL "PDF_URL" -o /media/yhr/2T/files/wiki/raw/papers/<slug>.pdf --connect-timeout 15
+curl -sL "PDF_URL" -o /media/$USER/2T/files/wiki/raw/papers/<slug>.pdf --connect-timeout 15
 ```
 
 **本地文件**：直接使用已有路径。
@@ -16,10 +16,10 @@ curl -sL "PDF_URL" -o /media/yhr/2T/files/wiki/raw/papers/<slug>.pdf --connect-t
 ```bash
 python3 -c "
 import fitz
-doc = fitz.open('/media/yhr/2T/files/wiki/raw/papers/<slug>.pdf')
+doc = fitz.open('/media/$USER/2T/files/wiki/raw/papers/<slug>.pdf')
 for page in doc:
     print(page.get_text())
-" > /media/yhr/2T/files/wiki/raw/papers/<slug>.txt
+" > /media/$USER/2T/files/wiki/raw/papers/<slug>.txt
 ```
 
 依赖 `pymupdf`（`pip install pymupdf`）。

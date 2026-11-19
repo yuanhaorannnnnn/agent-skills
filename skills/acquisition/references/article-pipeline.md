@@ -33,7 +33,7 @@ python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
 
 ```bash
 python <skill-dir>/scripts/discover_wechat_album.py "ALBUM_URL" \
-  --save-manifest --wiki-root /media/yhr/2T/files/wiki
+  --save-manifest --wiki-root /media/$USER/2T/files/wiki
 ```
 
 manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json`，包含
@@ -62,7 +62,7 @@ manifest 保存为 `raw/collections/YYYYMMDD-wechat-album-<album-id>-<hash>.json
 
 ```bash
 python <skill-dir>/scripts/extract_article.py "URL" \
-  --save-raw --wiki-root /media/yhr/2T/files/wiki
+  --save-raw --wiki-root /media/$USER/2T/files/wiki
 ```
 
 自动检测平台（Substack/Medium/X/博客），trafilatura 优先、bs4 回退。
@@ -89,7 +89,7 @@ uv tool run --from 'camoufox[geoip]' camoufox fetch
 
 ```bash
 python <skill-dir>/scripts/ingest_wechat_article.py "WECHAT_URL" \
-  --wiki-root /media/yhr/2T/files/wiki \
+  --wiki-root /media/$USER/2T/files/wiki \
   --fallback-reason "direct extraction returned an empty article body"
 ```
 
@@ -146,8 +146,8 @@ Clippings 文件；其清理由独立 closeout gate 决定。
 archive。跨入口去重仍以 canonical URL 和内容 hash 为准，不能因 Clipping 已归档跳过 Step 0。
 
 ```bash
-mkdir -p /media/yhr/2T/files/wiki/raw/clippings
-cp "/media/yhr/2T/files/wiki/Clippings/<file>.md" "/media/yhr/2T/files/wiki/raw/clippings/<file>.md"
+mkdir -p /media/$USER/2T/files/wiki/raw/clippings
+cp "/media/$USER/2T/files/wiki/Clippings/<file>.md" "/media/$USER/2T/files/wiki/raw/clippings/<file>.md"
 ```
 
 普通文章的笔记 `sources:` 和 `## 来源` 段引用 `raw/clippings/<file>.md`，不引用

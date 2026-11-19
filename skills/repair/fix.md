@@ -122,14 +122,14 @@ gate 通过后继续以下预检：
    - 更新 `goal.md`：标记已完成和跳过的项。
    - 更新 Breach 页面（`<artifact-dir>/index.html`）：定位结论、修复方案、文件改动与 commit 一致。
    - 如果 Intake 假设被否决（如 FOV 减半→实际是 FaceScale），必须在更新中标注"已否决的原假设"。
-   - 更新后同步 LAN 分享目录：`cp .../index.html /media/yhr/2T/carla_images/doc/<bug-id>.html`
+   - 更新后同步 LAN 分享目录：`cp .../index.html /media/$USER/2T/carla_images/doc/<bug-id>.html`
 
 ### Step 4: Review Gate
 
 验证通过后、提交并推送前，读取共享质量门：
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/review-gate.md
+~/.agents/repos/agent-skills/references/review-gate.md
 ```
 
 用本缺陷的 Canon task page、`root-cause.md`、当前 diff、monitored 或本地验证摘要做 review。优先使用跨 runtime reviewer；不可用时执行本地 adversarial review 并说明。
@@ -180,7 +180,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
 ## Canon promotion
 
 - 更新 Canon task page：记录修复摘要、验证摘要、review 结果、validation task id、commit/MR、构建产物和剩余风险。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-fix.md`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-fix.md`。
 - Codify/AfterAction 的长期结论优先沉淀到 Canon `patterns/` 或 `incidents/`；repo-local 规则文件只作为项目内运行时兼容入口。
 
 ## 更新 state.json
@@ -193,7 +193,7 @@ Review Gate 通过后提交并推送修复分支，失败则停在 Fix，不进�
   "self_check_summary": "脚本路径 + 跑完的摘要（研发自测，非 QA 回归）",
   "self_check_script_paths": ["PythonAPI/examples/test_<bug-id>_<sensor>.py", "PythonAPI/examples/<bug-id>_<sensor>.py"],
   "validation_task_ids": ["<bug-id>-package"],
-  "build_artifacts": ["/media/yhr/2T/carla_images/<artifact>"],
+  "build_artifacts": ["/media/$USER/2T/carla_images/<artifact>"],
   "commit_sha": "<git commit>",
   "pushed_branch": "<fix_branch>",
   "remote_url": "<origin branch URL>",

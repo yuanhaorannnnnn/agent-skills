@@ -77,7 +77,7 @@ description: |
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - Go/no-go recommendations can become Canon decisions when the user accepts them. Create an update-card for accepted skill/tooling decisions; otherwise keep the answer ephemeral.
-- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-gonogo-<topic>.md`.
+- Canon update-card path, when needed: `/media/$USER/2T/Canon/raw/update-cards/<date>-gonogo-<topic>.md`.

@@ -53,4 +53,4 @@
 每件作品仍要形成自己的视觉主张；不要把签名做成强制模板或添加来源未提供的历史动画/BPM规则。
 详细特征、区别、媒介建议与来源见[目录](style-catalog.json)；调用契约见[路由说明](style-routing.md)。
 
-原始资料归档：`/media/yhr/2T/files/wiki/raw/collections/20261026-art-style-definitions/`。安装环境没有该本地资料时使用每项的公开来源URL。
+原始资料归档：`/media/$USER/2T/files/wiki/raw/collections/20261026-art-style-definitions/`。安装环境没有该本地资料时使用每项的公开来源URL。

@@ -191,7 +191,7 @@ functional correctness and fidelity, without adding aesthetic defaults.
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - Generated DESIGN.md files are project artifacts. If a visual/design decision should persist across projects, record it in Canon `decisions/` or `patterns/` and reference the DESIGN.md path.
-- Canon update-card path, when needed: `/media/yhr/2T/Canon/raw/update-cards/<date>-cover-<topic>.md`.
+- Canon update-card path, when needed: `/media/$USER/2T/Canon/raw/update-cards/<date>-cover-<topic>.md`.

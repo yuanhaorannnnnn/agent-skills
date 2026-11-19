@@ -36,7 +36,7 @@ gate 通过后继续：
 
 ### Step 3: 生成 Canon 计划和 goal.md
 
-调用 `Execute --plan /media/yhr/2T/Canon/tasks/<demand-id>.md`：
+调用 `Execute --plan /media/$USER/2T/Canon/tasks/<demand-id>.md`：
 - 更新 Canon task page § Plan / § Findings / § Progress
 - 生成 repo-local `goal.md`: `<artifact-dir>/goal.md`
 - `goal.md` 是 `/goal` 的 runtime 输入；Canon task page 是 durable state
@@ -90,7 +90,7 @@ gate 通过后继续：
 实现完成后先读取共享质量门：
 
 ```text
-/home/yhr/.agents/repos/agent-skills/references/review-gate.md
+~/.agents/repos/agent-skills/references/review-gate.md
 ```
 
 用 Canon task page、`goal.md`、方案文档、当前 diff、测试/编译证据做 review。有 blocker 时停在 Engage，不进入 Traceback/Sanitize；无 blocker 时把 review 结果写入 Canon task page § Findings / § Evidence / § Timeline，再运行 Traceback。
@@ -106,7 +106,7 @@ Traceback 完成后运行机器 gate：
 
 - `.planning/conversations/<demand-id>/` 不再创建；`goal.md` 是 runtime execution brief，Canon task page 是 durable state。
 - 更新 Canon task page：记录开发任务摘要、关键约束、review 结果、状态 `dev` 和下一步验证/Turnover 条件。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-engage.md`，把 Canon task page 和 `goal.md` 路径作为 artifact refs。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-engage.md`，把 Canon task page 和 `goal.md` 路径作为 artifact refs。
 
 ## 更新 state.json
 
@@ -114,7 +114,7 @@ Traceback 完成后运行机器 gate：
 {
   "phase": "review → dev",
   "goal_path": "<artifact-dir>/goal.md",
-  "canon_task_path": "/media/yhr/2T/Canon/tasks/<demand-id>.md"
+  "canon_task_path": "/media/$USER/2T/Canon/tasks/<demand-id>.md"
 }
 ```
 

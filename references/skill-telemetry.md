@@ -4,7 +4,7 @@ Record one local outcome event when a skill materially passes, blocks, skips, or
 errors. Telemetry measures workflow use and gate outcomes; it never stores the
 conversation.
 
-`<agent-skills-repo>` 指本 reference 所属仓库的真实根目录：先解析本文件的真实路径，再取 `references/` 的父目录。当前本机为 `/home/yhr/.agents/repos/agent-skills`。记录器在该仓库 `scripts/skill_telemetry.py`；先核对文件存在。不要由 skill 的加载路径拼接 `<skills-root>/.scripts`：runtime 的 symlink 布局与仓库的 `skills/` 布局不同，后者没有 `.scripts`。
+`<agent-skills-repo>` 指本 reference 所属仓库的真实根目录：先解析本文件的真实路径，再取 `references/` 的父目录。当前本机为 `~/.agents/repos/agent-skills`。记录器在该仓库 `scripts/skill_telemetry.py`；先核对文件存在。不要由 skill 的加载路径拼接 `<skills-root>/.scripts`：runtime 的 symlink 布局与仓库的 `skills/` 布局不同，后者没有 `.scripts`。
 
 ```bash
 python3 <agent-skills-repo>/scripts/skill_telemetry.py \

@@ -3,13 +3,17 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import json
 import re
 import sys
 from pathlib import Path
 
-DEFAULT_INDEX = Path("/media/yhr/2T/Canon/artifacts/artifact-index.md")
+_DSH_ROOT = os.environ.get("DSH_DATA_ROOT") or os.path.join("/media", os.environ.get("USER", ""), "2T")
+
+DEFAULT_INDEX = Path(_DSH_ROOT) / "Canon" / "artifacts" / "artifact-index.md"
 LINK_FIELDS = ("source_path", "task_path", "update_card")
 
 

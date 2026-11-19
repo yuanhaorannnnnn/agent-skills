@@ -56,7 +56,7 @@ gate 通过后继续：
 ### Step 4: Canon promotion
 
 - 更新 Canon task page：记录状态 `test`、交付物 URL、系统测试负责人 `樊亮亮`、云效评论证据和后续测试入口。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-turnover.md`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-turnover.md`。
 - 交付物只作为 URL/artifact refs 记录，不复制到 Canon。
 
 ## 更新 state.json

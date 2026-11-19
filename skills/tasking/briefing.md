@@ -80,7 +80,7 @@ gate 通过后继续：
 ### Canon promotion
 
 - 更新 Canon task page：记录知识库文档 URL、评审评论、日程 ID、参与人 userId 和当前阶段 `review`。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-briefing.md`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-tasking-<demand-id>-briefing.md`。
 - 知识库文档和日程只保存 URL/ID 引用，不把文档复制进 Canon。
 
 ## 完成检查

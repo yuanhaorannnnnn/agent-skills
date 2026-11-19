@@ -126,7 +126,7 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
 
 - 更新 Canon task page：记录 outcome、目标云效状态、评论证据、deliverable URLs、commit/MR 和下一步。
 - `fixed` 的下一步：测试同事在稳定性环境集成测试，通过后改状态为回归验证，再进入 Clear 阶段合入主分支。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md`。
 - Closeout 不复制构建产物，只保存 HTTP 链接和绝对路径 artifact refs。
 
 ## 更新 state.json
@@ -136,12 +136,12 @@ Repair 全流程不修改负责人。不要转派给验证者、提单人或其�
   "phase": "fixed -> integration",
   "outcome": "fixed|false-positive|requirement|cannot-reproduce|blocked",
   "commit_sha": "<git commit>",
-  "image_path": "/media/yhr/2T/carla_images/<image_file>",
+  "image_path": "/media/$USER/2T/carla_images/<image_file>",
   "deliverable_urls": ["http://..."],
   "comment_ids": ["<Intake comment ID>", "<Closeout comment ID>"],
   "attachment_ids": ["<self-check script attachment IDs>"],
   "status": "集成测试中|转需求|关闭|开发挂起",
-  "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md"
+  "canon_update_card_path": "/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-closeout.md"
 }
 ```
 

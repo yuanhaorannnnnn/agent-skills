@@ -3,7 +3,7 @@
 ## 预检
 
 1. 确认当前在目标代码仓库，或 `state.json.repo_path` 指向目标仓库。
-2. 确认 `/media/yhr/2T/yunxiao/bugs/<bug-id>/state.json` 和 `detail.md` 存在。
+2. 确认 `/media/$USER/2T/yunxiao/bugs/<bug-id>/state.json` 和 `detail.md` 存在。
 3. 检查 worktree：`git diff --quiet && git diff --cached --quiet`，不通过则停止并提示用户处理未提交修改（不自动 stash）。未跟踪文件（`??`）不计为 dirty。
 4. 确认参数包含 `<bug-id>`，并且 `--branch` / `--base` 二选一。
 
@@ -38,7 +38,7 @@
 
 以缺陷标题、模块名、错误类型为线索，搜 Canon 是否有相关历史：
 ```bash
-rg -i "<keyword1>|<keyword2>" /media/yhr/2T/Canon/{projects,tasks,decisions,patterns,incidents}
+rg -i "<keyword1>|<keyword2>" /media/$USER/2T/Canon/{projects,tasks,decisions,patterns,incidents}
 ```
 如果命中同类缺陷→参考历史根因和修复方案。Canon 无命中→继续。
 
@@ -111,7 +111,7 @@ Breach 页面是快速对齐材料，不替代 `root-cause.md`。
 **双重落盘**：生成后复制到 LAN 分享目录：
 
 ```bash
-cp <artifact-dir>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
+cp <artifact-dir>/index.html /media/$USER/2T/carla_images/doc/<bug-id>.html
 ```
 
 ### Step 7: 评论区 + 云效状态
@@ -140,8 +140,8 @@ cp <artifact-dir>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
 
 ## Canon promotion
 
-- 创建或更新 Canon task page：`/media/yhr/2T/Canon/tasks/<bug-id>.md`，记录缺陷摘要、当前状态 `修复中`、修复分支、根因假设、风险和下一步 `Fix`。
-- 创建 update card：`/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md`。
+- 创建或更新 Canon task page：`/media/$USER/2T/Canon/tasks/<bug-id>.md`，记录缺陷摘要、当前状态 `修复中`、修复分支、根因假设、风险和下一步 `Fix`。
+- 创建 update card：`/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md`。
 - 把 `root-cause.md`、`fix_plan.json`、Breach HTML、LAN 分享 URL、缺陷目录作为 artifact refs；不要把 Phase 0 原始材料复制进 Canon。
 
 ## 更新 state.json
@@ -155,8 +155,8 @@ cp <artifact-dir>/index.html /media/yhr/2T/carla_images/doc/<bug-id>.html
   "root_cause_path": "<artifact-dir>/root-cause.md",
   "proposal_page_path": "<artifact-dir>/index.html",
   "share_url": "http://172.16.19.158:8080/doc/<bug-id>.html",
-  "canon_task_path": "/media/yhr/2T/Canon/tasks/<bug-id>.md",
-  "canon_update_card_path": "/media/yhr/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md"
+  "canon_task_path": "/media/$USER/2T/Canon/tasks/<bug-id>.md",
+  "canon_update_card_path": "/media/$USER/2T/Canon/raw/update-cards/<date>-repair-<bug-id>-intake.md"
 }
 ```
 

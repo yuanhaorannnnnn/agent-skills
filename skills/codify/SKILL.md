@@ -57,10 +57,10 @@ Keep one-off or purely local mistakes only as raw incident entries in repo-local
 
 ## Canon 输出边界
 
-读取共享契约：`/home/yhr/.agents/repos/agent-skills/references/canon-output-contract.md`。
+读取共享契约：`~/.agents/repos/agent-skills/references/canon-output-contract.md`。
 
 - Durable rules go to Canon `patterns/` or `incidents/`; repo-local `.agent-state/rules/mistakes.md` remains a runtime compatibility mirror.
-- For each materially new reusable rule, create or update `/media/yhr/2T/Canon/raw/update-cards/<date>-codify-<slug>.md` with wrong/correct/trigger/evidence.
+- For each materially new reusable rule, create or update `/media/$USER/2T/Canon/raw/update-cards/<date>-codify-<slug>.md` with wrong/correct/trigger/evidence.
 - If the rule is project-specific only, update the project page or local rule file and state that no cross-project Canon pattern was created.
 
 ## Script
