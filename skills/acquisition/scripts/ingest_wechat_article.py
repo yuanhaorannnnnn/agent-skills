@@ -122,8 +122,10 @@ def run_cli_in_staging(url: str, staging_dir: Path, command: str) -> str:
         check=False,
     )
     if completed.returncode != 0:
-        detail = (completed.stderr or completed.stdout).strip().splitlines()[-1:]
-        suffix = detail[0] if detail else f"exit code {completed.returncode}"
+        detail = (completed.stderr or completed.stdout).strip()
+        if len(detail) > 4096:
+            detail = detail[:2048] + "\n... diagnostic truncated ...\n" + detail[-2048:]
+        suffix = f"exit code {completed.returncode}; {detail or 'no diagnostic output'}"
         raise RuntimeError(f"WeChat fallback extraction failed: {suffix}")
     return completed.stdout
 

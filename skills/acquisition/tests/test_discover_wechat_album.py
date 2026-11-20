@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import subprocess
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "discover_wechat_album.py"
@@ -18,6 +20,23 @@ ARTICLE_URL = "http://mp.weixin.qq.com/s?__biz=biz-value&mid=99&idx=1&sn=abc#rd"
 
 
 class WeChatAlbumDiscoveryTests(unittest.TestCase):
+    def test_subprocess_failure_preserves_signal_and_diagnostic_context(self):
+        cases = [
+            (-11, "Fatal Python error: Segmentation fault\n" + "stack frame\n" * 600 + "Extension modules: native.module", "", "Fatal Python error", "Extension modules:"),
+            (1, "", "capture refused", "capture refused", "capture refused"),
+            (2, "", "", "no diagnostic output", "no diagnostic output"),
+        ]
+        for code, stderr, stdout, first, last in cases:
+            with self.subTest(code=code), patch.object(MODULE, "installed_cli_python", return_value="unused"), patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], code, stdout, stderr)) as run:
+                with self.assertRaises(RuntimeError) as caught:
+                    MODULE.fetch_album_dom(ALBUM_URL, "unused", 1)
+                message = str(caught.exception)
+                self.assertIn(f"exit code {code}", message)
+                self.assertIn(first, message)
+                self.assertIn(last, message)
+                self.assertLess(len(message), 4300)
+                run.assert_called_once()
+
     def test_album_url_is_canonicalized_without_viewer_noise(self):
         self.assertEqual(
             MODULE.canonical_album_url(ALBUM_URL),

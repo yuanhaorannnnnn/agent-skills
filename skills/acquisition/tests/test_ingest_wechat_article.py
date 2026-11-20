@@ -2,6 +2,8 @@ import datetime as dt
 import importlib.util
 from pathlib import Path
 import unittest
+import subprocess
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "ingest_wechat_article.py"
@@ -12,6 +14,23 @@ SPEC.loader.exec_module(MODULE)
 
 
 class WeChatFallbackTests(unittest.TestCase):
+    def test_subprocess_failure_preserves_signal_and_diagnostic_context(self):
+        cases = [
+            (-11, "Fatal Python error: Segmentation fault\n" + "stack frame\n" * 600 + "Extension modules: native.module", "", "Fatal Python error", "Extension modules:"),
+            (1, "", "capture refused", "capture refused", "capture refused"),
+            (2, "", "", "no diagnostic output", "no diagnostic output"),
+        ]
+        for code, stderr, stdout, first, last in cases:
+            with self.subTest(code=code), patch.object(MODULE, "installed_cli_python", return_value="unused"), patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], code, stdout, stderr)) as run:
+                with self.assertRaises(RuntimeError) as caught:
+                    MODULE.run_cli_in_staging("https://mp.weixin.qq.com/s/example", Path("/unused"), "unused")
+                message = str(caught.exception)
+                self.assertIn(f"exit code {code}", message)
+                self.assertIn(first, message)
+                self.assertIn(last, message)
+                self.assertLess(len(message), 4300)
+                run.assert_called_once()
+
     def test_only_accepts_public_wechat_article_urls(self):
         url = "https://mp.weixin.qq.com/s/example?foo=bar"
         self.assertEqual(MODULE.validate_wechat_url(url), url)
