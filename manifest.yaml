@@ -2,6 +2,13 @@ repo:
   name: agent-skills
   runtime_dir: ~/.agents/skills
 skills:
+- name: agent-browser
+  enabled: true
+  category: browser
+  invocation: user
+  role: adapter
+  calls: []
+  handoffs: []
 - name: codify
   enabled: true
   category: workflow

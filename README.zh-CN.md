@@ -72,6 +72,7 @@ skill 按自身边界自动触发：写设计文档走 `conops`，缺陷单走 `
 | Skill | Category | Invocation | Role | 做什么 |
 |---|---|---|---|---|
 | `acquisition` | media | user | adapter | 视频/文章/PDF 摄入知识库 |
+| `agent-browser` | browser | user | adapter | 用独立 Chrome 会话操作网页并核验结果 |
 | `after-action` | workflow | model | renderer | 故障复盘记录 |
 | `breach` | design | model | renderer | 单页 HTML、讨论摘要、`--archive` 档案呈现 |
 | `chart` | learning | user | orchestrator | 软件/仓库 Study Hub |

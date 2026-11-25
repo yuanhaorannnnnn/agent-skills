@@ -95,6 +95,7 @@ Skills also fire from their own trigger boundaries: design docs route to `conops
 | Skill | Category | Invocation | Role | What it does |
 |---|---|---|---|---|
 | `acquisition` | media | user | adapter | Ingest videos, articles and PDFs into a knowledge base |
+| `agent-browser` | browser | user | adapter | Drive and verify web tasks in an isolated Chrome session |
 | `after-action` | workflow | model | renderer | Write a post-mortem for a hard fix |
 | `breach` | design | model | renderer | Single-page HTML deliverables; discussion digest and read-only dossier archive modes |
 | `chart` | learning | user | orchestrator | Build a durable Study Hub for a repo or product |
